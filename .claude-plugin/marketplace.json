@@ -1,0 +1,17 @@
+{
+  "name": "plugin-mcp-use",
+  "owner": { "name": "yigitkonur", "url": "https://github.com/yigitkonur" },
+  "metadata": {
+    "description": "mcp-use for MCP servers and MCP Apps: build, migrate, and harden TypeScript MCP servers, with ChatGPT and Archestra host checks.",
+    "version": "0.1.0"
+  },
+  "plugins": [
+    {
+      "name": "mcp-use",
+      "description": "Build, migrate, and harden TypeScript MCP servers on mcp-use, add MCP Apps, and target ChatGPT and Archestra with host-specific checks, linting, and live verification.",
+      "version": "0.1.0",
+      "author": { "name": "yigitkonur", "url": "https://github.com/yigitkonur" },
+      "source": "."
+    }
+  ]
+}

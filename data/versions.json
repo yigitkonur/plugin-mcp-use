@@ -1,0 +1,14 @@
+{
+  "as_of": "2026-10-20",
+  "node": ">=22.22.2",
+  "packages": {
+    "mcp-use": { "known_good": "2.11.0", "floor": "2.8.0" },
+    "@mcp-use/cli": { "known_good": "4.5.0" },
+    "create-mcp-use-app": { "known_good": "2.1.0" },
+    "@mcp-use/inspector": { "known_good": "20.3.22" },
+    "@openai/apps-sdk-ui": { "known_good": "0.2.2" },
+    "@modelcontextprotocol/ext-apps": { "known_good": "2.0.3" },
+    "@modelcontextprotocol/sdk": { "known_good": "1.32.1" },
+    "@modelcontextprotocol/server": { "known_good": "2.3.1" }
+  }
+}

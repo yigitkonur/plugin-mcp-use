@@ -1,0 +1,10 @@
+# Maintainer rules
+
+1. **Bump `version`** in `.claude-plugin/plugin.json` and `.claude-plugin/marketplace.json` (both entries) in the same change as any shipped file. Installers gate updates on it. `node scripts/validate.mjs` fails if they disagree.
+2. **Evidence over memory.** A rule, checklist item or reference states only what was read from the installed package types, a vendor doc, or an observed run, and cites a `data/sources.json` id on a `Sources:` line. No source, no claim.
+3. **Every TS example compiles.** Mark examples with `<!-- fixture: name -->` (must compile) or `<!-- fixture-bad: name -->` (must fail), then run `sh scripts/typecheck-fixtures.sh`. Bumping `known_good` in `data/versions.json` re-runs it; a failing fixture blocks the bump until the reference is fixed.
+4. **Quiet by default.** Hooks always exit 0, print nothing unless a signal is present, never block, make no network calls. Tests in `tests/` assert empty stdout for every control in `tests/controls/`.
+5. **Size caps:** `SKILL.md` ≤ 150 lines, references ≤ 300 lines, knowledge skill descriptions ≤ 350 characters. One home per fact: link, do not restate.
+6. **Knowledge skills are model-invoked, workflow skills are manual** (`disable-model-invocation: true`). Workflow skills cannot be started by the model; tell the user which command to type.
+7. **No vendor text is copied** into this repository. No Archestra (AGPL) code or tests are vendored.
+8. Run before every PR: `node scripts/validate.mjs`, `node --test tests/*.test.mjs`, `sh scripts/typecheck-fixtures.sh`, `claude plugin validate --strict .`.
