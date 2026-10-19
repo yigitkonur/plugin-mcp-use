@@ -1,0 +1,5 @@
+node_modules/
+.mcp-use-plugin/
+evals/results/
+.DS_Store
+*.log
