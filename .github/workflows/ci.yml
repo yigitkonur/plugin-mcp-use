@@ -1,0 +1,28 @@
+name: ci
+on:
+  push:
+    branches: [main, build]
+  pull_request:
+jobs:
+  checks:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Repo validation (manifests, size caps, source citations, checklists)
+        run: node scripts/validate.mjs
+      - name: Type fixtures (every documented example compiles against the pinned mcp-use) and API facts
+        run: sh scripts/typecheck-fixtures.sh
+      - name: Engine and hook tests
+        run: node --test tests/*.test.mjs
+      - name: Claude Code manifest validation
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          npm install -g @anthropic-ai/claude-code
+          claude plugin validate --strict .

@@ -1,0 +1,107 @@
+#!/usr/bin/env node
+// Static checks for mcp-use servers and views (stack rules + host rules), driven by data/guard-rules.tsv.
+import { readFileSync, mkdirSync, appendFileSync, existsSync } from "node:fs";
+import { join, relative, isAbsolute } from "node:path";
+import { tmpdir } from "node:os";
+import { detect } from "../lib/detect.mjs";
+import { loadRules, scanFiles, projectFiles, applyFixes, writeReport, SEVERITY_RANK } from "../lib/scan.mjs";
+import { envelope, EXIT } from "../lib/envelope.mjs";
+
+const args = process.argv.slice(2);
+const flag = (n) => args.includes(n);
+const vals = (n) => args.flatMap((a, i) => (a === n ? [args[i + 1]] : []));
+const val = (n) => vals(n)[0];
+
+if (flag("-h") || flag("--help")) {
+  process.stdout.write(`mcp-use-scan [--dir <project>] [--file <path>]... [--host stack|chatgpt|all] [--json] [--fix [--force]] [--hook --session <id>]
+
+Static rules from data/guard-rules.tsv. Exit: 0 clean · 1 warnings/advisories only · 2 errors · 3 usage · 4 out of scope.
+  --host     rule groups to run. Default: stack plus every host declared in .mcp-use-plugin/settings.md or inferred from code.
+  --fix      apply only fix_mode=auto rules. Needs a clean git state for each file (or --force). Writes a report first.
+  --hook     read a PostToolUse payload on stdin and print at most 3 new error/warning findings as additionalContext JSON (silent otherwise).
+`);
+  process.exit(0);
+}
+
+const short = (m) => (m.length <= 112 ? m : m.slice(0, 112).replace(/\s+\S*$/, "") + "…");
+const hookMode = flag("--hook");
+let root = val("--dir") || process.env.CLAUDE_PROJECT_DIR || process.cwd();
+let hookFile = null, session = val("--session") || "no-session";
+try {
+  if (hookMode) {
+    const p = JSON.parse(readFileSync(0, "utf8"));
+    if (p.cwd) root = p.cwd;
+    if (p.session_id) session = p.session_id;
+    hookFile = p.tool_input?.file_path ?? null;
+  }
+} catch { if (hookMode) process.exit(0); }
+
+try {
+  const d = detect(root);
+  if (hookMode && (!d.settings.enabled || d.scenario === "NONE" || d.scenario === "OUT_OF_SCOPE")) {
+    // Owned-App HTML in a Node project still counts; scenario OWNED_APP is handled by the Archestra rules in a later version.
+    process.exit(0);
+  }
+  if (!hookMode && d.scenario === "OUT_OF_SCOPE") {
+    process.stdout.write(JSON.stringify(envelope("mcp-use-scan", { ok: false, error: { code: "out_of_scope", message: "This plugin targets Node/TypeScript projects.", suggestion: `Detected: ${d.stack.other.join(", ") || "no package.json"}` } })) + "\n");
+    process.exit(EXIT.SCOPE);
+  }
+  const requested = val("--host");
+  const hosts = requested && requested !== "all" ? [requested] : requested === "all" ? ["chatgpt", "archestra"] : [...new Set([...d.hosts.declared, ...d.hosts.inferred])];
+  const mcpUse = d.versions["mcp-use"]?.effective ?? null;
+  const rules = loadRules();
+
+  let files;
+  if (hookMode) files = hookFile ? [isAbsolute(hookFile) ? relative(root, hookFile) : hookFile] : [];
+  else if (vals("--file").length) files = vals("--file").map((f) => (isAbsolute(f) ? relative(root, f) : f));
+  else files = projectFiles(root);
+  files = files.filter((f) => !f.startsWith(".."));
+
+  const allFiles = (hookMode || vals("--file").length) && rules.some((r) => r.kind.startsWith("project:")) ? projectFiles(root) : null;
+  let findings = scanFiles(root, files, rules, { hosts, mcpUse, allFiles });
+
+  if (hookMode) {
+    findings = findings.filter((f) => f.severity !== "advisory");
+    const dataDir = process.env.CLAUDE_PLUGIN_DATA || join(tmpdir(), "mcp-use-plugin-data");
+    const seenDir = join(dataDir, "guard-seen");
+    const seenFile = join(seenDir, `${session.replace(/[^\w.-]/g, "_")}.tsv`);
+    const seen = new Set(existsSync(seenFile) ? readFileSync(seenFile, "utf8").split("\n") : []);
+    const fresh = [];
+    for (const f of findings) { const k = `${f.file}\t${f.rule_id}`; if (!seen.has(k) && !fresh.some((x) => x.rule_id === f.rule_id)) fresh.push(f); }
+    if (!fresh.length) process.exit(0);
+    const shown = fresh.slice(0, 3);
+    mkdirSync(seenDir, { recursive: true });
+    appendFileSync(seenFile, shown.map((f) => `${f.file}\t${f.rule_id}`).join("\n") + "\n");
+    const lines = [`mcp-use guard: ${shown[0].file}`];
+    for (const f of shown) lines.push(`- ${f.rule_id} line ${f.line}: ${short(f.message)} [${f.source}]`);
+    let text = lines.join("\n");
+    if (text.length > 600) text = text.slice(0, 597) + "…";
+    process.stdout.write(JSON.stringify({ hookSpecificOutput: { hookEventName: "PostToolUse", additionalContext: text } }) + "\n");
+    process.exit(0);
+  }
+
+  const counts = (fs) => ({ error: fs.filter((f) => f.severity === "error").length, warning: fs.filter((f) => f.severity === "warning").length, advisory: fs.filter((f) => f.severity === "advisory").length });
+  const result = { root, hosts: ["stack", ...hosts], files_scanned: files.length, before: counts(findings), findings };
+
+  if (flag("--fix")) {
+    const report = writeReport(root, "scan", { phase: "before-fix", findings });
+    const fixes = applyFixes(root, findings, rules, { force: flag("--force") });
+    const after = scanFiles(root, files, rules, { hosts, mcpUse, allFiles });
+    Object.assign(result, { report, fixes, after: counts(after), findings: after });
+    findings = after;
+  }
+
+  if (flag("--json")) process.stdout.write(JSON.stringify(envelope("mcp-use-scan", { result, next_actions: findings.some((f) => f.fix_mode === "auto") && !flag("--fix") ? [{ cmd: "mcp-use-scan --fix", why: "apply the auto-fixable findings (clean git tree required)" }] : [] })) + "\n");
+  else {
+    for (const f of findings) process.stdout.write(`${f.severity.toUpperCase().padEnd(8)} ${f.rule_id.padEnd(8)} ${f.file}:${f.line}  ${f.message}  [fix: ${f.fix_mode}] [${f.source}]\n`);
+    const c = counts(findings);
+    if (result.fixes) process.stdout.write(`fixed: ${result.fixes.fixed.join(", ") || "none"}${result.fixes.skipped.length ? `; skipped: ${result.fixes.skipped.map((s) => s.file + " (" + s.reason + ")").join("; ")}` : ""}\nreport: ${result.report}\nbefore: ${JSON.stringify(result.before)}  after: ${JSON.stringify(result.after)}\n`);
+    process.stdout.write(`${files.length} files scanned · ${c.error} errors · ${c.warning} warnings · ${c.advisory} advisories\n`);
+  }
+  const worst = findings.length ? Math.min(...findings.map((f) => SEVERITY_RANK[f.severity])) : 3;
+  process.exit(worst === 0 ? EXIT.ERROR : worst <= 2 ? EXIT.WARN : EXIT.OK);
+} catch (e) {
+  if (hookMode) process.exit(0);
+  process.stderr.write(`mcp-use-scan: ${e?.message ?? e}\n`);
+  process.exit(EXIT.USAGE);
+}

@@ -8,11 +8,11 @@
 | `import … from "mcp-use/server"` | `from "mcp-use"` (no `./server` export key) |
 | CommonJS, Node < 22.22.2 | ESM, Node `>=22.22.2` |
 | `server.getHandler()` | `server.fetch`; `toNodeHandler(server)` from `mcp-use/node` for Node/Express (`getHandler` still exists, `@deprecated`) |
-| `text()`, `object()`, `array()`, `error()`, `mix()` … | raw `CallToolResult` (still exported, `@deprecated`) |
-| `widget({ props, output })`, `widget: { name }`, `resources/<n>/widget.tsx`, `ui://widget/<n>.html` | `view: { name }`, `views/<n>/view.tsx`, `ui://views/<n>.html` (`widget()` no longer exists) |
+| `text()`, `object()`, `array()`, `error()`, `mix()`, `widget()` … | raw `CallToolResult` (all still exported, `@deprecated` in `response-helpers.d.ts`) |
+| `widget({ props, output })` (deprecated helper), tool `widget: { name }`, `resources/<n>/widget.tsx`, `ui://widget/<n>.html` | `view: { name }` on the tool, `views/<n>/view.tsx`, `ui://views/<n>.html`; return `structuredContent` directly |
 | `useWidget()`, `useWidgetProps()`, `<McpUseProvider>` | `useToolContext<"tool">()`; no aggregate provider (not exported) |
 | `ctx.elicit()`, `ctx.sample()` | `inputRequired` round trip (`elicitation.md`); no server-side sampling |
-| `ctx.req` | `ctx.request` (`ctx.req` is a deprecated alias) |
+| `ctx.req` | `ctx.request` (`ctx.req` still exists as a deprecated alias) |
 | `ctx.log(...)` | `ctx.sendLog(...)` |
 | `ctx.client.supportsApps()` | `ctx.client.supportsViews()` |
 | tool `schema` | `inputSchema` (`schema` is still accepted on tools; prompts use only `schema`) |

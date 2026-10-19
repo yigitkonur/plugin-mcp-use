@@ -1,0 +1,28 @@
+name: drift
+on:
+  schedule:
+    - cron: "17 6 * * 1"
+  workflow_dispatch:
+permissions:
+  contents: read
+  issues: write
+jobs:
+  drift:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Compare npm latest and vendor docs with the pinned snapshot
+        id: drift
+        run: |
+          set +e
+          node scripts/drift.mjs | tee drift.txt
+          echo "code=$?" >> "$GITHUB_OUTPUT"
+      - name: Open an issue on drift
+        if: steps.drift.outputs.code != '0'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh issue create --title "Drift detected $(date -u +%F)" --body "$(printf '```\n%s\n```\nReview with the docs MCP servers, re-run `sh scripts/typecheck-fixtures.sh` against the new versions, update references and rules, then bump known_good / run `scripts/drift.sh --update-hashes`.' "$(cat drift.txt)")"

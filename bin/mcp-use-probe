@@ -1,0 +1,76 @@
+#!/usr/bin/env node
+// Live protocol probe for MCP servers over Streamable HTTP: snapshots, diffs, and host checks.
+import { readFileSync, writeFileSync } from "node:fs";
+import { connect } from "../lib/mcp-http.mjs";
+import { takeSnapshot, diffSnapshots, chatgptChecks, authChallengeCheck } from "../lib/probe.mjs";
+import { envelope, EXIT } from "../lib/envelope.mjs";
+
+const args = process.argv.slice(2);
+const flag = (n) => args.includes(n);
+const val = (n) => { const i = args.indexOf(n); return i >= 0 ? args[i + 1] : undefined; };
+const out = (e) => process.stdout.write(JSON.stringify(e) + "\n");
+
+if (flag("-h") || flag("--help") || !args.length) {
+  process.stdout.write(`mcp-use-probe --url <http://localhost:3000/mcp> [--host chatgpt] [--ua chatgpt|<string>] [--token T] [--calls calls.json] [--snapshot out.json] [--submit] [--json]
+mcp-use-probe --diff before.json after.json [--json]
+
+Connects over Streamable HTTP (modern stateless protocol first, legacy initialize as fallback), lists tools/resources/templates/prompts,
+reads every ui:// resource, optionally calls tools (--calls: [{"tool":"x","arguments":{}}]), and runs the host checklist (data/hosts/<host>.checklist.json).
+  --ua chatgpt   also sends an unauthenticated call with a ChatGPT user agent to each protected tool (CG-A01)
+  --token        bearer token for the main connection (never printed)
+Exit: 0 clean · 1 warnings/advisories · 2 errors · 3 usage · 5 network failure
+`);
+  process.exit(flag("-h") || flag("--help") ? 0 : EXIT.USAGE);
+}
+
+const emit = (res, text) => { if (flag("--json")) out(envelope("mcp-use-probe", res)); else process.stdout.write(text + "\n"); };
+
+try {
+  if (flag("--diff")) {
+    const i = args.indexOf("--diff");
+    const a = JSON.parse(readFileSync(args[i + 1], "utf8")), b = JSON.parse(readFileSync(args[i + 2], "utf8"));
+    const d = diffSnapshots(a, b);
+    emit({ result: d, ok: d.equal }, d.equal ? "snapshots are equal" : d.differences.map((x) => `${x.change.toUpperCase()} ${x.kind} ${x.id}${x.fields ? ": " + x.fields.map((f) => f.field).join(", ") : ""}`).join("\n"));
+    process.exit(d.equal ? EXIT.OK : EXIT.WARN);
+  }
+  const url = val("--url");
+  if (!url) { process.stderr.write("mcp-use-probe: --url is required (or --diff a b)\n"); process.exit(EXIT.USAGE); }
+  const uaOpt = val("--ua");
+  const uaString = uaOpt === "chatgpt" ? "ChatGPT/1.0" : uaOpt;
+  const token = val("--token") || process.env.MCP_USE_PROBE_TOKEN;
+  let client;
+  try { client = await connect({ url, token }); }
+  catch (e) {
+    emit({ ok: false, error: { code: e.code || "connect_failed", message: e.message, suggestion: e.code === "unauthorized" ? "pass --token <bearer token>" : "is the server running? try: mcp-use dev --no-open --no-inspector" } }, `connect failed: ${e.message}`);
+    process.exit(EXIT.NETWORK);
+  }
+  const calls = val("--calls") ? JSON.parse(readFileSync(val("--calls"), "utf8")) : [];
+  const snap = await takeSnapshot(client, { calls });
+  const host = val("--host");
+  let findings = [];
+  const notes = [];
+  if (host === "chatgpt") {
+    findings = chatgptChecks(snap, { submit: flag("--submit") });
+    if (uaString) {
+      const c2 = await connect({ url, ua: uaString, token });
+      const a = await authChallengeCheck(snap, c2);
+      findings.push(...a.findings);
+      if (a.note) notes.push(a.note);
+      if (a.tested) notes.push(`CG-A01: unauthenticated call with user agent "${uaString}" to ${a.tested.join(", ")} checked`);
+      await c2.close();
+    }
+  } else if (host && host !== "stack") { process.stderr.write(`mcp-use-probe: host "${host}" has no probe rules in this version\n`); process.exit(EXIT.USAGE); }
+  for (const p of snap.problems) findings.push({ rule_id: "PROBE", severity: "warning", host: host ?? "stack", method: "probe", target: "server", message: p, source: "M2" });
+  if (val("--snapshot")) writeFileSync(val("--snapshot"), JSON.stringify(snap, null, 2));
+  await client.close();
+  const counts = { error: findings.filter((x) => x.severity === "error").length, warning: findings.filter((x) => x.severity === "warning").length, advisory: findings.filter((x) => x.severity === "advisory").length };
+  const summary = { server: snap.server, tools: snap.tools.length, resources: snap.resources.length, resource_templates: snap.resourceTemplates.length, prompts: snap.prompts.length, ui_resources: snap.ui.length, calls: snap.calls.length, counts, notes, findings, ...(val("--snapshot") ? { snapshot: val("--snapshot") } : {}) };
+  const text = [`${snap.server.name ?? "?"} ${snap.server.version ?? ""} via ${snap.server.mode} protocol ${snap.server.protocol}: ${summary.tools} tools, ${summary.resources} resources, ${summary.prompts} prompts, ${summary.ui_resources} ui resources`,
+    ...findings.map((x) => `${x.severity.toUpperCase().padEnd(8)} ${x.rule_id.padEnd(7)} ${x.target}  ${x.message}  [${x.source}]`), ...notes.map((n) => `note: ${n}`),
+    `${counts.error} errors · ${counts.warning} warnings · ${counts.advisory} advisories`].join("\n");
+  emit({ result: summary, ok: counts.error === 0 }, text);
+  process.exit(counts.error ? EXIT.ERROR : counts.warning || counts.advisory ? EXIT.WARN : EXIT.OK);
+} catch (e) {
+  process.stderr.write(`mcp-use-probe: ${e?.message ?? e}\n`);
+  process.exit(EXIT.USAGE);
+}

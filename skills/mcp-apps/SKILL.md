@@ -29,7 +29,7 @@ Start from `${CLAUDE_PLUGIN_ROOT}/skills/mcp-use-server/SKILL.md` for server rul
 | CSP buckets, env vars, merge order, `permissions`, `domain` | `references/csp.md` |
 | The MCP Apps standard and what mcp-use emits | `references/protocol.md` |
 | What works on every host; dual-host rules | `references/portable-core.md` |
-| ChatGPT specifics | `${CLAUDE_PLUGIN_ROOT}/skills/host-chatgpt/SKILL.md` (shipped in 0.2.0) |
+| ChatGPT specifics | `${CLAUDE_PLUGIN_ROOT}/skills/host-chatgpt/SKILL.md` |
 
 ## Verify
-Typecheck regenerates `mcp-env.d.ts`; `mcp-use screenshot` renders the view (`--delay`, not `--wait-for` inside the view). Ask the user to run `/mcp-use:verify`.
+Typecheck regenerates `mcp-env.d.ts`; `mcp-use screenshot` renders the view (`--delay`, not `--wait-for` inside the view). Static and live host checks: `mcp-use-scan --host chatgpt` and `mcp-use-probe --host chatgpt --url …`. Ask the user to run `/mcp-use:verify` or `/mcp-use:host chatgpt audit`.

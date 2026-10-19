@@ -29,7 +29,7 @@ mcp-use moved from 2.8.2 to 2.11.0 in ten days. Do not trust memory for signatur
 - `server.settings(...)` fields are `{ schema, title, description? }` and `read`/`update` both return the values. There is no `type`, `label`, `default` or `secret`, and credentials must not be stored there (`host-chatgpt/references/extensions.md`).
 - `useViewTheme()` returns the string `"light" | "dark"`, not `{ theme }`.
 - `<AppsSDKUIProvider>` requires `linkComponent`. `Card` does not exist in `@openai/apps-sdk-ui`.
-- There is no `ctx.elicit()`, `ctx.sample()`, `ctx.req`, `ctx.log`, `widget()`, or `supportsApps()` in v2. See `references/elicitation.md` and `references/versions.md`.
+- There is no `ctx.elicit()`, `ctx.sample()`, `ctx.log()` or `supportsApps()` in v2, and `ctx.req`, `widget()`, `text()`, `object()` and the other response helpers are deprecated. See `references/elicitation.md` and `references/versions.md`.
 - `server.fetch` is a function reference. Never call it with no arguments.
 - `websiteUrl`, `icons`, `favicon`, `logging` are top-level `MCPServer` options. Do not nest them in `branding`.
 - `cors: { origin: "*", credentials: true }` is invalid; list origins.
@@ -53,5 +53,5 @@ mcp-use moved from 2.8.2 to 2.11.0 in ten days. Do not trust memory for signatur
 | ChatGPT rules | `${CLAUDE_PLUGIN_ROOT}/skills/host-chatgpt/SKILL.md` |
 
 ## Workflows (the user types these; you cannot start them)
-`/mcp-use:start` (what applies here) · `/mcp-use:new` (scaffold a server) · `/mcp-use:verify` (typecheck, run, call tools, screenshot).
+`/mcp-use:start` (what applies here) · `/mcp-use:new` (scaffold a server) · `/mcp-use:apps` (add views to a server) · `/mcp-use:host <chatgpt> <add|audit|fix>` (check or improve a host integration) · `/mcp-use:verify` (typecheck, run, call tools, screenshot). Engines the model can run directly: `mcp-use-detect`, `mcp-use-scan` (static rules), `mcp-use-probe` (live protocol checks).
 When one fits, tell the user which command to type and why.

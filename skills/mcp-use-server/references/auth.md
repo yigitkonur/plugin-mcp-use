@@ -77,7 +77,10 @@ Rules on a `mixedAuth` server (from the mcp-use docs, M1):
 - Views load signed out so ChatGPT can preview them while the connector is created.
 
 ## The ChatGPT challenge (HTTP 200)
-OpenAI's reference lists `_meta["mcp/www_authenticate"]` as the way a tool result asks ChatGPT to start sign-in. The mcp-use docs say that for ChatGPT requests without a bearer token on a protected tool, mcp-use answers HTTP 200 with `isError: true`, a short sign-in text and `_meta["mcp/www_authenticate"]`, instead of 401, so the chat session survives. **Check it, do not assume it:** `mcp-use-probe --ua chatgpt` (Phase 2) sends an unauthenticated call with a ChatGPT user agent and asserts the 200 shape; until then use `curl` with `-H 'user-agent: ChatGPT/1.0'` against a protected tool.
+OpenAI's reference lists `_meta["mcp/www_authenticate"]` as the way a tool result asks ChatGPT to start sign-in. mcp-use answers a call to a protected tool without a token in one of two ways depending on the `User-Agent` (its matcher is `/chatgpt|openai/i`). **Observed on mcp-use 2.11.0 (2026-10-20, fixture `tests/fixtures/p-auth`):**
+- `User-Agent: ChatGPT/1.0` → HTTP **200**, `isError: true`, text "Authentication is required for this request.", and `_meta["mcp/www_authenticate"]` = `["Bearer error=\"invalid_token\", …, scope=\"orders:write\", resource_metadata=\"…/.well-known/oauth-protected-resource/mcp\""]`.
+- any other user agent (`curl/8`) → HTTP **401** with a `WWW-Authenticate: Bearer …` header.
+Check it with `mcp-use-probe --url <mcp url> --host chatgpt --ua chatgpt` (rule CG-A01; it fails if a protected tool answers 401 to ChatGPT's user agent).
 
 ## Verified identity vs client hints
 - `ctx.auth` is verified: `user`, `scopes`, `permissions`, `payload`, `accessToken`, `clientId`, `expiresAt`, `resource`, `upstream`. Authorize on `permissions` or `scopes`, not on "a user exists".
@@ -143,4 +146,4 @@ export const provider = oauthCustomProvider<{ id: string }>({
 - Keep checks next to the sensitive operation or in narrow `mcp:tools/call` middleware.
 - Do not put credentials in `server.settings` or in view state (`host-chatgpt/references/extensions.md`).
 
-Sources: M1, M2, O5.
+Sources: M1, M2, O5, S18.

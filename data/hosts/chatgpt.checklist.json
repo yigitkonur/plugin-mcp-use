@@ -1,0 +1,716 @@
+{
+ "host": "chatgpt",
+ "as_of": "2026-10-20",
+ "items": [
+  {
+   "id": "CG-T01",
+   "title": "Every tool sets readOnlyHint, destructiveHint and openWorldHint as explicit booleans",
+   "methods": [
+    "static",
+    "probe"
+   ],
+   "severity": "error",
+   "fix_mode": "suggest",
+   "submission_only": false,
+   "static_rules": [
+    "CG-T01"
+   ],
+   "probe_rules": [
+    "CG-T01"
+   ],
+   "source": "O4"
+  },
+  {
+   "id": "CG-T02",
+   "title": "readOnlyHint:true is not set on a tool whose name or description implies mutation",
+   "methods": [
+    "manual"
+   ],
+   "severity": "warning",
+   "fix_mode": "manual",
+   "submission_only": false,
+   "static_rules": [],
+   "probe_rules": [],
+   "source": "O4",
+   "judge": "Read each tool; flag create/update/delete/send/cancel verbs with readOnlyHint true."
+  },
+  {
+   "id": "CG-T03",
+   "title": "destructiveHint is true for deletion, overwrite, cancel or irreversible send",
+   "methods": [
+    "manual"
+   ],
+   "severity": "advisory",
+   "fix_mode": "manual",
+   "submission_only": false,
+   "static_rules": [],
+   "probe_rules": [],
+   "source": "O4",
+   "judge": "Tools that may delete or overwrite user data need destructiveHint true so the host asks for approval."
+  },
+  {
+   "id": "CG-T04",
+   "title": "Tool names unique, verb-based, no promotional wording; plugin name has no MCP/Server/Plugin suffix",
+   "methods": [
+    "manual"
+   ],
+   "severity": "advisory",
+   "fix_mode": "manual",
+   "submission_only": false,
+   "static_rules": [],
+   "probe_rules": [],
+   "source": "O4"
+  },
+  {
+   "id": "CG-T05",
+   "title": "Descriptions are accurate, state side effects, and never steer toward or away from other plugins",
+   "methods": [
+    "probe",
+    "manual"
+   ],
+   "severity": "warning",
+   "fix_mode": "manual",
+   "submission_only": false,
+   "static_rules": [],
+   "probe_rules": [
+    "CG-T05"
+   ],
+   "source": "O4",
+   "judge": "Probe only checks a description exists; read them for accuracy and side effects."
+  },
+  {
+   "id": "CG-T06",
+   "title": "Inputs are minimal: no conversation, history, transcript or messages fields; no precise location",
+   "methods": [
+    "manual"
+   ],
+   "severity": "warning",
+   "fix_mode": "manual",
+   "submission_only": false,
+   "static_rules": [],
+   "probe_rules": [],
+   "source": "O4",
+   "judge": "Scan inputSchema property names."
+  },
+  {
+   "id": "CG-T07",
+   "title": "Responses omit session, trace or request IDs and timestamps unless needed",
+   "methods": [
+    "manual"
+   ],
+   "severity": "advisory",
+   "fix_mode": "manual",
+   "submission_only": false,
+   "static_rules": [],
+   "probe_rules": [],
+   "source": "O4"
+  },
+  {
+   "id": "CG-T08",
+   "title": "toolInvocation invoking/invoked strings are 64 characters or fewer",
+   "methods": [
+    "static",
+    "probe"
+   ],
+   "severity": "warning",
+   "fix_mode": "suggest",
+   "submission_only": false,
+   "static_rules": [
+    "CG-T08"
+   ],
+   "probe_rules": [
+    "CG-T08"
+   ],
+   "source": "O5"
+  },
+  {
+   "id": "CG-T09",
+   "title": "Tools that return structuredContent declare an outputSchema",
+   "methods": [
+    "static",
+    "probe"
+   ],
+   "severity": "warning",
+   "fix_mode": "suggest",
+   "submission_only": false,
+   "static_rules": [
+    "CG-T09"
+   ],
+   "probe_rules": [
+    "CG-T09"
+   ],
+   "source": "O5"
+  },
+  {
+   "id": "CG-T10",
+   "title": "Render tools carry resourceUri, data tools do not; tools work without the UI",
+   "methods": [
+    "manual"
+   ],
+   "severity": "advisory",
+   "fix_mode": "manual",
+   "submission_only": false,
+   "static_rules": [],
+   "probe_rules": [],
+   "source": "O1",
+   "judge": "Check the decoupled pattern (host-chatgpt/references/metadata.md)."
+  },
+  {
+   "id": "CG-T11",
+   "title": "Returned structuredContent matches the declared outputSchema",
+   "methods": [
+    "probe"
+   ],
+   "severity": "error",
+   "fix_mode": "manual",
+   "submission_only": false,
+   "static_rules": [],
+   "probe_rules": [
+    "CG-T11"
+   ],
+   "source": "O5",
+   "judge": "Needs --calls so the probe invokes the tool."
+  },
+  {
+   "id": "CG-R01",
+   "title": "UI resource MIME type is text/html;profile=mcp-app",
+   "methods": [
+    "probe"
+   ],
+   "severity": "error",
+   "fix_mode": "manual",
+   "submission_only": false,
+   "static_rules": [],
+   "probe_rules": [
+    "CG-R01"
+   ],
+   "source": "O1"
+  },
+  {
+   "id": "CG-R02",
+   "title": "Each UI tool's resourceUri resolves through resources/read to HTML",
+   "methods": [
+    "probe"
+   ],
+   "severity": "error",
+   "fix_mode": "manual",
+   "submission_only": false,
+   "static_rules": [],
+   "probe_rules": [
+    "CG-R02"
+   ],
+   "source": "O1"
+  },
+  {
+   "id": "CG-R03",
+   "title": "Resource _meta.ui.domain is set and unique per plugin",
+   "methods": [
+    "static",
+    "probe"
+   ],
+   "severity": "advisory",
+   "fix_mode": "suggest",
+   "submission_only": true,
+   "static_rules": [
+    "CG-R03"
+   ],
+   "probe_rules": [
+    "CG-R03"
+   ],
+   "source": "O5",
+   "judge": "Error only when submitting (probe --submit)."
+  },
+  {
+   "id": "CG-R04",
+   "title": "CSP is minimal and declares every origin the view uses",
+   "methods": [
+    "probe",
+    "manual"
+   ],
+   "severity": "warning",
+   "fix_mode": "suggest",
+   "submission_only": false,
+   "static_rules": [],
+   "probe_rules": [
+    "CG-R04"
+   ],
+   "source": "O1",
+   "judge": "Probe compares origins in the HTML with _meta.ui.csp; also read the view code for fetch/img/font origins."
+  },
+  {
+   "id": "CG-R05",
+   "title": "frameDomains only for the server's own registrable domain, with a written justification",
+   "methods": [
+    "probe",
+    "manual"
+   ],
+   "severity": "advisory",
+   "fix_mode": "manual",
+   "submission_only": true,
+   "static_rules": [],
+   "probe_rules": [
+    "CG-R05"
+   ],
+   "source": "O4"
+  },
+  {
+   "id": "CG-R06",
+   "title": "A breaking UI change ships under a new resource URI",
+   "methods": [
+    "manual"
+   ],
+   "severity": "warning",
+   "fix_mode": "manual",
+   "submission_only": false,
+   "static_rules": [],
+   "probe_rules": [],
+   "source": "O1",
+   "judge": "mcp-use's URI follows the view directory name and does not change on rebuild (S11); rename the directory or reconnect the connector."
+  },
+  {
+   "id": "CG-R07",
+   "title": "availableDisplayModes is a subset of inline and fullscreen (pip is disputed)",
+   "methods": [
+    "static",
+    "probe"
+   ],
+   "severity": "warning",
+   "fix_mode": "suggest",
+   "submission_only": false,
+   "static_rules": [
+    "CG-R07"
+   ],
+   "probe_rules": [
+    "CG-R07"
+   ],
+   "source": "O6"
+  },
+  {
+   "id": "CG-R08",
+   "title": "openai/widgetDescription present",
+   "methods": [
+    "probe"
+   ],
+   "severity": "advisory",
+   "fix_mode": "manual",
+   "submission_only": false,
+   "static_rules": [],
+   "probe_rules": [
+    "CG-R08"
+   ],
+   "source": "O5",
+   "judge": "mcp-use copies view.description."
+  },
+  {
+   "id": "CG-U01",
+   "title": "No Card import from @openai/apps-sdk-ui (it does not exist)",
+   "methods": [
+    "static"
+   ],
+   "severity": "error",
+   "fix_mode": "suggest",
+   "submission_only": false,
+   "static_rules": [
+    "CG-U01"
+   ],
+   "probe_rules": [],
+   "source": "O7"
+  },
+  {
+   "id": "CG-U02",
+   "title": "AppsSDKUIProvider has linkComponent",
+   "methods": [
+    "static"
+   ],
+   "severity": "error",
+   "fix_mode": "auto",
+   "submission_only": false,
+   "static_rules": [
+    "CG-U02"
+   ],
+   "probe_rules": [],
+   "source": "O7"
+  },
+  {
+   "id": "CG-U03",
+   "title": "toolOutput is read only after narrowing status",
+   "methods": [
+    "static"
+   ],
+   "severity": "warning",
+   "fix_mode": "suggest",
+   "submission_only": false,
+   "static_rules": [
+    "CG-U03"
+   ],
+   "probe_rules": [],
+   "source": "M2"
+  },
+  {
+   "id": "CG-U04",
+   "title": "useViewTheme() is not destructured",
+   "methods": [
+    "static"
+   ],
+   "severity": "error",
+   "fix_mode": "auto",
+   "submission_only": false,
+   "static_rules": [
+    "CG-U04"
+   ],
+   "probe_rules": [],
+   "source": "M2"
+  },
+  {
+   "id": "CG-U05",
+   "title": "useModelContext().attachments is treated as an array",
+   "methods": [
+    "static"
+   ],
+   "severity": "error",
+   "fix_mode": "auto",
+   "submission_only": false,
+   "static_rules": [
+    "CG-U05",
+    "CG-U05b"
+   ],
+   "probe_rules": [],
+   "source": "M2"
+  },
+  {
+   "id": "CG-U06",
+   "title": "add/remove/clearAttachments promises are awaited where order matters",
+   "methods": [
+    "manual"
+   ],
+   "severity": "advisory",
+   "fix_mode": "manual",
+   "submission_only": false,
+   "static_rules": [],
+   "probe_rules": [],
+   "source": "M2"
+  },
+  {
+   "id": "CG-U07",
+   "title": "apps-sdk-ui CSS is imported with an @source line",
+   "methods": [
+    "static"
+   ],
+   "severity": "error",
+   "fix_mode": "auto",
+   "submission_only": false,
+   "static_rules": [
+    "CG-U07"
+   ],
+   "probe_rules": [],
+   "source": "O7"
+  },
+  {
+   "id": "CG-U08",
+   "title": "No custom fonts",
+   "methods": [
+    "static"
+   ],
+   "severity": "warning",
+   "fix_mode": "suggest",
+   "submission_only": false,
+   "static_rules": [
+    "CG-U08"
+   ],
+   "probe_rules": [],
+   "source": "O3"
+  },
+  {
+   "id": "CG-U09",
+   "title": "No browser storage for core state",
+   "methods": [
+    "static"
+   ],
+   "severity": "warning",
+   "fix_mode": "suggest",
+   "submission_only": false,
+   "static_rules": [
+    "CG-U09"
+   ],
+   "probe_rules": [],
+   "source": "O1"
+  },
+  {
+   "id": "CG-U10",
+   "title": "No nested scrolling in inline UI",
+   "methods": [
+    "static"
+   ],
+   "severity": "advisory",
+   "fix_mode": "manual",
+   "submission_only": false,
+   "static_rules": [
+    "CG-U10"
+   ],
+   "probe_rules": [],
+   "source": "O3"
+  },
+  {
+   "id": "CG-U11",
+   "title": "At most two actions in an inline card",
+   "methods": [
+    "static"
+   ],
+   "severity": "advisory",
+   "fix_mode": "manual",
+   "submission_only": false,
+   "static_rules": [
+    "CG-U11"
+   ],
+   "probe_rules": [],
+   "source": "O3"
+  },
+  {
+   "id": "CG-U12",
+   "title": "No tabs or multi-view navigation in an inline card",
+   "methods": [
+    "static"
+   ],
+   "severity": "advisory",
+   "fix_mode": "manual",
+   "submission_only": false,
+   "static_rules": [
+    "CG-U12"
+   ],
+   "probe_rules": [],
+   "source": "O3"
+  },
+  {
+   "id": "CG-U13",
+   "title": "window.openai is feature-detected",
+   "methods": [
+    "static"
+   ],
+   "severity": "warning",
+   "fix_mode": "suggest",
+   "submission_only": false,
+   "static_rules": [
+    "CG-U13"
+   ],
+   "probe_rules": [],
+   "source": "O1"
+  },
+  {
+   "id": "CG-U14",
+   "title": "Images have alt text",
+   "methods": [
+    "static"
+   ],
+   "severity": "warning",
+   "fix_mode": "suggest",
+   "submission_only": false,
+   "static_rules": [
+    "CG-U14"
+   ],
+   "probe_rules": [],
+   "source": "O3"
+  },
+  {
+   "id": "CG-U15",
+   "title": "No custom gradients or patterns",
+   "methods": [
+    "static"
+   ],
+   "severity": "advisory",
+   "fix_mode": "manual",
+   "submission_only": false,
+   "static_rules": [
+    "CG-U15"
+   ],
+   "probe_rules": [],
+   "source": "O3"
+  },
+  {
+   "id": "CG-U16",
+   "title": "No iframe in a view unless justified",
+   "methods": [
+    "static"
+   ],
+   "severity": "warning",
+   "fix_mode": "manual",
+   "submission_only": false,
+   "static_rules": [
+    "CG-U16"
+   ],
+   "probe_rules": [],
+   "source": "O4"
+  },
+  {
+   "id": "CG-U17",
+   "title": "Inline carousels have 3 to 8 items, each with an image and at most one CTA",
+   "methods": [
+    "manual"
+   ],
+   "severity": "advisory",
+   "fix_mode": "manual",
+   "submission_only": false,
+   "static_rules": [],
+   "probe_rules": [],
+   "source": "O3",
+   "judge": "Read the view or screenshot it."
+  },
+  {
+   "id": "CG-A01",
+   "title": "Protected tool, called without a token with ChatGPT's user agent, answers HTTP 200 + isError + _meta[mcp/www_authenticate]",
+   "methods": [
+    "probe"
+   ],
+   "severity": "error",
+   "fix_mode": "manual",
+   "submission_only": false,
+   "static_rules": [],
+   "probe_rules": [
+    "CG-A01"
+   ],
+   "source": "O5",
+   "judge": "Verified against mcp-use 2.11.0 (spikes: probe test p-auth)."
+  },
+  {
+   "id": "CG-A02",
+   "title": "An invalid or expired token yields 401, even on noauth tools",
+   "methods": [
+    "manual"
+   ],
+   "severity": "error",
+   "fix_mode": "manual",
+   "submission_only": false,
+   "static_rules": [],
+   "probe_rules": [],
+   "source": "M1",
+   "judge": "Stated by the mcp-use docs; needs a real token issuer to test, so it is a manual check."
+  },
+  {
+   "id": "CG-A03",
+   "title": "A demo account with sample data is documented for review",
+   "methods": [
+    "manual"
+   ],
+   "severity": "error",
+   "fix_mode": "manual",
+   "submission_only": true,
+   "static_rules": [],
+   "probe_rules": [],
+   "source": "O4"
+  },
+  {
+   "id": "CG-A04",
+   "title": "No credential-collecting inputs or settings (API keys, passwords, one-time codes)",
+   "methods": [
+    "static",
+    "manual"
+   ],
+   "severity": "error",
+   "fix_mode": "manual",
+   "submission_only": false,
+   "static_rules": [
+    "CG-A04"
+   ],
+   "probe_rules": [],
+   "source": "O4"
+  },
+  {
+   "id": "CG-X01",
+   "title": "Entrypoint tools accept {} (global/thread) or { file } (file); file extensions start with a dot",
+   "methods": [
+    "manual"
+   ],
+   "severity": "error",
+   "fix_mode": "suggest",
+   "submission_only": false,
+   "static_rules": [],
+   "probe_rules": [],
+   "source": "O6",
+   "judge": "Read view.entrypoints and the tool inputSchema."
+  },
+  {
+   "id": "CG-X02",
+   "title": "server.settings uses { schema, title, description? } fields and read/update return values",
+   "methods": [
+    "static"
+   ],
+   "severity": "error",
+   "fix_mode": "suggest",
+   "submission_only": false,
+   "static_rules": [
+    "CG-X02"
+   ],
+   "probe_rules": [],
+   "source": "M2"
+  },
+  {
+   "id": "CG-X03",
+   "title": "Deep links use ?path= / openai/deepLink, not ?route=",
+   "methods": [
+    "static"
+   ],
+   "severity": "warning",
+   "fix_mode": "suggest",
+   "submission_only": false,
+   "static_rules": [
+    "CG-X03"
+   ],
+   "probe_rules": [],
+   "source": "O6"
+  },
+  {
+   "id": "CG-X04",
+   "title": "The mentions search tool is read-only and visible to the app",
+   "methods": [
+    "manual"
+   ],
+   "severity": "error",
+   "fix_mode": "manual",
+   "submission_only": false,
+   "static_rules": [],
+   "probe_rules": [],
+   "source": "O6"
+  },
+  {
+   "id": "CG-X05",
+   "title": "Platform caveats are surfaced (file entrypoint and mentions desktop only; deep links not Android; forms need MRTR)",
+   "methods": [
+    "manual"
+   ],
+   "severity": "advisory",
+   "fix_mode": "manual",
+   "submission_only": false,
+   "static_rules": [],
+   "probe_rules": [],
+   "source": "O6"
+  },
+  {
+   "id": "CG-S01",
+   "title": "Submission checklist: verified publisher, support contact, privacy policy, example prompts, names, desktop and mobile tests",
+   "methods": [
+    "manual"
+   ],
+   "severity": "error",
+   "fix_mode": "manual",
+   "submission_only": true,
+   "static_rules": [],
+   "probe_rules": [],
+   "source": "O4",
+   "judge": "See host-chatgpt/references/submission.md; report as TODOs with an owner."
+  },
+  {
+   "id": "CG-U18",
+   "title": "When apps-sdk-ui components are used, a vite.config excludes @openai/apps-sdk-ui from optimizeDeps (dev-mode rendering)",
+   "methods": [
+    "static"
+   ],
+   "severity": "warning",
+   "fix_mode": "suggest",
+   "submission_only": false,
+   "static_rules": [
+    "CG-U18"
+   ],
+   "probe_rules": [],
+   "source": "S19"
+  }
+ ]
+}

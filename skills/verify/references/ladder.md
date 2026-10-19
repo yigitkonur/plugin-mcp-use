@@ -38,7 +38,7 @@ Optional second harness: `mcpc connect 127.0.0.1:<port>/mcp @v` then `mcpc @v to
 npx mcp-use screenshot --mcp http://localhost:<port>/mcp --tool <tool> key=value --theme light --delay 2500 --output <dir>/<tool>-light.png --json
 npx mcp-use screenshot --mcp http://localhost:<port>/mcp --tool <tool> key=value --theme dark  --delay 2500 --output <dir>/<tool>-dark.png  --json
 ```
-Use `--delay`, not `--wait-for` with a selector inside the view (the selector is evaluated in the outer page and times out). Then **open each PNG with the Read tool and say what it shows**: the real data from `structuredContent` (not "Loading…"), nothing clipped, readable text. A light-theme PNG of a view that paints no background shows the capture host's black backdrop; say so instead of calling it a bug, and judge contrast in the dark one.
+Use `--delay`, not `--wait-for` with a selector inside the view (the selector is evaluated in the outer page and times out; checked against the production build too). If every capture times out with `View did not become ready in time.`, read the dev log: a line `…does not provide an export named 't'` means the apps-sdk-ui dev-mode problem; add the `vite.config.ts` from `${CLAUDE_PLUGIN_ROOT}/skills/host-chatgpt/references/apps-sdk-ui.md`, or capture against `mcp-use build` + `mcp-use start --port <port>` instead. Then **open each PNG with the Read tool and say what it shows**: the real data from `structuredContent` (not "Loading…"), nothing clipped, readable text. A light-theme PNG of a view that paints no background shows the capture host's black backdrop; say so instead of calling it a bug, and judge contrast in the dark one.
 
 ## Rung 5 — host (guided, ships with the host skills)
 ChatGPT developer mode through `mcp-use dev --tunnel`, and Archestra with the user's own Archestra URL. Without access, report the rung as UNVERIFIED with the reason.
@@ -46,4 +46,4 @@ ChatGPT developer mode through `mcp-use dev --tunnel`, and Archestra with the us
 ## Cleanup
 Stop the dev server, run `mcp-use client remove dev`, and leave `.mcp-use-plugin/` out of version control.
 
-Sources: M2, S16.
+Sources: M2, S16, S19.

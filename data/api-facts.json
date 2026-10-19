@@ -1,0 +1,15 @@
+{
+  "note": "Claims about mcp-use API presence, absence and deprecation that references and guard rules rely on. scripts/check-api-facts.mjs verifies them against the installed declarations (known_good). Absent means the string appears in no .d.ts file.",
+  "absent": ["supportsApps", "useWidget", "useWidgetProps", "McpUseProvider", "StdioServerTransport"],
+  "absent_member_calls": ["ctx.elicit(", "ctx.sample(", "ctx.log("],
+  "absent_export_keys": ["./server"],
+  "present": [
+    "supportsViews", "inputRequired", "inputResponse", "acceptedContent", "useModelContext", "useViewState",
+    "useDisplayMode", "useHostContext", "useFiles", "useViewTool", "useSendFollowUp", "useOpenExternal",
+    "useSendSizeChanged", "useDeepLink", "useViewTheme", "useCallTool", "useDynamicTool", "useToolContext",
+    "fromOpenAPI", "toNodeHandler", "createNextHandler", "withMcpUse", "mentions", "settings", "oauthProxy",
+    "upstreamToken", "isBuilding", "completable", "notifyToolsChanged", "createJwtVerifier", "mixedAuth",
+    "securitySchemes", "ToolCancelledError", "ThemeProvider", "ViewControls", "oauthCustomProvider"
+  ],
+  "deprecated": ["getHandler", "widget", "text", "object", "array", "error", "mix", "markdown", "html"]
+}

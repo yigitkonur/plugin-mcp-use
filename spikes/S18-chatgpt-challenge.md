@@ -1,0 +1,6 @@
+# S18 — ChatGPT auth challenge as served by mcp-use 2.11.0
+Fixture `tests/fixtures/p-auth` (custom OAuth provider, `mixedAuth: true`, a `noauth` tool and an `oauth2` tool `checkout`). Raw `tools/call checkout` without a token:
+- `User-Agent: ChatGPT/1.0` → `HTTP/1.1 200 OK` `{"result":{"resultType":"complete","content":[{"type":"text","text":"Authentication is required for this request."}],"isError":true,"_meta":{"mcp/www_authenticate":["Bearer error=\"invalid_token\", error_description=\"Authentication is required for this request.\", scope=\"orders:write\", resource_metadata=\"http://localhost:3582/.well-known/oauth-protected-resource/mcp\""]}}}`
+- `User-Agent: curl/8` → `HTTP/1.1 401 Unauthorized`, `www-authenticate: Bearer error="invalid_token", …`, body `{"error":"invalid_token",…}`.
+- mcp-use source: `TOOL_RESULT_CHALLENGE_USER_AGENT=/chatgpt|openai/i`, key `mcp/www_authenticate`.
+Also seen in the probe tests: a tool whose `structuredContent` violates its `outputSchema` returns `isError: true` with `Output validation error: Invalid structured content for tool mismatch: ok: Invalid input: expected boolean, received string` (mcp-use validates its own outputs), and `viewConfig.displayModes: ["inline","fullscreen","pip"]` in a view is not copied into the resource's `openai/ui.availableDisplayModes` in dev mode (still `["inline","fullscreen"]`).

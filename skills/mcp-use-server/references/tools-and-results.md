@@ -47,7 +47,7 @@ export default server;
 - **`outputSchema` is typed.** When it is set, the callback must return `structuredContent` that matches it, or `{ isError: true, ... }` (`ToolResult` in `tools.d.ts`). A tool with a `view` must have one.
 - **Channels.** `content` is a short text for the model. `structuredContent` is the typed payload (model and view). Result `_meta` is for the view only and never reaches the model. Do not duplicate the whole payload as JSON inside `content`.
 - **Failures.** Expected problems (not found, refused input) return `isError: true` with explanatory `content`. Throw only for unexpected failures.
-- **Helpers.** `text()`, `object()`, `array()`, `error()`, `mix()` and the others are `@deprecated` in 2.11.0. Return raw envelopes. `widget()` does not exist in v2.
+- **Helpers.** `text()`, `object()`, `array()`, `error()`, `mix()`, `widget()` and the others (`markdown`, `html`, `xml`, `css`, `javascript`, `image`, `audio`, `binary`, `resource`) are `@deprecated` in 2.11.0. Return raw envelopes. `widget()` is deprecated too (use `view:` on the tool and return `structuredContent`).
 - **Names.** Tool names are the wire id (`lookup-inventory`). `export const lookupInventory` is the TypeScript handle; views and `useCallTool` resolve tools by the wire name through `mcp-env.d.ts`.
 
 ## Export and register

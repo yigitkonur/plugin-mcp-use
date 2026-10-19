@@ -1,0 +1,1 @@
+{ "name": "p-defects", "private": true, "type": "module", "engines": { "node": ">=22.22.2" }, "dependencies": { "mcp-use": "2.11.0", "react": "^19.2.7", "react-dom": "^19.2.7", "zod": "^4.4.3" } }

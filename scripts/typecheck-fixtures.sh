@@ -14,6 +14,7 @@ INSTALLED=$(node -p "require('$WS/node_modules/mcp-use/package.json').version")
 KNOWN=$(node -p "require('$HERE/data/versions.json').packages['mcp-use'].known_good")
 echo "mcp-use installed=$INSTALLED known_good=$KNOWN"
 [ "$INSTALLED" = "$KNOWN" ] || { echo "FAIL: installed mcp-use differs from data/versions.json known_good"; exit 2; }
+node "$HERE/scripts/check-api-facts.mjs" "$WS" || exit 1
 mkdir -p "$WS/generated"
 COUNTS=$(node "$HERE/scripts/extract-fixtures.mjs" "$WS/generated") || exit 2
 echo "fixtures: $COUNTS"
