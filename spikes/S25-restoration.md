@@ -18,4 +18,4 @@ Findings that changed this plugin: `allowedOrigins`/`allowedHosts` take hostname
 
 Unresolved (kept out of the references): `allowedHosts` under `mcp-use dev` still returned 403 for a custom Host in one test while `start` and `server.fetch` honored it; the browser CSP console string; Inspector UI details; the Node 22.22.2 floor (only Node 26.5.0 was available); every hosted-platform target other than the docs-stated ones.
 
-Process note: one of the agents ran a command that printed another process's environment into its own transcript (a local proxy token among other values). It is not in any deliverable or the repository (searched for the value itself); the transcript stays in the local temp directory.
+Process note: one of the agents ran a command that printed another process's environment into its own transcript (a local proxy token among other values). It is not in any deliverable or the repository (searched for the value itself); the transcript stays in the local temp directory. The value was shown to a model transcript, so treat that token as exposed and rotate it.

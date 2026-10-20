@@ -38,6 +38,7 @@ for (const file of mdFiles(join(root, "skills"))) {
     seen.add(name);
     const body = [];
     for (j = j + 1; j < lines.length && !lines[j].startsWith("```"); j++) body.push(lines[j]);
+    if (j >= lines.length) { console.error(`${file}:${i + 1}: fixture ${name} has no closing fence`); process.exit(1); }
     const kind = m[1] ? m[1].slice(1) : "good";
     writeFileSync(join(out, kind, `${name}.${f[1]}`), `// extracted from ${file.slice(root.length + 1)}:${i + 1}\n` + body.join("\n") + "\n");
     counts[kind]++;

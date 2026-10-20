@@ -15,7 +15,7 @@ Input (from the caller): the host (`chatgpt` or `archestra`), the project root, 
 Do this, in order:
 1. Read `${CLAUDE_PLUGIN_ROOT}/data/hosts/<host>.checklist.json` (the plugin directory is on your PATH through `bin/`; the data files sit one level above it) and the host skill you were given. Treat the checklist as the complete list of things to decide.
 2. Static pass: `mcp-use-scan --host <host> --dir <root> --json`.
-3. Live pass (only if a dev URL was given and answers): `mcp-use-probe --url <url> --host <host> --json`, with `--calls <file>` for the supplied read-only calls and `--ua chatgpt` (ChatGPT only) if any tool declares `securitySchemes`. If the URL does not answer, say so; do not start the server yourself.
+3. Live pass (only if a dev URL was given and answers): `mcp-use-probe --url <url> --host <host> --json`, with `--calls <file>` for the supplied read-only calls (the caller passes the path to a calls file) and `--ua chatgpt` (ChatGPT only, local dev servers only: it sends one unauthenticated empty-argument call to every protected tool) if any tool declares `securitySchemes`. If the URL does not answer, say so; do not start the server yourself.
 4. Manual pass: for every checklist item with `manual` in `methods` that neither engine decided, read the relevant files and decide pass, fail, or not applicable. Quote the line or the probe field as `evidence`. Use the item's `judge` text.
 5. Return exactly one JSON object and nothing else:
 ```json
@@ -24,4 +24,4 @@ Do this, in order:
   "decided": {"static": ["CG-U02", "..."], "probe": ["..."], "manual": ["..."]},
   "unverified": ["checklist id: reason it could not be checked"] }
 ```
-For `archestra`, items marked `unverified` are reported under `unverified` with the checklist's `judge` text, never as findings; Owned-App HTML is not your job (`/mcp-use:archestra-app`). Rules: every `rule_id` is an id from the checklist (never invent one; something the checklist does not cover goes in `unverified` as `uncovered: <what you saw>`); every finding cites the checklist item's `source`; never invent a finding without evidence; if an engine fails, put the error in `unverified` instead of guessing; `submission_only` items are reported as advisories with the owner "the plugin publisher".
+For `archestra`, items marked `unverified` are reported under `unverified` with the checklist's `judge` text, never as findings; Owned-App HTML is not your job (`/mcp-use:archestra-app`): drop any scan finding whose `host` is `archestra-owned`. Rules: every `rule_id` is an id from the checklist (never invent one; something the checklist does not cover goes in `unverified` as `uncovered: <what you saw>`); every finding cites the checklist item's `source`; never invent a finding without evidence; if an engine fails, put the error in `unverified` instead of guessing; `submission_only` items are reported as advisories with the owner "the plugin publisher".

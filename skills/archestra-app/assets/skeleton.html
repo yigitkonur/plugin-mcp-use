@@ -42,26 +42,41 @@
     $("list").replaceChildren(...items.map((text) => Object.assign(document.createElement("li"), { textContent: text })));
   }
 
+  // Read, append, write. A write after a read fails with code "conflict" when someone else wrote the key in between:
+  // read again and retry.
+  async function addItem(text) {
+    for (let attempt = 0; ; attempt++) {
+      const current = await archestra.storage.user.get("items");
+      const next = [...(current ? current.value : []), text];
+      try {
+        await archestra.storage.user.set("items", next);
+        return next;
+      } catch (e) {
+        if (e.code !== "conflict" || attempt >= 2) throw e;
+      }
+    }
+  }
+
   try {
     await archestra.ready;
     // Private to this viewer. Use archestra.storage.shared for data every viewer sees.
     const saved = await archestra.storage.user.get("items");
-    let items = saved ? saved.value : [];
-    render(items);
+    render(saved ? saved.value : []);
 
+    let saving = false; // ignore a second submit while a save is in flight
     $("add").addEventListener("submit", async (ev) => {
       ev.preventDefault();
       const text = $("text").value.trim();
-      if (!text) return;
+      if (!text || saving) return;
+      saving = true;
       try {
-        items = [...items, text];
-        await archestra.storage.user.set("items", items);
+        render(await addItem(text));
         $("text").value = "";
         $("error").hidden = true;
-        render(items);
       } catch (e) {
-        items = items.slice(0, -1);
         showError(e);
+      } finally {
+        saving = false;
       }
     });
 

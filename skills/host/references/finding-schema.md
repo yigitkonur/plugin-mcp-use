@@ -6,7 +6,7 @@ Every engine and the reviewer agent report findings in this shape (`mcp-use-scan
 {
   "rule_id": "CG-T01",
   "severity": "error | warning | advisory",
-  "host": "stack | chatgpt | archestra-a | archestra-owned",
+  "host": "stack | chatgpt | archestra | archestra-owned",
   "method": "static | probe | manual",
   "file": "index.ts",
   "line": 12,

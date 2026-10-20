@@ -189,7 +189,7 @@ Keep the verification logic, move it into `createTokenVerifier`, and read the re
 Old pattern: a `ui://widget/<name>.html` resource (`text/html+skybridge`), `_meta["openai/outputTemplate"]` on the tool, a hand-written HTML/JS widget reading `window.openai.toolOutput`. Port in this order, after the tools pass parity:
 1. Add `outputSchema` to the tool and `view: { name }` (and `view.description`, `prefersBorder`, `domain`, `csp` from the old `openai/widget*` keys). Delete the hand-written resource and `_meta` keys.
 2. Create `views/<name>/view.tsx`. Replace `window.openai` calls with hooks: `toolOutput` → `useToolContext`, `callTool` → `useCallTool`, `widgetState`/`setWidgetState` → `useViewState`, `theme` → `useViewTheme`, `notifyIntrinsicHeight` → nothing (`autoResize`). Full table: `${CLAUDE_PLUGIN_ROOT}/skills/host-chatgpt/references/window-openai.md`.
-3. `openai/widgetAccessible` and `openai/visibility: "private"` become `visibility: "app"` on helper tools.
+3. `openai/widgetAccessible: true` only lets the widget call the tool; it does not hide the tool from the model. `openai/visibility: "private"` does, and becomes `visibility: "app"` on helper tools (a tool the model should still call keeps the default).
 
 <!-- fixture: migrate-widget-view -->
 ```tsx

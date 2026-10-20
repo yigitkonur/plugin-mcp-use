@@ -265,12 +265,12 @@
       "unverified": false
     },
     {
-      "id": "AO-DOC",
-      "title": "Owned-App HTML follows the documented sandbox and SDK rules (no network, iframes, native forms, target=_blank; storage, ready, tool names, limits)",
+      "id": "AO-SANDBOX",
+      "title": "Owned-App HTML respects the sandbox: no external network calls, iframes, native form submits, popups or media from non-allowlisted hosts",
       "methods": [
         "static"
       ],
-      "severity": "advisory",
+      "severity": "warning",
       "fix_mode": "mixed",
       "submission_only": false,
       "static_rules": [],
@@ -280,7 +280,24 @@
         "AD02",
         "AD03",
         "AD04",
-        "AD05",
+        "AD05"
+      ],
+      "source": "A2",
+      "route": "owned-app",
+      "unverified": false
+    },
+    {
+      "id": "AO-DOC",
+      "title": "Owned-App HTML follows the documented SDK usage (storage values, ready, tool names, hidden, device permissions, limits, pinned CDN versions)",
+      "methods": [
+        "static"
+      ],
+      "severity": "advisory",
+      "fix_mode": "mixed",
+      "submission_only": false,
+      "static_rules": [],
+      "probe_rules": [],
+      "lint_rules": [
         "AD06",
         "AD07",
         "AD08",

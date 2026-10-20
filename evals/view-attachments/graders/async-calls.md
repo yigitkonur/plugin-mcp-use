@@ -1,6 +1,6 @@
 ---
 type: regex
-pattern: \bawait\b[^;\n]*\b(?:add|remove)\(|\b(?:add|remove)\([^)]*\)\s*\.then
+pattern: ^(?=[\s\S]*(?:\bawait\b[^;\n]*\badd\(|\badd\([^)]*\)\s*\.then))(?=[\s\S]*(?:\bawait\b[^;\n]*\bremove\(|\bremove\([^)]*\)\s*\.then))
 target:
   source: file
   path: views/rows/view.tsx

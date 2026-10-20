@@ -12,14 +12,15 @@ Input (from the caller): the project root.
 Do this:
 1. `mcp-use-detect --json --dir <root>` (the plugin's `bin/` is on your PATH) for signals and versions. Read `package.json`, the lockfile name, `tsconfig.json`, and every source file that registers tools, resources, prompts, transports or auth. Use Grep for `registerTool|\.tool\(|registerResource|\.resource\(|registerPrompt|\.prompt\(|setRequestHandler|StdioServerTransport|StreamableHTTPServerTransport|createMcpHandler|serveStdio|requireBearerAuth|mcpAuthRouter|elicitInput|createMessage|window\.openai|ui://|registerAppTool|registerAppResource`.
 2. For each tool decide `side_effects` from its handler (`none`, `writes` local state or database, `external` calls other systems, `unknown`), and whether it is safe for a sample call (`read_only_call: true` only if it has no side effects).
-3. Return exactly one JSON object and nothing else, at most 3 KB, matching `${CLAUDE_PLUGIN_ROOT}/data/schemas/survey.schema.json`:
+3. Return exactly one JSON object and nothing else, at most 3 KB, valid against `${CLAUDE_PLUGIN_ROOT}/data/schemas/survey.schema.json`. Example (values are illustrative):
 ```json
-{ "root": "...", "framework": {"package": "@modelcontextprotocol/sdk", "version": "1.32.1", "style": "McpServer|Server|v2"},
-  "entry": "src/index.ts", "transport": {"kind": "stdio|http|both|unknown", "evidence": "file:line"},
-  "tools": [ {"name": "...", "schema_source": "zod-shape|zod-object|json-schema|none", "output_schema": false, "annotations": ["readOnlyHint"], "side_effects": "none", "read_only_call": true, "file": "...", "line": 1} ],
-  "resources": [ {"name": "...", "uri": "...", "dynamic": false} ], "prompts": [ {"name": "...", "args": 0} ],
-  "auth": {"kind": "none|bearer|oauth-server|custom", "evidence": "..."}, "state": {"kind": "none|module-global|session|database", "evidence": "..."},
-  "ui": {"kind": "none|ext-apps|openai-widgets", "files": []}, "zod": {"version": "3.25.76", "needs_upgrade": true},
-  "tests": {"present": false, "command": null}, "deps_to_remove": ["@modelcontextprotocol/sdk"], "risks": ["..."] }
+{ "root": "/path/to/project", "framework": {"package": "@modelcontextprotocol/sdk", "version": "1.32.1", "style": "McpServer"},
+  "entry": "src/index.ts", "transport": {"kind": "stdio", "evidence": "src/index.ts:71"},
+  "tools": [ {"name": "lookup-sku", "schema_source": "zod-shape", "output_schema": true, "annotations": ["readOnlyHint"], "side_effects": "none", "read_only_call": true, "file": "src/index.ts", "line": 14} ],
+  "resources": [ {"name": "inventory-summary", "uri": "inventory://summary", "dynamic": false} ], "prompts": [ {"name": "restock-report", "args": 1} ],
+  "auth": {"kind": "none", "evidence": "no auth code found"}, "state": {"kind": "module-global", "evidence": "src/index.ts:7"},
+  "ui": {"kind": "none", "files": []}, "zod": {"version": "3.25.76", "needs_upgrade": true},
+  "tests": {"present": false, "command": null}, "deps_to_remove": ["@modelcontextprotocol/sdk"], "risks": ["stdio clients must switch to a URL"] }
 ```
-Rules: report only what you read, with `file:line` evidence for transport, auth, state and UI; use `unknown` instead of guessing; never include secrets or tokens (write `"<redacted>"`); if the project is not on the official SDK, return `{"error": "not_official_sdk", "found": "..."}`.
+Allowed values: `framework.style` is `McpServer`, `Server` or `v2`; `transport.kind` is `stdio`, `http`, `both` or `unknown`; `tools[].schema_source` is `zod-shape`, `zod-object`, `json-schema` or `none`; `tools[].side_effects` is `none`, `writes`, `external` or `unknown`, and `read_only_call` may be `true` only when it is `none`; `auth.kind` is `none`, `bearer`, `oauth-server` or `custom`; `state.kind` is `none`, `module-global`, `session` or `database`; `ui.kind` is `none`, `ext-apps` or `openai-widgets`.
+Rules: report only what you read, with `file:line` evidence for transport, auth, state and UI; use `unknown` instead of guessing; never include secrets or tokens (write `"<redacted>"`); if the project is not on the official SDK, return `{"error": "not_official_sdk", "found": "<what you found>"}`.

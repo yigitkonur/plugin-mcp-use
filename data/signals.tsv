@@ -13,5 +13,5 @@ M-OAI-WIDGET	src	**/*.{ts,mts,tsx,js,mjs}	ui://widget/|openai/outputTemplate	ser
 V-VIEWS-PATH	path	**/views/*/view.tsx	-	mcp-use view folder
 V-VIEWS-SRC	src	**/*.{ts,mts,tsx,js,mjs}	\bview\s*:\s*\{\s*name\s*:|["']ui://views/	server tool bound to a view
 H-GPT-DEP	dep	package.json	^@openai/apps-sdk-ui$	ChatGPT Apps SDK UI
-H-GPT-SRC	src	**/*.{ts,mts,tsx,js,mjs}	["']openai/[A-Za-z/]+["']|\bserver\.settings\s*\(|\bserver\.mentions\s*\(|window\.openai|\bentrypoints\s*:	ChatGPT-specific metadata or APIs
+H-GPT-SRC	src	**/*.{ts,mts,tsx,js,mjs}	["']openai/(?:outputTemplate|widget[A-Za-z]*|toolInvocation/[a-z]+|fileParams|profile|ui|extensions|mentions|visibility|deepLink)["']|\bserver\.settings\s*\(|\bserver\.mentions\s*\(|window\.openai|\bentrypoints\s*:\s*\[\s*\{\s*type\s*:	ChatGPT-specific metadata or APIs
 O-APP	src	**/*.html	window\.archestra|archestra\.ready|archestra\.tools\.call	Archestra Owned App source

@@ -25,7 +25,7 @@ Fix modes: **auto** = `--fix` edits the file (clean git tree required, a report 
 | AD06 | advisory | `JSON.stringify(` passed as a storage value | suggest |
 | AD07 | advisory | `.set(key, null)` | suggest |
 | AD08 | advisory | `archestra.*` used with no `archestra.ready` anywhere | suggest |
-| AD09 | advisory | `tools.call("name")` where the name lacks the `server__tool` shape | manual |
+| AD09 | advisory | `tools.call("name")` with a literal name that has no `__` separator between server and tool (the lint does not validate the two halves) | manual |
 | AD10 | advisory | CSS giving a non-`none` `display` to a `[hidden]` selector or to a class or id used on an element with `hidden` | suggest |
 | AD11 | advisory | `getUserMedia`, `navigator.mediaDevices`, `navigator.geolocation`, `navigator.clipboard.writeText` | manual (declare `uiPermissions`) |
 | AD12 | advisory | `updateModelContext` string literal over 500 characters | suggest |
@@ -39,6 +39,6 @@ Fix modes: **auto** = `--fix` edits the file (clean git tree required, a report 
 - An `[hidden]` rule whose display is `none`.
 - Dynamic names and URLs (`tools.call(name)`, `fetch(url)` with a variable): the lint reads literals only. The platform's render diagnostics catch the rest.
 
-Rule data and limits live in `data/archestra-policy.json`; the engine is `lib/archestra-lint.mjs`. `data/hosts/archestra.checklist.json` groups the rules as `AO-SAVE` (AA), `AO-WARN` (AW) and `AO-DOC` (AD).
+Rule data and limits live in `data/archestra-policy.json`; the engine is `lib/archestra-lint.mjs`. `data/hosts/archestra.checklist.json` groups the rules as `AO-SAVE` (AA), `AO-WARN` (AW), `AO-SANDBOX` (AD01 to AD05) and `AO-DOC` (AD06 to AD14).
 
 Sources: A2, A3.

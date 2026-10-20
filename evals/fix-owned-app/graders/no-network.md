@@ -1,6 +1,6 @@
 ---
 type: regex
-pattern: 'fetch\(\s*["'']https?:'
+pattern: \bfetch\s*\(|XMLHttpRequest|new\s+WebSocket|new\s+EventSource|sendBeacon
 match: not_contains
 target:
   source: file

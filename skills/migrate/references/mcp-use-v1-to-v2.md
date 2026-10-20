@@ -7,7 +7,7 @@ For servers that already import `mcp-use` but use the v1 API (`from "mcp-use/ser
 2. Fix imports (`from "mcp-use"`), then tools: `inputSchema`, exported constants, raw result envelopes, `ctx.sendLog`, `ctx.request`.
 3. Remove session and transport assumptions (below).
 4. Rebuild each widget as a view (below).
-5. Typecheck, run, probe, scan: `/mcp-use:verify`.
+5. `/mcp-use:verify` (typecheck, build, dev server, tool calls, screenshots), then `mcp-use-scan --json` and `mcp-use-probe --url http://localhost:<port>/mcp --json`.
 
 ## Rebuild interactive UI, per rendering tool
 1. Move the entry component to `views/<name>/view.tsx`; export the tool (`export const myTool = server.tool(…)`).

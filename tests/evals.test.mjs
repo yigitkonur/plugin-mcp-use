@@ -42,11 +42,11 @@ test("six cases exist, each with a prompt and at least three graders", () => {
 
 // expected failures of each bad sample, by grader file name
 const EXPECT_BAD = {
-  "chatgpt-ready-tool": ["root-import", "no-v1-import", "three-annotations", "typed-output", "default-export"],
+  "chatgpt-ready-tool": ["root-import", "no-v1-import", "three-annotations", "typed-output", "default-export", "output-fields"],
   "apps-sdk-ui-view": ["provider-link", "no-card", "button-color", "tool-context", "narrow-status"],
   "server-settings": ["schema-and-title", "no-label-secret", "no-credentials"],
   "view-attachments": ["not-a-record", "async-calls"],
-  "port-sdk-tool": ["mcp-use-tools", "z-object", "no-sdk-left", "all-annotations", "default-export"],
+  "port-sdk-tool": ["mcp-use-tools", "write-tool-not-readonly", "z-object", "no-sdk-left", "all-annotations", "default-export"],
   "fix-owned-app": ["no-platform-sdk", "storage-partition", "no-browser-storage", "no-network", "no-blank-target", "prevent-default", "no-stringify-in-storage"],
 };
 
@@ -92,4 +92,19 @@ test("apps-sdk-ui-view provider-link: no provider passes, provider with linkComp
   assert.equal(re.test('<AppsSDKUIProvider linkComponent="a"><Badge color="info">x</Badge></AppsSDKUIProvider>'), true);
   assert.equal(re.test('<AppsSDKUIProvider\n  linkComponent="a"\n>x</AppsSDKUIProvider>'), true);
   assert.equal(re.test("<AppsSDKUIProvider><Badge>x</Badge></AppsSDKUIProvider>"), false);
+});
+
+test("graders added after review reject weak outputs", () => {
+  const re = (c, g) => { const { fm } = frontmatter(readFileSync(join(evals, c, "graders", `${g}.md`), "utf8")); return { re: new RegExp(fm.pattern, fm.flags ?? ""), neg: fm.match === "not_contains" }; };
+  const pass = (c, g, text) => { const { re: r, neg } = re(c, g); return neg ? !r.test(text) : r.test(text); };
+  assert.equal(pass("server-settings", "schema-and-title", 'server.settings({ fields: { theme: { schema: z.string(), title: "Theme" } } })'), false);
+  assert.equal(pass("server-settings", "schema-and-title", 'fields: { notifications: { schema: z.boolean(), title: "N" }, units: { schema: z.enum(["metric","imperial"]), title: "U" } }'), true);
+  assert.equal(pass("view-attachments", "async-calls", "await add('k', x);"), false);
+  assert.equal(pass("view-attachments", "async-calls", "await add('k', x); await remove('k');"), true);
+  assert.equal(pass("fix-owned-app", "no-network", "const f = fetch; await fetch(url)"), false);
+  assert.equal(pass("fix-owned-app", "no-network", "const ws = new WebSocket(u)"), false);
+  assert.equal(pass("apps-sdk-ui-view", "button-color", '<Button onClick={() => go()} color="primary">x</Button>'), true);
+  assert.equal(pass("apps-sdk-ui-view", "button-color", "<Button onClick={() => go()}>x</Button>"), false);
+  assert.equal(pass("port-sdk-tool", "mcp-use-tools", 'server.tool({ name: "lookup-sku" }, h)'), false);
+  assert.equal(pass("chatgpt-ready-tool", "tool-name", 'name: "other-tool"'), false);
 });

@@ -25,7 +25,7 @@ An mcp-use server with a `view` already speaks the contract Archestra reads. Wha
 
 ## In mcp-use terms
 - The tool/view binding writes `_meta.ui.resourceUri` for you (`ui://views/<name>.html`); a hand-written `_meta` should use the nested `ui.resourceUri` form, not a flat key.
-- Declare origins with `view.csp` (`${CLAUDE_PLUGIN_ROOT}/skills/mcp-apps/references/csp.md`); the probe compares them with the `src`/`href` origins in the HTML text it reads, so it cannot see origins added by scripts at runtime. Read Archestra's diagnostics for those.
+- Declare origins with `view.csp` (`${CLAUDE_PLUGIN_ROOT}/skills/mcp-apps/references/csp.md`); the probe compares them with the `src`/`href` origins in the HTML text it reads, so it cannot see origins added by scripts at runtime, and it only matches absolute `src`/`href` values (quoted with `"` or `'`); unquoted attributes and CSS `url()` loads are not seen. Read Archestra's diagnostics for those.
 - A helper the view calls (refresh, save) is a tool with `visibility: "app"`. A tool the model should call but the view never does can be `"model"`; the scan only complains when a view calls a model-only tool by a literal name (`useCallTool("name")`, `callTool("name")`).
 - Keep tools useful without UI. Route A servers are also used by chat agents.
 - Do not make correctness depend on `@openai/apps-sdk-ui`; it is ChatGPT-styled, and whether it renders in Archestra was not tested here (`unverified.md`).

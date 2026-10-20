@@ -57,7 +57,7 @@ Use `inputRequired.elicitUrl({ message, url })` to send the user to a page (sign
 
 <!-- fixture: elicit-url -->
 ```ts
-import { MCPServer, inputRequired } from "mcp-use";
+import { MCPServer, inputRequired, inputResponse } from "mcp-use";
 import { z } from "zod";
 
 const server = new MCPServer({ name: "connect", version: "1.0.0" });
@@ -70,17 +70,22 @@ export const connectAccount = server.tool(
     annotations: { readOnlyHint: false, destructiveHint: false, openWorldHint: true },
   },
   async ({ provider }, ctx) => {
-    if (!ctx.inputResponses) {
-      return inputRequired({
-        inputRequests: {
-          authorize: inputRequired.elicitUrl({
-            message: `Authorize access to ${provider}`,
-            url: `https://${provider}.example.com/oauth/authorize?client_id=app`,
-          }),
-        },
-      });
+    const response = inputResponse(ctx.inputResponses, "authorize");
+    if (response.kind === "elicit" && response.action === "accept") {
+      return { content: [{ type: "text", text: `Linked ${provider}.` }] };
     }
-    return { content: [{ type: "text", text: `Linked ${provider}.` }] };
+    if (response.kind === "elicit") {
+      // declined or cancelled: do not report success
+      return { isError: true, content: [{ type: "text", text: `Linking ${provider} was ${response.action}.` }] };
+    }
+    return inputRequired({
+      inputRequests: {
+        authorize: inputRequired.elicitUrl({
+          message: `Authorize access to ${provider}`,
+          url: `https://${provider}.example.com/oauth/authorize?client_id=app`,
+        }),
+      },
+    });
   },
 );
 

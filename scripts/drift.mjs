@@ -24,7 +24,7 @@ for (const [pkg, v] of Object.entries(versions.packages)) {
 }
 for (const [url, old] of Object.entries(hashes.pages)) {
   let h = "?";
-  try { const r = await fetch(url, { redirect: "follow" }); h = createHash("sha256").update(await r.text()).digest("hex").slice(0, 16); } catch { /* network */ }
+  try { const r = await fetch(url, { redirect: "follow" }); if (r.ok) h = createHash("sha256").update(await r.text()).digest("hex").slice(0, 16); } catch { /* network */ }
   const bad = h !== old;
   if (update && h !== "?") hashes.pages[url] = h;
   else if (bad) drift++;

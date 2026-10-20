@@ -23,7 +23,7 @@ my-server/
 - Every skill file is a resource with URI `skill://<skill-name>/<path>` (for example `skill://process-refund/SKILL.md`, `skill://process-refund/references/policy.md`), readable with `resources/read`.
 - `skills/list` returns `{ skills: [{ uri, frontmatter: { name, description }, resources: [{ uri, digest }] }], resultType: "complete" }`.
 - `skills/get` takes `{ uri }` (not `name`).
-- Over raw HTTP the 2026 protocol requires an `Mcp-Method` header that matches the body (`Mcp-Method: skills/list`).
+- Over raw HTTP the 2026 protocol requires the `Mcp-Method` header matching the body (`Mcp-Method: skills/list`), `mcp-protocol-version: 2026-07-28`, and the `_meta` client envelope in `params` (S17); the legacy `initialize` handshake also works. `mcp-use-probe` and `mcp-use client` do this for you.
 - `mcpc` 0.7.0's `skills-list` rejects this result because entries carry `digest` but no `size`; read `skill://…` URIs with `resources-read` instead.
 
 ## Verify

@@ -7,4 +7,6 @@ build2 uri ui://views/my-view.html len 1211 sha 22bb8b5f01f8   # after editing v
 Dev server resource: same URI, MIME `text/html;profile=mcp-app`, `_meta` keys `ui`, `openai/widgetDescription`, `openai/ui`.
 Tool `show-app` `_meta`: `{"ui/resourceUri":"ui://views/my-view.html","ui":{"resourceUri":"ui://views/my-view.html"}}`; **no `openai/outputTemplate`** is emitted.
 
-**Decision:** the URI does not change when the view changes, so a host that caches by URI (OpenAI says it does, `02` U9) can serve a stale view. Guidance (CG-R06): after a view change that must reach ChatGPT, rename the view directory (e.g. `my-view-v2`) or disconnect/reconnect the connector. The plugin never edits `openai/outputTemplate` itself; whether ChatGPT needs it beyond `ui.resourceUri` is decided in row 7.
+**Decision:** the URI does not change when the view changes, so a host that caches by URI (OpenAI's chatgpt-ui guide says the URI is a cache key, O1) can serve a stale view. Guidance (CG-R06): after a view change that must reach ChatGPT, rename the view directory (e.g. `my-view-v2`) or disconnect/reconnect the connector. The plugin never edits `openai/outputTemplate` itself; whether ChatGPT needs it beyond `ui.resourceUri` is decided in row 7.
+
+Sources: O1, M2.

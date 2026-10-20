@@ -1,6 +1,6 @@
 # Route B: the `window.archestra` surface
 
-The platform injects `window.archestra` into the page; never import or load an SDK yourself. Wait for `archestra.ready` before the first call. Methods return promises, except the three synchronous ones: `files.onChange`, `ui.updateModelContext` and `llm.prompt`. When the host connection cannot be made, `ready` and all the methods reject.
+The platform injects `window.archestra` into the page; never import or load an SDK yourself. Wait for `archestra.ready` before the first call. Methods return promises, except the three synchronous ones: `files.onChange`, `ui.updateModelContext` and `llm.prompt`. When the host connection cannot be made, `ready` and every promise-returning method reject.
 
 ```html
 <script type="module">

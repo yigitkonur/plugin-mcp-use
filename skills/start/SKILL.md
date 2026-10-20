@@ -15,5 +15,5 @@ Report what applies to this project. Do not edit anything except the optional se
    - `ADD_APPS`, `HAS_VIEWS`, `ADD_HOST`, `IMPROVE_HOST`, `OWNED_APP`: one line on what was found (server entry, mcp-use version against `known_good`, view names, hosts inferred or declared).
    - `MIGRATE`, `LEGACY_V1`: say this is an official-SDK or legacy mcp-use server and name `/mcp-use:migrate` only if it appears in `next_actions` (it ships in a later plugin version).
 3. Print `next_actions` exactly as returned (`cmd` and `why`). Only commands in that list exist in the installed plugin version.
-4. If hosts are empty and views exist, offer to record them: create `.mcp-use-plugin/settings.md` with frontmatter `hosts: [chatgpt]` and/or `archestra` (Archestra cannot be inferred from code, so it must be declared), and add `.mcp-use-plugin/` to `.gitignore`. Ask first.
+4. If hosts are empty and views exist, offer to record them: create `.mcp-use-plugin/settings.md` with frontmatter `hosts: [chatgpt]` and/or `archestra` (Archestra cannot be inferred from code, so it must be declared), and suggest adding `.mcp-use-plugin/` to `.gitignore`; edit `.gitignore` only if the user agrees. Ask first.
 5. Mention the knowledge that loads on its own (`mcp-use-server`, `mcp-apps`), and the off switch `MCP_USE_PLUGIN=off`.

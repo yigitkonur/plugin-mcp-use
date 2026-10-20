@@ -5,7 +5,7 @@ Archestra's public pages (A1, A2) and the source read as behavioral evidence (A3
 | ID | Claim | Why unsettled | How to settle |
 |---|---|---|---|
 | U5 | Route A credentials: the viewer's or the installation's | A1 says apps invoke MCP tools with the active viewer's credentials; an earlier skill said an installation uses its own configured upstream credentials | install a server needing per-user auth; open its app as two users; compare |
-| U6 | a refresh endpoint (`POST /api/mcp/server/:id/refresh`) for stale tool lists | only in the earlier skill's private sources | after changing tools, find the dashboard action that reloads them; otherwise reconnect or reinstall |
+| U6 | a way to refresh an installed server's stale tool list from the dashboard or an API | only mentioned by the earlier skill's private sources; no route is documented here | after changing tools, find the dashboard action that reloads them; otherwise reconnect or reinstall |
 | U7 | `ui/update-model-context` from an installed server's app | nothing in A1, A2 or the source read; the earlier skill said unsupported | call it from a view and watch whether the chat model sees it |
 | AR-A07 | an installation viewer without access gets 403 | earlier skill only | open the app as a user without a grant |
 | AR-A04 | which CSP forms the host honors (`baseUriDomains`, wildcards, `frameDomains`) | the source read shows CSP taken from the resource item but not every directive | declare each, read the diagnostics |
