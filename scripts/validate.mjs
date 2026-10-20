@@ -2,7 +2,7 @@
 // Repo validation: manifests, size caps, source citations, version agreement. Exit 1 on any failure.
 import { readFileSync, readdirSync, statSync, existsSync, accessSync, constants } from "node:fs";
 import { join, dirname, relative } from "node:path";
-import { fileURLToPath } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 const errors = [];
@@ -60,14 +60,18 @@ for (const f of [...walk(join(root, "bin")), ...walk(join(root, "hooks")).filter
 // checklists: every referenced static rule exists in guard-rules.tsv, every probe rule is emitted by lib/probe.mjs
 const ruleIds = new Set(readFileSync(join(root, "data", "guard-rules.tsv"), "utf8").split("\n").filter((l) => l && !l.startsWith("#")).map((l) => l.split("\t")[0]));
 const probeSrc = readFileSync(join(root, "lib", "probe.mjs"), "utf8");
+const { RULE_IDS: lintIds } = await import(pathToFileURL(join(root, "lib", "archestra-lint.mjs")).href);
 for (const f of readdirSync(join(root, "data", "hosts"))) {
   const cl = json(`data/hosts/${f}`);
   for (const it of cl?.items ?? []) {
     if (!sources[it.source]) err(`data/hosts/${f}: ${it.id} cites unknown source ${it.source}`);
     for (const r of it.static_rules) if (!ruleIds.has(r)) err(`data/hosts/${f}: ${it.id} names unknown static rule ${r}`);
+    for (const r of it.lint_rules ?? []) if (!lintIds.includes(r)) err(`data/hosts/${f}: ${it.id} names unknown lint rule ${r}`);
     for (const r of it.probe_rules) if (!probeSrc.includes(`"${r}"`)) err(`data/hosts/${f}: ${it.id} names probe rule ${r} not emitted by lib/probe.mjs`);
   }
 }
+const archItems = json("data/hosts/archestra.checklist.json")?.items ?? [];
+for (const id of lintIds) if (!archItems.some((it) => (it.lint_rules ?? []).includes(id))) err(`data/hosts/archestra.checklist.json: lint rule ${id} is not covered by any AO-* item`);
 for (const l of readFileSync(join(root, "data", "guard-rules.tsv"), "utf8").split("\n").filter((x) => x && !x.startsWith("#"))) {
   const c = l.split("\t");
   if (!sources[c[11]]) err(`data/guard-rules.tsv: ${c[0]} cites unknown source ${c[11]}`);

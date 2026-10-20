@@ -2,7 +2,7 @@
 // Live protocol probe for MCP servers over Streamable HTTP: snapshots, diffs, and host checks.
 import { readFileSync, writeFileSync } from "node:fs";
 import { connect } from "../lib/mcp-http.mjs";
-import { takeSnapshot, diffSnapshots, chatgptChecks, authChallengeCheck } from "../lib/probe.mjs";
+import { takeSnapshot, diffSnapshots, chatgptChecks, archestraChecks, authChallengeCheck } from "../lib/probe.mjs";
 import { envelope, EXIT } from "../lib/envelope.mjs";
 
 const args = process.argv.slice(2);
@@ -11,7 +11,7 @@ const val = (n) => { const i = args.indexOf(n); return i >= 0 ? args[i + 1] : un
 const out = (e) => process.stdout.write(JSON.stringify(e) + "\n");
 
 if (flag("-h") || flag("--help") || !args.length) {
-  process.stdout.write(`mcp-use-probe --url <http://localhost:3000/mcp> [--host chatgpt] [--ua chatgpt|<string>] [--token T] [--calls calls.json] [--snapshot out.json] [--submit] [--json]
+  process.stdout.write(`mcp-use-probe --url <http://localhost:3000/mcp> [--host chatgpt|archestra] [--ua chatgpt|<string>] [--token T] [--calls calls.json] [--snapshot out.json] [--submit] [--json]
 mcp-use-probe --diff before.json after.json [--json]
 
 Connects over Streamable HTTP (modern stateless protocol first, legacy initialize as fallback), lists tools/resources/templates/prompts,
@@ -59,6 +59,9 @@ try {
       if (a.tested) notes.push(`CG-A01: unauthenticated call with user agent "${uaString}" to ${a.tested.join(", ")} checked`);
       await c2.close();
     }
+  } else if (host === "archestra") {
+    findings = archestraChecks(snap);
+    notes.push("AR-A07 (viewer access), AR-A08 (credential model), AR-A09/A10 (size and theme) and AR-A12 (model context) cannot be probed from outside; see host-archestra/references/unverified.md");
   } else if (host && host !== "stack") { process.stderr.write(`mcp-use-probe: host "${host}" has no probe rules in this version\n`); process.exit(EXIT.USAGE); }
   for (const p of snap.problems) findings.push({ rule_id: "PROBE", severity: "warning", host: host ?? "stack", method: "probe", target: "server", message: p, source: "M2" });
   if (val("--snapshot")) writeFileSync(val("--snapshot"), JSON.stringify(snap, null, 2));

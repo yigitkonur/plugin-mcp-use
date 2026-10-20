@@ -5,6 +5,8 @@ import { join, relative, isAbsolute } from "node:path";
 import { tmpdir } from "node:os";
 import { detect } from "../lib/detect.mjs";
 import { loadRules, scanFiles, projectFiles, applyFixes, writeReport, SEVERITY_RANK } from "../lib/scan.mjs";
+import { readSettings, globToRegex, readText } from "../lib/project.mjs";
+import { lintHtml } from "../lib/archestra-lint.mjs";
 import { envelope, EXIT } from "../lib/envelope.mjs";
 
 const args = process.argv.slice(2);
@@ -21,6 +23,21 @@ Static rules from data/guard-rules.tsv. Exit: 0 clean · 1 warnings/advisories o
   --hook     read a PostToolUse payload on stdin and print at most 3 new error/warning findings as additionalContext JSON (silent otherwise).
 `);
   process.exit(0);
+}
+
+// Archestra Owned-App HTML: a declared owned_app_paths glob, or a file that uses the injected window.archestra.
+const OWNED_SIGNATURE = /\barchestra\.(?:ready|user|context|storage|files|llm|tools|ui)\b/;
+function ownedFindings(root, files, requestedHost) {
+  if (requestedHost && requestedHost !== "all" && requestedHost !== "archestra") return [];
+  const globs = readSettings(root).owned_app_paths.map(globToRegex);
+  const out = [];
+  for (const rel of files) {
+    if (!/\.html?$/i.test(rel)) continue;
+    const text = readText(join(root, rel));
+    if (!text || !(globs.some((g) => g.test(rel)) || OWNED_SIGNATURE.test(text))) continue;
+    out.push(...lintHtml(text, { file: rel }));
+  }
+  return out;
 }
 
 const short = (m) => (m.length <= 112 ? m : m.slice(0, 112).replace(/\s+\S*$/, "") + "…");
@@ -58,7 +75,9 @@ try {
   files = files.filter((f) => !f.startsWith(".."));
 
   const allFiles = (hookMode || vals("--file").length) && rules.some((r) => r.kind.startsWith("project:")) ? projectFiles(root) : null;
-  let findings = scanFiles(root, files, rules, { hosts, mcpUse, allFiles });
+  const sortFindings = (fs) => fs.sort((a, b) => SEVERITY_RANK[a.severity] - SEVERITY_RANK[b.severity] || a.file.localeCompare(b.file) || a.line - b.line);
+  const gather = () => sortFindings([...scanFiles(root, files, rules, { hosts, mcpUse, allFiles }), ...ownedFindings(root, files, requested)]);
+  let findings = gather();
 
   if (hookMode) {
     findings = findings.filter((f) => f.severity !== "advisory");
@@ -80,18 +99,24 @@ try {
     process.exit(0);
   }
 
+  const nextActions = (fs) => {
+    const a = [];
+    if (fs.some((f) => f.fix_mode === "auto" && f.host !== "archestra-owned") && !flag("--fix")) a.push({ cmd: "mcp-use-scan --fix", why: "apply the auto-fixable findings (clean git tree required)" });
+    for (const file of new Set(fs.filter((f) => f.fix_mode === "auto" && f.host === "archestra-owned").map((f) => f.file))) a.push({ cmd: `archestra-app-lint --fix ${file}`, why: "apply the auto-fixable Owned-App findings (clean git tree required)" });
+    return a;
+  };
   const counts = (fs) => ({ error: fs.filter((f) => f.severity === "error").length, warning: fs.filter((f) => f.severity === "warning").length, advisory: fs.filter((f) => f.severity === "advisory").length });
   const result = { root, hosts: ["stack", ...hosts], files_scanned: files.length, before: counts(findings), findings };
 
   if (flag("--fix")) {
     const report = writeReport(root, "scan", { phase: "before-fix", findings });
-    const fixes = applyFixes(root, findings, rules, { force: flag("--force") });
-    const after = scanFiles(root, files, rules, { hosts, mcpUse, allFiles });
+    const fixes = applyFixes(root, findings.filter((f) => f.host !== "archestra-owned"), rules, { force: flag("--force") });
+    const after = gather();
     Object.assign(result, { report, fixes, after: counts(after), findings: after });
     findings = after;
   }
 
-  if (flag("--json")) process.stdout.write(JSON.stringify(envelope("mcp-use-scan", { result, next_actions: findings.some((f) => f.fix_mode === "auto") && !flag("--fix") ? [{ cmd: "mcp-use-scan --fix", why: "apply the auto-fixable findings (clean git tree required)" }] : [] })) + "\n");
+  if (flag("--json")) process.stdout.write(JSON.stringify(envelope("mcp-use-scan", { result, next_actions: nextActions(findings) })) + "\n");
   else {
     for (const f of findings) process.stdout.write(`${f.severity.toUpperCase().padEnd(8)} ${f.rule_id.padEnd(8)} ${f.file}:${f.line}  ${f.message}  [fix: ${f.fix_mode}] [${f.source}]\n`);
     const c = counts(findings);
