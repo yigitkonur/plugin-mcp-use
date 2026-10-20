@@ -1,5 +1,6 @@
 node_modules/
 .mcp-use-plugin/
+!tests/fixtures/**/.mcp-use-plugin/
 evals/results/
 .DS_Store
 *.log
