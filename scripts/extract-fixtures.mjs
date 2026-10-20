@@ -1,6 +1,8 @@
 #!/usr/bin/env node
-// Extract fenced TS/TSX examples that are marked with <!-- fixture: name --> (must compile) or
-// <!-- fixture-bad: name --> (must NOT compile) from skills/**/*.md into <outDir>/{good,bad}/.
+// Extract fenced TS/TSX examples marked with <!-- fixture: name --> (must compile against mcp-use),
+// <!-- fixture-bad: name --> (must NOT compile) or <!-- fixture-sdk1: name --> / <!-- fixture-sdk2: name -->
+// (official MCP SDK v1 / v2 "before" code, must compile in the migration workspace) from skills/**/*.md
+// into <outDir>/{good,bad,sdk1,sdk2}/.
 import { readdirSync, readFileSync, writeFileSync, mkdirSync, rmSync, statSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -18,15 +20,14 @@ function* mdFiles(dir) {
 }
 rmSync(join(out, "good"), { recursive: true, force: true });
 rmSync(join(out, "bad"), { recursive: true, force: true });
-mkdirSync(join(out, "good"), { recursive: true });
-mkdirSync(join(out, "bad"), { recursive: true });
+for (const d of ["good", "bad", "sdk1", "sdk2"]) { rmSync(join(out, d), { recursive: true, force: true }); mkdirSync(join(out, d), { recursive: true }); }
 
 const seen = new Set();
-let good = 0, bad = 0;
+const counts = { good: 0, bad: 0, sdk1: 0, sdk2: 0 };
 for (const file of mdFiles(join(root, "skills"))) {
   const lines = readFileSync(file, "utf8").split("\n");
   for (let i = 0; i < lines.length; i++) {
-    const m = lines[i].match(/^<!--\s*fixture(-bad)?:\s*([a-z0-9-]+)\s*-->\s*$/);
+    const m = lines[i].match(/^<!--\s*fixture(-bad|-sdk1|-sdk2)?:\s*([a-z0-9-]+)\s*-->\s*$/);
     if (!m) continue;
     let j = i + 1;
     while (j < lines.length && !lines[j].trim()) j++;
@@ -37,10 +38,11 @@ for (const file of mdFiles(join(root, "skills"))) {
     seen.add(name);
     const body = [];
     for (j = j + 1; j < lines.length && !lines[j].startsWith("```"); j++) body.push(lines[j]);
-    writeFileSync(join(out, m[1] ? "bad" : "good", `${name}.${f[1]}`), `// extracted from ${file.slice(root.length + 1)}:${i + 1}\n` + body.join("\n") + "\n");
-    m[1] ? bad++ : good++;
+    const kind = m[1] ? m[1].slice(1) : "good";
+    writeFileSync(join(out, kind, `${name}.${f[1]}`), `// extracted from ${file.slice(root.length + 1)}:${i + 1}\n` + body.join("\n") + "\n");
+    counts[kind]++;
   }
 }
 // Stub so examples can `import server from "./server.js"` as a project would.
 writeFileSync(join(out, "good", "server.ts"), 'export { default } from "../../index.js";\n');
-console.log(JSON.stringify({ good, bad }));
+console.log(JSON.stringify(counts));

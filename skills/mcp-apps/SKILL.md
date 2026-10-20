@@ -29,6 +29,7 @@ Start from `${CLAUDE_PLUGIN_ROOT}/skills/mcp-use-server/SKILL.md` for server rul
 | CSP buckets, env vars, merge order, `permissions`, `domain` | `references/csp.md` |
 | The MCP Apps standard and what mcp-use emits | `references/protocol.md` |
 | What works on every host; dual-host rules | `references/portable-core.md` |
+| A view is blank or errors, CSP blocks, screenshot errors | `references/troubleshooting-views.md` |
 | ChatGPT specifics | `${CLAUDE_PLUGIN_ROOT}/skills/host-chatgpt/SKILL.md` |
 
 ## Verify

@@ -1,0 +1,14 @@
+<div id="app">
+<link rel="stylesheet" href="/static/archestra-app-base.css">
+<script src="https://app.archestra.ai/archestra-app-sdk.js"></script>
+<form id="f"><input id="q"><button>Go</button></form>
+<a id="docs" href="https://example.com/docs" target="_blank">Docs</a>
+<script>
+(async () => {
+  await archestra.ready;
+  await archestra.storage.set("filter", JSON.stringify({ q: "" }));
+  const r = await fetch("https://api.example.com/issues");
+  localStorage.setItem("seen", "1");
+})();
+</script>
+</div>

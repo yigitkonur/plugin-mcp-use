@@ -129,3 +129,21 @@ test("scan of a non-Node project is out of scope (exit 4)", () => {
   const r = runScan(join(root, "tests", "controls", "c6-python-fastmcp"));
   assert.equal(r.status, 4);
 });
+
+test("STK-13: zod 3 next to mcp-use is an error; zod 3 with the official SDK only, and zod 4, are not", () => {
+  const mk = (deps) => { const d = mkdtempSync(join(tmpdir(), "z-")); writeFileSync(join(d, "package.json"), JSON.stringify({ name: "z", type: "module", dependencies: deps }, null, 2)); writeFileSync(join(d, "index.ts"), 'import { MCPServer } from "mcp-use";\nexport default new MCPServer({ name: "z", version: "1.0.0" });\n'); return d; };
+  const ids = (d) => runScan(d).out.result.findings.filter((f) => f.file === "package.json").map((f) => f.rule_id);
+  assert.deepEqual(ids(mk({ "mcp-use": "2.11.0", zod: "^3.25.76" })), ["STK-13"]);
+  assert.deepEqual(ids(mk({ "mcp-use": "2.11.0", zod: "3.23.8" })), ["STK-13"]);
+  assert.deepEqual(ids(mk({ "mcp-use": "2.11.0", zod: "^4.4.3" })), []);
+  assert.deepEqual(ids(mk({ "@modelcontextprotocol/sdk": "1.32.1", zod: "^3.25.76" })), []);
+});
+
+test("STK-14: a URL in allowedOrigins/allowedHosts is an error; hostnames and cors URLs are fine", () => {
+  const mk = (cfg) => { const d = mkdtempSync(join(tmpdir(), "o-")); writeFileSync(join(d, "package.json"), JSON.stringify({ name: "o", type: "module", dependencies: { "mcp-use": "2.11.0" } })); writeFileSync(join(d, "index.ts"), `import { MCPServer } from "mcp-use";\nexport default new MCPServer({ name: "o", version: "1.0.0", ${cfg} });\n`); return d; };
+  const ids = (d) => runScan(d).out.result.findings.filter((f) => f.file === "index.ts").map((f) => f.rule_id);
+  assert.deepEqual(ids(mk('allowedOrigins: ["https://chatgpt.com"]')), ["STK-14"]);
+  assert.deepEqual(ids(mk('allowedHosts: ["http://api.example.com", "ok.example.com"]')), ["STK-14"]);
+  assert.deepEqual(ids(mk('allowedOrigins: ["chatgpt.com"], allowedHosts: ["catalog.internal"]')), []);
+  assert.deepEqual(ids(mk('cors: { origin: ["https://chatgpt.com"], credentials: true }')), []);
+});

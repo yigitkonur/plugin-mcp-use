@@ -80,5 +80,14 @@ for (const l of readFileSync(join(root, "data", "guard-rules.tsv"), "utf8").spli
   const c = l.split("\t");
   if (!sources[c[11]]) err(`data/guard-rules.tsv: ${c[0]} cites unknown source ${c[11]}`);
 }
+// migration fixtures and workspace pin the official SDK at data/versions.json known_good
+const vp = json("data/versions.json")?.packages ?? {};
+for (const [where, file] of [["tests/types/migration", "tests/types/migration/package.json"], ["tests/fixtures/f02", "tests/fixtures/f02/package.json"], ["tests/fixtures/f03", "tests/fixtures/f03/package.json"], ["tests/fixtures/f11", "tests/fixtures/f11/package.json"]]) {
+  const pj = json(file);
+  for (const [dep, v] of Object.entries(pj?.dependencies ?? {})) {
+    const want = vp[dep]?.known_good ?? (dep === "@modelcontextprotocol/node" ? "2.1.1" : null);
+    if (want && v !== want) err(`${where}: ${dep} is ${v}, expected ${want} (data/versions.json known_good)`);
+  }
+}
 if (errors.length) { console.error(errors.map((e) => "FAIL " + e).join("\n")); process.exit(1); }
 console.log("validate: ok");

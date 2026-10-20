@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>App</title>
+</head>
+<body>
+<div id="app">
+<form id="f"><input id="q"><button>Go</button></form>
+<a id="docs" href="https://example.com/docs">Docs</a>
+<ul id="list"></ul>
+<script>
+(async () => {
+  await archestra.ready;
+  document.getElementById("docs").addEventListener("click", (e) => { e.preventDefault(); archestra.ui.openLink(e.currentTarget.href); });
+  document.getElementById("f").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    await archestra.storage.user.set("filter", { q: document.getElementById("q").value });
+  });
+  const tools = await archestra.tools.list();
+  const t = tools.find((x) => x.name.endsWith("__list_issues"));
+  document.getElementById("list").textContent = t ? JSON.stringify(await archestra.tools.call(t.name, { state: "open" })) : "No issues tool assigned.";
+})();
+</script>
+</div>
+</body>
+</html>

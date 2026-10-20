@@ -2,6 +2,7 @@
 // Live protocol probe for MCP servers over Streamable HTTP: snapshots, diffs, and host checks.
 import { readFileSync, writeFileSync } from "node:fs";
 import { connect } from "../lib/mcp-http.mjs";
+import { connectStdio } from "../lib/mcp-stdio.mjs";
 import { takeSnapshot, diffSnapshots, chatgptChecks, archestraChecks, authChallengeCheck } from "../lib/probe.mjs";
 import { envelope, EXIT } from "../lib/envelope.mjs";
 
@@ -11,7 +12,7 @@ const val = (n) => { const i = args.indexOf(n); return i >= 0 ? args[i + 1] : un
 const out = (e) => process.stdout.write(JSON.stringify(e) + "\n");
 
 if (flag("-h") || flag("--help") || !args.length) {
-  process.stdout.write(`mcp-use-probe --url <http://localhost:3000/mcp> [--host chatgpt|archestra] [--ua chatgpt|<string>] [--token T] [--calls calls.json] [--snapshot out.json] [--submit] [--json]
+  process.stdout.write(`mcp-use-probe (--url <http://localhost:3000/mcp> | --stdio "<command>" [--cwd dir]) [--host chatgpt|archestra] [--ua chatgpt|<string>] [--token T] [--calls calls.json] [--timeout ms] [--snapshot out.json] [--submit] [--json]
 mcp-use-probe --diff before.json after.json [--json]
 
 Connects over Streamable HTTP (modern stateless protocol first, legacy initialize as fallback), lists tools/resources/templates/prompts,
@@ -30,18 +31,21 @@ try {
     const i = args.indexOf("--diff");
     const a = JSON.parse(readFileSync(args[i + 1], "utf8")), b = JSON.parse(readFileSync(args[i + 2], "utf8"));
     const d = diffSnapshots(a, b);
-    emit({ result: d, ok: d.equal }, d.equal ? "snapshots are equal" : d.differences.map((x) => `${x.change.toUpperCase()} ${x.kind} ${x.id}${x.fields ? ": " + x.fields.map((f) => f.field).join(", ") : ""}`).join("\n"));
+    const noted = d.ignored.length ? "\n" + [...new Set(d.ignored.map((x) => x.note))].map((n) => `note: ${n} (${d.ignored.filter((x) => x.note === n).length} schema${d.ignored.filter((x) => x.note === n).length === 1 ? "" : "s"})`).join("\n") : "";
+    emit({ result: d, ok: d.equal }, (d.equal ? "snapshots are equal" : d.differences.map((x) => `${x.change.toUpperCase()} ${x.kind} ${x.id}${x.fields ? ": " + x.fields.map((f) => f.field).join(", ") : ""}`).join("\n")) + noted);
     process.exit(d.equal ? EXIT.OK : EXIT.WARN);
   }
   const url = val("--url");
-  if (!url) { process.stderr.write("mcp-use-probe: --url is required (or --diff a b)\n"); process.exit(EXIT.USAGE); }
+  const stdioCmd = val("--stdio");
+  if (!url && !stdioCmd) { process.stderr.write("mcp-use-probe: --url or --stdio is required (or --diff a b)\n"); process.exit(EXIT.USAGE); }
   const uaOpt = val("--ua");
   const uaString = uaOpt === "chatgpt" ? "ChatGPT/1.0" : uaOpt;
   const token = val("--token") || process.env.MCP_USE_PROBE_TOKEN;
   let client;
-  try { client = await connect({ url, token }); }
+  const timeoutMs = Number(val("--timeout")) || undefined;
+  try { client = stdioCmd ? await connectStdio({ command: stdioCmd, cwd: val("--cwd"), timeoutMs }) : await connect({ url, token, timeoutMs }); }
   catch (e) {
-    emit({ ok: false, error: { code: e.code || "connect_failed", message: e.message, suggestion: e.code === "unauthorized" ? "pass --token <bearer token>" : "is the server running? try: mcp-use dev --no-open --no-inspector" } }, `connect failed: ${e.message}`);
+    emit({ ok: false, error: { code: e.code || "connect_failed", message: e.message, suggestion: stdioCmd ? "run the command by hand from --cwd and check it starts and reads stdin" : e.code === "unauthorized" ? "pass --token <bearer token>" : "is the server running? try: mcp-use dev --no-open --no-inspector" } }, `connect failed: ${e.message}`);
     process.exit(EXIT.NETWORK);
   }
   const calls = val("--calls") ? JSON.parse(readFileSync(val("--calls"), "utf8")) : [];
@@ -63,6 +67,7 @@ try {
     findings = archestraChecks(snap);
     notes.push("AR-A07 (viewer access), AR-A08 (credential model), AR-A09/A10 (size and theme) and AR-A12 (model context) cannot be probed from outside; see host-archestra/references/unverified.md");
   } else if (host && host !== "stack") { process.stderr.write(`mcp-use-probe: host "${host}" has no probe rules in this version\n`); process.exit(EXIT.USAGE); }
+  if (client.state.noise?.length) findings.push({ rule_id: "PROBE", severity: "warning", host: host ?? "stack", method: "probe", target: "stdout", message: `Server wrote ${client.state.noise.length} non-JSON line(s) to stdout, which corrupts the stdio protocol (first: ${JSON.stringify(client.state.noise[0])}). Log to stderr.`, source: "M2" });
   for (const p of snap.problems) findings.push({ rule_id: "PROBE", severity: "warning", host: host ?? "stack", method: "probe", target: "server", message: p, source: "M2" });
   if (val("--snapshot")) writeFileSync(val("--snapshot"), JSON.stringify(snap, null, 2));
   await client.close();

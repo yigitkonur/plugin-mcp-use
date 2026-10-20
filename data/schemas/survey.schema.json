@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "server-surveyor output",
+  "type": "object",
+  "required": ["framework", "transport", "tools", "resources", "prompts", "auth", "state", "ui", "zod"],
+  "properties": {
+    "root": { "type": "string" },
+    "framework": {
+      "type": "object",
+      "required": ["package", "version", "style"],
+      "properties": { "package": { "type": "string" }, "version": { "type": "string" }, "style": { "enum": ["McpServer", "Server", "v2"] } }
+    },
+    "entry": { "type": ["string", "null"] },
+    "transport": {
+      "type": "object",
+      "required": ["kind"],
+      "properties": { "kind": { "enum": ["stdio", "http", "both", "unknown"] }, "evidence": { "type": "string" } }
+    },
+    "tools": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["name", "side_effects", "read_only_call"],
+        "properties": {
+          "name": { "type": "string" },
+          "schema_source": { "enum": ["zod-shape", "zod-object", "json-schema", "none"] },
+          "output_schema": { "type": "boolean" },
+          "annotations": { "type": "array", "items": { "type": "string" } },
+          "side_effects": { "enum": ["none", "writes", "external", "unknown"] },
+          "read_only_call": { "type": "boolean" },
+          "file": { "type": "string" },
+          "line": { "type": "number" }
+        }
+      }
+    },
+    "resources": { "type": "array", "items": { "type": "object", "required": ["name"], "properties": { "name": { "type": "string" }, "uri": { "type": "string" }, "dynamic": { "type": "boolean" } } } },
+    "prompts": { "type": "array", "items": { "type": "object", "required": ["name"], "properties": { "name": { "type": "string" }, "args": { "type": "number" } } } },
+    "auth": { "type": "object", "required": ["kind"], "properties": { "kind": { "enum": ["none", "bearer", "oauth-server", "custom"] }, "evidence": { "type": "string" } } },
+    "state": { "type": "object", "required": ["kind"], "properties": { "kind": { "enum": ["none", "module-global", "session", "database"] }, "evidence": { "type": "string" } } },
+    "ui": { "type": "object", "required": ["kind"], "properties": { "kind": { "enum": ["none", "ext-apps", "openai-widgets"] }, "files": { "type": "array", "items": { "type": "string" } } } },
+    "zod": { "type": "object", "required": ["needs_upgrade"], "properties": { "version": { "type": ["string", "null"] }, "needs_upgrade": { "type": "boolean" } } },
+    "tests": { "type": "object", "properties": { "present": { "type": "boolean" }, "command": { "type": ["string", "null"] } } },
+    "deps_to_remove": { "type": "array", "items": { "type": "string" } },
+    "risks": { "type": "array", "items": { "type": "string" } }
+  }
+}

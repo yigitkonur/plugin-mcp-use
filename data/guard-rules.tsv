@@ -13,6 +13,8 @@ STK-09	stack	**/*.{ts,tsx,mts,js,mjs}	regex	\bctx\.elicit\(			error	suggest		ctx
 STK-10	stack	**/*.{ts,tsx,mts,js,mjs}	regex	\bctx\.(?:log|sample)\(			warning	suggest		ctx.log() and ctx.sample() do not exist in v2; use ctx.sendLog(level, data).	M2
 STK-11	stack	**/*.{ts,tsx,mts,js,mjs}	regex	\.supportsApps\(			error	auto	.supportsViews(	supportsApps() was removed; use ctx.client.supportsViews().	M2
 STK-12	stack	**/*.{ts,tsx,mts,js,mjs}	regex	\b(?:useWidget|useWidgetProps|McpUseProvider)\b			error	suggest		v1 widget API; use useToolContext<"tool">() from mcp-use/react (there is no aggregate provider).	M2
+STK-13	stack	package.json	regex	(?:(?<="mcp-use"\s*:\s*"[\s\S]*)|(?=[\s\S]*"mcp-use"\s*:\s*"))"zod"\s*:\s*"[\^~>=\s]*3\.			error	manual		zod 3 cannot produce JSON Schema for mcp-use (typecheck fails and tools/list returns nothing). Use zod >= 4.2.0 (the scaffolds pin ^4.4.3).	S20
+STK-14	stack	**/*.{ts,mts,js,mjs}	regex	allowed(?:Origins|Hosts)\s*:\s*\[[^\]]*["']https?://			error	suggest		allowedOrigins/allowedHosts take hostnames ("chatgpt.com"), not URLs; a URL never matches and the request gets 403 Invalid Origin.	S24
 CG-T01	chatgpt	**/*.{ts,mts,js,mjs}	tooldef	require:annotations.readOnlyHint,annotations.destructiveHint,annotations.openWorldHint			error	suggest		Tool must set readOnlyHint, destructiveHint and openWorldHint as explicit booleans (ChatGPT review).	O4
 CG-T08	chatgpt	**/*.{ts,mts,js,mjs}	regex	["']openai/toolInvocation/(?:invoking|invoked)["']\s*:\s*["'`][^"'`]{65,}["'`]			warning	suggest		Invocation status text must be 64 characters or fewer.	O5
 CG-T09	chatgpt	**/*.{ts,mts,js,mjs}	tooldef	imply:@structuredContent=>outputSchema			warning	suggest		Tool returns structuredContent but declares no outputSchema.	O5

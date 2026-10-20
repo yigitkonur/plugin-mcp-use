@@ -41,7 +41,7 @@ export default server;
 ```
 
 ## Rules
-- **Schemas.** Any Standard Schema validator works (Zod, ArkType, Valibot). `inputSchema` is the tool argument schema (`schema` is also accepted on tools, but prompts use only `schema`; write `inputSchema` for tools). Put `.describe()` on every field the model fills.
+- **Schemas.** The validator must be a Standard Schema that can also produce JSON Schema: **zod >= 4.2.0** (zod 3 fails typecheck and `tools/list`, S20). ArkType and Valibot were not tested here. `inputSchema` is the tool argument schema (`schema` is also accepted on tools, but prompts use only `schema`; write `inputSchema` for tools). Put `.describe()` on every field the model fills.
 - **Annotations.** Always set `readOnlyHint`, `destructiveHint` and `openWorldHint` explicitly. `idempotentHint` is optional. ChatGPT review requires the first three as explicit booleans (OpenAI plugin guidelines, O4). `openWorldHint: true` means the tool reaches systems outside the user's own data (the web, third-party APIs).
 - **Description.** Say what the tool does, what it changes, and when not to use it. Side effects belong here, not only in annotations.
 - **`outputSchema` is typed.** When it is set, the callback must return `structuredContent` that matches it, or `{ isError: true, ... }` (`ToolResult` in `tools.d.ts`). A tool with a `view` must have one.
@@ -107,4 +107,4 @@ export const broken = server.tool(
 export default server;
 ```
 
-Sources: M1, M2.
+Sources: M1, M2, S20.

@@ -34,6 +34,6 @@ export default function Card() {
 - `useSendSizeChanged()` reports an explicit size when content changes outside React's render cycle.
 
 ## Theme and locale
-Read theme and locale from the host (`useViewTheme()`, `useHostContext().locale`), not from `prefers-color-scheme`. A view that paints no background shows the host's backdrop, which is what hosts want for inline cards.
+Read theme and locale from the host (`useViewTheme()`, `useHostContext().locale`), not from `prefers-color-scheme`. A view that paints no background shows the host's backdrop, which is what hosts want for inline cards, but then it must not rely on default text colors: set foreground and background for both themes (or use the Apps SDK UI tokens). The `mcp-use screenshot` harness draws a black backdrop in both themes (S22), so an unstyled view is unreadable there.
 
-Sources: M2, O6, O3.
+Sources: M2, O6, O3, S22.

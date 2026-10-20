@@ -116,6 +116,30 @@
     "A4": {
       "title": "Archestra: Archestra MCP Server reference (built-in app authoring tools and their schemas)",
       "url": "https://archestra.ai/docs/reference/archestra-mcp-server"
+    },
+    "S20": {
+      "title": "Spike S20: zod 3 does not work with mcp-use 2.11.0 (typecheck error, empty tools/list)",
+      "url": "spikes/S20-zod3.md"
+    },
+    "S22": {
+      "title": "Spike S22: mcp-use screenshot paints a black backdrop in both themes",
+      "url": "spikes/S22-screenshot-backdrop.md"
+    },
+    "S23": {
+      "title": "Spike S23: OAuth behavior observed on mcp-use 2.11.0 with a local issuer (status codes, headers, errors)",
+      "url": "spikes/S23-auth-runtime.md"
+    },
+    "S24": {
+      "title": "Spike S24: allowedOrigins and allowedHosts take hostnames; a URL is rejected with 403",
+      "url": "spikes/S24-allowed-origins.md"
+    },
+    "S21": {
+      "title": "Spike S21: /mcp-use:migrate on F02, F03 and F11 with snapshot parity",
+      "url": "spikes/S21-migration.md"
+    },
+    "S25": {
+      "title": "Spike S25: restoration of troubleshooting, deploy and auth knowledge, verified claim by claim",
+      "url": "spikes/S25-restoration.md"
     }
   }
 }

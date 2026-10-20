@@ -44,6 +44,9 @@ mcp-use moved from 2.8.2 to 2.11.0 in ten days. Do not trust memory for signatur
 | `ctx` members, middleware, observers | `references/context-and-middleware.md` |
 | Resources, templates, prompts, completion | `references/resources-and-prompts.md` |
 | OAuth providers, `mixedAuth`, ChatGPT challenge, `ctx.auth` | `references/auth.md` |
+| OAuth not working: 401/403 causes, `MCP_USE_OAUTH_DEBUG`, provider gotchas | `references/auth-debugging.md` |
+| Something fails: exact error strings, status codes, symptom to fix | `references/troubleshooting.md` |
+| Production: hosts and targets, checklist, env vars, hardening, scaling | `references/deploy.md` |
 | Asking the user mid-tool (`inputRequired`) | `references/elicitation.md` |
 | OpenAPI, Next.js, Node bridge, proxy, notifications | `references/advanced.md` |
 | Serving skills from the server | `references/skills-over-mcp.md` |
@@ -51,7 +54,8 @@ mcp-use moved from 2.8.2 to 2.11.0 in ten days. Do not trust memory for signatur
 | Versions, removed v1 APIs, drift | `references/versions.md` |
 | Views, hooks, CSP, display modes | `${CLAUDE_PLUGIN_ROOT}/skills/mcp-apps/SKILL.md` |
 | ChatGPT rules | `${CLAUDE_PLUGIN_ROOT}/skills/host-chatgpt/SKILL.md` |
+| Archestra rules (installed server and Owned Apps) | `${CLAUDE_PLUGIN_ROOT}/skills/host-archestra/SKILL.md` |
 
 ## Workflows (the user types these; you cannot start them)
-`/mcp-use:start` (what applies here) · `/mcp-use:new` (scaffold a server) · `/mcp-use:apps` (add views to a server) · `/mcp-use:host <chatgpt> <add|audit|fix>` (check or improve a host integration) · `/mcp-use:verify` (typecheck, run, call tools, screenshot). Engines the model can run directly: `mcp-use-detect`, `mcp-use-scan` (static rules), `mcp-use-probe` (live protocol checks).
+`/mcp-use:start` (what applies here) · `/mcp-use:new` (scaffold a server) · `/mcp-use:apps` (add views to a server) · `/mcp-use:migrate` (port an official-SDK server) · `/mcp-use:host <chatgpt|archestra> <add|audit|fix>` (check or improve a host integration) · `/mcp-use:archestra-app <lint|fix|new> <file.html>` (Archestra Owned Apps) · `/mcp-use:verify` (typecheck, run, call tools, screenshot). Engines the model can run directly: `mcp-use-detect`, `mcp-use-scan` (static rules), `mcp-use-probe` (live protocol checks, `--stdio` for stdio servers, `--diff` for parity), `archestra-app-lint`.
 When one fits, tell the user which command to type and why.

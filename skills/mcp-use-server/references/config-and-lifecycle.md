@@ -18,8 +18,8 @@ const server = new MCPServer({
   basePath: "/mcp", // default endpoint path
   legacy: "stateless", // or "reject" for pre-2026 protocol traffic
   logging: { enabled: true, level: "info" }, // MCP_USE_LOG_LEVEL overrides
-  allowedHosts: ["catalog.internal"], // extra Host headers (DNS-rebinding protection)
-  allowedOrigins: ["https://chatgpt.com"], // extra Origins on non-GET/HEAD requests
+  allowedHosts: ["catalog.internal"], // extra Host header hostnames (DNS-rebinding protection)
+  allowedOrigins: ["chatgpt.com"], // extra Origin hostnames on non-GET/HEAD requests
   skills: true, // serve ./skills; see skills-over-mcp.md
   cors: { origin: ["https://chatgpt.com", "https://claude.ai"], credentials: true },
 });
@@ -32,7 +32,8 @@ export default server;
 - `websiteUrl`, `icons`, `favicon`, `logging` are top-level options. There is no `branding` option; `server.branding` is a read-only getter.
 - `host`, `port` are accepted, but `mcp-use dev|start` own the listener and read `--port`, `--host`, `$PORT`, `$HOST`.
 - `basePath` sets the MCP endpoint (default `/mcp`).
-- `cors.origin: "*"` with `credentials: true` is invalid; list origins.
+- `allowedHosts` and `allowedOrigins` take **hostnames** (`"chatgpt.com"`), port-agnostic. A URL such as `"https://chatgpt.com"` compiles but never matches: the request gets 403 `Invalid Origin` (S24). Origin checks apply to non-GET/HEAD requests and are off when `allowedOrigins` is unset.
+- `cors.origin: "*"` with `credentials: true` is invalid; list origins (URLs here, since CORS compares full origins).
 - `publicLandingPage`, `oauth`, `mixedAuth` are covered in `auth.md`. `requestState` configures verification of state echoed across `input_required` rounds (`elicitation.md`).
 
 ## Lifecycle and runtimes
@@ -62,4 +63,4 @@ const server = new MCPServer({
 export default server;
 ```
 
-Sources: M1, M2, S12.
+Sources: M1, M2, S12, S24.

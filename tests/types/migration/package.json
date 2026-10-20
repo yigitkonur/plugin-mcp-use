@@ -1,0 +1,14 @@
+{
+  "name": "mcp-use-plugin-migration-workspace",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@modelcontextprotocol/ext-apps": "2.0.3",
+    "@modelcontextprotocol/node": "2.1.1",
+    "@modelcontextprotocol/sdk": "1.32.1",
+    "@modelcontextprotocol/server": "2.3.1",
+    "@types/node": "^22.20.0",
+    "typescript": "^7.0.2",
+    "zod": "^4.4.3"
+  }
+}
