@@ -30,7 +30,8 @@ const pj = JSON.parse(readFileSync(join(pkgDir, "package.json"), "utf8"));
 for (const k of facts.absent_export_keys) if (pj.exports && k in pj.exports) fails.push(`package.json exports has ${k}`);
 for (const n of facts.present) if (!all.includes(n)) fails.push(`present but not found: ${n}`);
 for (const n of facts.deprecated) {
-  const re = new RegExp(`@deprecated[^]{0,700}?(?:function\\s+${n}\\b|\\b${n}\\s*\\()`);
+  // the named symbol is declared directly after a JSDoc block that carries @deprecated
+  const re = new RegExp(`/\\*\\*(?:(?!\\*/)[^])*?@deprecated(?:(?!\\*/)[^])*?\\*/\\s*(?:export\\s+)?(?:declare\\s+)?(?:(?:async\\s+)?function\\s+|const\\s+|class\\s+)?${n}\\b`);
   if (!re.test(all)) fails.push(`expected @deprecated: ${n}`);
 }
 if (fails.length) { console.error(fails.map((f) => "FAIL " + f).join("\n")); process.exit(1); }

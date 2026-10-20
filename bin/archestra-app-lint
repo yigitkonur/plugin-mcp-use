@@ -1,47 +1,62 @@
 #!/usr/bin/env node
 // Lint (and fix) Archestra Owned-App HTML. Works on any HTML file; it reads only the file.
-import { readFileSync, writeFileSync, existsSync } from "node:fs";
+import { readFileSync, writeFileSync } from "node:fs";
 import { execFileSync } from "node:child_process";
-import { resolve, dirname, basename, join } from "node:path";
+import { resolve, dirname, basename } from "node:path";
 import { lintHtml, applyAutoFixes, loadPolicy, RULE_IDS } from "../lib/archestra-lint.mjs";
 import { writeReport } from "../lib/scan.mjs";
 import { envelope, EXIT } from "../lib/envelope.mjs";
+import { parseCli, usage, requireFile, kindOf } from "../lib/cli.mjs";
 
-const args = process.argv.slice(2);
-const flag = (n) => args.includes(n);
-const val = (n) => { const i = args.indexOf(n); return i >= 0 ? args[i + 1] : undefined; };
-const files = args.filter((a, i) => !a.startsWith("--") && !(i > 0 && ["--policy", "--ui-permissions"].includes(args[i - 1])));
+const TOOL = "archestra-app-lint";
+const { values: o, positionals: files } = parseCli(TOOL, {
+  fix: { type: "boolean" }, force: { type: "boolean" }, json: { type: "boolean" }, stdin: { type: "boolean" },
+  "ui-permissions": { type: "string" }, policy: { type: "string" },
+}, { positionals: true });
+const json = !!o.json;
 
-if (flag("-h") || flag("--help") || (!files.length && !flag("--stdin"))) {
+if (o.help || (!files.length && !o.stdin)) {
   process.stdout.write(`archestra-app-lint <file.html>... [--fix [--force]] [--json] [--ui-permissions camera,microphone] [--policy data/archestra-policy.json] [--stdin]
 
 Lints Archestra Owned-App HTML against the documented save gate (AA*), validate_app warnings (AW*) and SDK-reference advisories (AD*).
 It mirrors documented behavior; Archestra's validate_app and render diagnostics stay authoritative.
   --fix     apply only fix_mode=auto rules (AA02, AA03, AW01, AW04). Needs a clean git tree for the file, or --force. Findings are written to
-            .mcp-use-plugin/reports/ first; the file is re-linted after fixing.
+            .mcp-use-plugin/reports/ at the file's git root (outside git: CLAUDE_PROJECT_DIR or the current directory) first; the file is re-linted after fixing.
+  --stdin   lint standard input instead of files (no --fix).
 Exit: 0 clean · 1 warnings/advisories only · 2 errors · 3 usage
 Rules: ${RULE_IDS.join(" ")}
 `);
-  process.exit(flag("-h") || flag("--help") ? 0 : EXIT.USAGE);
+  process.exit(o.help ? 0 : EXIT.USAGE);
 }
 
-const policy = loadPolicy(val("--policy"));
-const uiPermissions = val("--ui-permissions")?.split(",").map((s) => s.trim()).filter(Boolean) ?? null;
+if (o.stdin && files.length) usage(TOOL, "--stdin cannot be combined with file arguments", json);
+if (o.stdin && o.fix) usage(TOOL, "--fix needs a file; it cannot rewrite standard input", json);
+for (const f of files) {
+  const k = kindOf(resolve(f)); // devices and pipes are readable input too (an empty one reports AA04)
+  if (k === null || k === "dir") usage(TOOL, `${f}: ${k === null ? "no such file" : "is a directory, not a file"}`, json);
+}
+let policy;
+if (o.policy) {
+  requireFile(TOOL, o.policy, "--policy", json);
+  try { policy = loadPolicy(o.policy); } catch (e) { usage(TOOL, `--policy ${o.policy}: ${e.message}`, json); }
+} else policy = loadPolicy();
+const uiPermissions = o["ui-permissions"]?.split(",").map((s) => s.trim()).filter(Boolean) ?? null;
 const counts = (fs) => ({ error: fs.filter((f) => f.severity === "error").length, warning: fs.filter((f) => f.severity === "warning").length, advisory: fs.filter((f) => f.severity === "advisory").length });
 const gitClean = (abs) => { try { execFileSync("git", ["-C", dirname(abs), "rev-parse", "--is-inside-work-tree"], { stdio: "ignore" }); return execFileSync("git", ["-C", dirname(abs), "status", "--porcelain", "--", basename(abs)], { encoding: "utf8" }).trim() === ""; } catch { return false; } };
+// The report goes to the repository root of the file (not into an app subfolder); outside git, to the project or current directory.
+const reportRoot = (abs) => { try { return execFileSync("git", ["-C", dirname(abs), "rev-parse", "--show-toplevel"], { encoding: "utf8", stdio: ["ignore", "pipe", "ignore"] }).trim() || null; } catch { return null; } };
+const fallbackRoot = process.env.CLAUDE_PROJECT_DIR || process.cwd();
 
 const results = [];
 let worst = 3;
-const inputs = flag("--stdin") ? [{ name: "(stdin)", abs: null, text: readFileSync(0, "utf8") }] : files.map((f) => ({ name: f, abs: resolve(f), text: existsSync(resolve(f)) ? readFileSync(resolve(f), "utf8") : null }));
+const inputs = o.stdin ? [{ name: "(stdin)", abs: null, text: readFileSync(0, "utf8") }] : files.map((f) => ({ name: f, abs: resolve(f), text: readFileSync(resolve(f), "utf8") }));
 for (const inp of inputs) {
-  if (inp.text === null) { process.stderr.write(`archestra-app-lint: cannot read ${inp.name}\n`); process.exit(EXIT.USAGE); }
   let findings = lintHtml(inp.text, { policy, uiPermissions, file: inp.name });
   const r = { file: inp.name, before: counts(findings), findings };
-  if (flag("--fix") && inp.abs) {
-    const root = dirname(inp.abs);
-    r.report = writeReport(root, "archestra", { file: inp.name, phase: "before-fix", findings });
-    if (!flag("--force") && !gitClean(inp.abs)) r.fix = { applied: false, reason: "file has uncommitted changes or is not in a git repository (use --force)" };
+  if (o.fix && inp.abs) {
+    if (!o.force && !gitClean(inp.abs)) r.fix = { applied: false, reason: "file has uncommitted changes or is not in a git repository (use --force)" };
     else {
+      r.report = writeReport(reportRoot(inp.abs) ?? fallbackRoot, "archestra", { file: inp.name, phase: "before-fix", findings });
       let text = inp.text; const notes = [];
       for (let pass = 0; pass < 5; pass++) {
         const fs = lintHtml(text, { policy, uiPermissions, file: inp.name });
@@ -60,7 +75,7 @@ for (const inp of inputs) {
   results.push(r);
 }
 
-if (flag("--json")) process.stdout.write(JSON.stringify(envelope("archestra-app-lint", { result: { files: results }, ok: worst !== 0, next_actions: results.some((r) => r.findings.some((f) => f.fix_mode === "auto") && !r.fix) ? [{ cmd: "archestra-app-lint --fix <file>", why: "apply auto-fixable findings" }] : [] })) + "\n");
+if (json) process.stdout.write(JSON.stringify(envelope(TOOL, { result: { files: results }, ok: worst !== 0, next_actions: results.some((r) => r.findings.some((f) => f.fix_mode === "auto") && !r.fix) ? [{ cmd: "archestra-app-lint --fix <file>", why: "apply auto-fixable findings" }] : [] })) + "\n");
 else for (const r of results) {
   for (const f of r.findings) process.stdout.write(`${f.severity.toUpperCase().padEnd(8)} ${f.rule_id.padEnd(5)} ${r.file}:${f.line}  ${f.message}  [fix: ${f.fix_mode}] [${f.source}]\n`);
   if (r.fix) process.stdout.write(r.fix.applied ? `fixed: ${r.fix.notes.join("; ")}\nreport: ${r.report}\nbefore ${JSON.stringify(r.before)} -> after ${JSON.stringify(r.after)}\n` : `not fixed: ${r.fix.reason ?? "nothing auto-fixable"}\n`);

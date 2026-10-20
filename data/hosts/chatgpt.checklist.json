@@ -13,7 +13,8 @@
       "fix_mode": "suggest",
       "submission_only": false,
       "static_rules": [
-        "CG-T01"
+        "CG-T01",
+        "CG-T01b"
       ],
       "probe_rules": [
         "CG-T01"
@@ -59,7 +60,8 @@
       "submission_only": false,
       "static_rules": [],
       "probe_rules": [],
-      "source": "O4"
+      "source": "O4",
+      "judge": "List every tool name and the plugin name. Flag duplicate names, names that are not verb-based, promotional wording, and a plugin name ending in MCP, Server or Plugin."
     },
     {
       "id": "CG-T05",
@@ -103,7 +105,8 @@
       "submission_only": false,
       "static_rules": [],
       "probe_rules": [],
-      "source": "O4"
+      "source": "O4",
+      "judge": "Read what each tool puts in content, structuredContent and _meta. Flag session, trace or request IDs and timestamps that neither the user nor the model needs."
     },
     {
       "id": "CG-T08",
@@ -251,7 +254,8 @@
       "probe_rules": [
         "CG-R05"
       ],
-      "source": "O4"
+      "source": "O4",
+      "judge": "For each origin in frameDomains (the probe lists them), flag any that is not the server's own registrable domain unless the embed is essential. Every entry needs a written justification; none is a pass."
     },
     {
       "id": "CG-R06",
@@ -388,7 +392,8 @@
       "submission_only": false,
       "static_rules": [],
       "probe_rules": [],
-      "source": "M2"
+      "source": "M2",
+      "judge": "Read every add, remove and clearAttachments call on useModelContext(). Flag a call whose Promise is neither awaited nor chained where the order of the calls matters."
     },
     {
       "id": "CG-U07",
@@ -595,7 +600,8 @@
       "submission_only": true,
       "static_rules": [],
       "probe_rules": [],
-      "source": "O4"
+      "source": "O4",
+      "judge": "Look in the README and the submission notes for a demo account with sample data. Report it missing as a TODO for the publisher; code cannot show it."
     },
     {
       "id": "CG-A04",
@@ -611,7 +617,8 @@
         "CG-A04"
       ],
       "probe_rules": [],
-      "source": "O4"
+      "source": "O4",
+      "judge": "After the static pass, read server.settings fields, view inputs and tool input schemas for fields that collect API keys, passwords or one-time codes under names or input types the regex does not match."
     },
     {
       "id": "CG-X01",
@@ -668,7 +675,8 @@
       "submission_only": false,
       "static_rules": [],
       "probe_rules": [],
-      "source": "O6"
+      "source": "O6",
+      "judge": "Only if the server defines a mentions search tool (server.mentions): check that it only reads data and that its ui.visibility is [\"app\"]. Flag a hand-written mentions tool that writes data or is hidden from the app."
     },
     {
       "id": "CG-X05",
@@ -681,7 +689,8 @@
       "submission_only": false,
       "static_rules": [],
       "probe_rules": [],
-      "source": "O6"
+      "source": "O6",
+      "judge": "If the project uses a file entrypoint, mentions, deep links or forms, check that the README or the app description states the platform limits: file entrypoint and mentions are desktop only, deep links are not on Android, forms need MRTR."
     },
     {
       "id": "CG-S01",

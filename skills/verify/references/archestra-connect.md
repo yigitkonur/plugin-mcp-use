@@ -1,6 +1,6 @@
 # Rung 5 for Archestra: use the user's own Archestra
 
-**Never install, start or configure an Archestra instance** (no Docker, no Helm, no local build). If the user has none, report the rung UNVERIFIED with that reason and stop. Archestra's UI was not observed when this was written; if a step does not match what the dashboard shows, read the docs MCP server (`archestra`, read-only search tools) and adapt, and record what you saw.
+**Never install, start or configure an Archestra instance** (no Docker, no Helm, no local build). If the user has none, report the rung UNVERIFIED with that reason and stop. Archestra's UI was not observed when this was written; if a step does not match what the dashboard shows, read the docs MCP server (`archestra-docs`, read-only tools) and adapt, and record what you saw.
 
 ## 1. Ask for what you need, once
 Ask the user (AskUserQuestion or one plain question):
@@ -24,7 +24,7 @@ Ask the user (AskUserQuestion or one plain question):
 2. `mcp-use-probe --url <tunnel url> --host archestra` must show no errors first.
 3. In the dashboard open the MCP registry (docs: `/docs/mcp/servers`), add a remote MCP server with that URL, wait for its tools to load, and assign what the user allows.
 4. Find the app in the gallery (it is labelled as an MCP server app), open it, and trigger the tool. Screenshot the rendered view and note anything the app card reports (CSP violations, auth prompts).
-5. If the view needs a signed-in tool credential, note which identity ran it; this is the evidence for the unverified credential question (`host-archestra/references/unverified.md`, U5).
+5. If the view needs a signed-in tool credential, note which identity ran it; this is the evidence for the unverified credential question (`${CLAUDE_PLUGIN_ROOT}/skills/host-archestra/references/unverified.md`, U5).
 6. Clean up: remove the server from the registry, delete any test chat, stop `mcp-use dev`. Leave no tunnel running.
 
 ## 4. Report

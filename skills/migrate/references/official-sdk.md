@@ -221,7 +221,7 @@ export default function ProductCard() {
   );
 }
 ```
-The old widget usually styled one theme only: set text and background colors for both `light` and `dark` (or use the Apps SDK UI tokens) instead of relying on the host's backdrop, then check light and dark screenshots (`/mcp-use:apps`, `mcp-apps/references/display-and-state.md`).
+The old widget usually styled one theme only: set text and background colors for both `light` and `dark` (or use the Apps SDK UI tokens) instead of relying on the host's backdrop, then check light and dark screenshots (`/mcp-use:apps`, `${CLAUDE_PLUGIN_ROOT}/skills/mcp-apps/references/display-and-state.md`).
 
 ## Traps
 - **stdout in stdio servers.** The old server may log to stdout; that corrupts stdio but is harmless over HTTP. The probe reports it (`mcp-use-probe --stdio`).

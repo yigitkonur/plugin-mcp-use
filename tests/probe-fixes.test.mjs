@@ -7,6 +7,7 @@ import { join, dirname } from "node:path";
 import { tmpdir } from "node:os";
 import { fileURLToPath } from "node:url";
 import { connectStdio } from "../lib/mcp-stdio.mjs";
+import { diffSnapshots } from "../lib/probe.mjs";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 const probe = join(root, "bin", "mcp-use-probe");
@@ -85,12 +86,19 @@ const rl = require("node:readline").createInterface({ input: process.stdin });
 rl.on("line", (l) => { const m = JSON.parse(l); if (m.method === "initialize") process.stdout.write(JSON.stringify({ jsonrpc: "2.0", id: m.id, result: { protocolVersion: "2025-06-18", capabilities: {}, serverInfo: { name: "tree", version: "1" } } }) + "\\n"); });
 setInterval(() => {}, 1000);`);
   // two commands force a real wrapper shell, so the node server is a grandchild of the spawned sh
-  const c = await connectStdio({ command: `node ${server}; echo wrapper-done`, cwd: d, timeoutMs: 10000 });
-  const pid = Number(readFileSync(pidfile, "utf8"));
-  assert.doesNotThrow(() => process.kill(pid, 0), "server is running before close");
-  await c.close();
-  const dead = await new Promise((res) => { const t0 = Date.now(); const tick = () => { try { process.kill(pid, 0); } catch { return res(true); } Date.now() - t0 > 3000 ? res(false) : setTimeout(tick, 50); }; tick(); });
-  assert.equal(dead, true, "grandchild server process is gone after close()");
+  let c, pid;
+  try {
+    c = await connectStdio({ command: `node ${server}; echo wrapper-done`, cwd: d, timeoutMs: 10000 });
+    pid = Number(readFileSync(pidfile, "utf8"));
+    assert.doesNotThrow(() => process.kill(pid, 0), "server is running before close");
+    await c.close();
+    const dead = await new Promise((res) => { const t0 = Date.now(); const tick = () => { try { process.kill(pid, 0); } catch { return res(true); } Date.now() - t0 > 3000 ? res(false) : setTimeout(tick, 50); }; tick(); });
+    assert.equal(dead, true, "grandchild server process is gone after close()");
+  } finally {
+    // a failed assertion must not leave the detached server running
+    await c?.close();
+    if (pid) { try { process.kill(pid, "SIGKILL"); } catch { /* already gone */ } }
+  }
 });
 
 test("drift workflow records the exit status of drift.mjs, not of tee", () => {
@@ -98,4 +106,38 @@ test("drift workflow records the exit status of drift.mjs, not of tee", () => {
   assert.match(y, /shell: bash/);
   assert.match(y, /code=\$\{PIPESTATUS\[0\]\}/);
   assert.ok(!/code=\$\?/.test(y));
+});
+
+// ---- snapshot diff: list endpoint failures and server changes -------------------------------------------
+const snap = (over = {}) => ({ server: { name: "inv", version: "1.0.0", protocol: "2025-06-18", mode: "stdio" }, tools: [], resources: [], resourceTemplates: [], prompts: [], ui: [], calls: [], problems: [], ...over });
+
+test("diff reports a list endpoint that started failing, and one that was fixed", () => {
+  const worse = diffSnapshots(snap(), snap({ problems: ["resources/list: Internal error"] }));
+  assert.equal(worse.equal, false);
+  assert.deepEqual(worse.differences, [{ kind: "problem", id: "resources/list: Internal error", change: "added" }]);
+  const better = diffSnapshots(snap({ problems: ["prompts/list: boom"] }), snap());
+  assert.deepEqual(better.differences, [{ kind: "problem", id: "prompts/list: boom", change: "removed" }]);
+});
+
+test("diff leaves sample-call failures to the call diff", () => {
+  const d = diffSnapshots(snap(), snap({ problems: ["sample call t({}) failed: HTTP 500"] }));
+  assert.equal(d.equal, true);
+});
+
+test("a changed server block is a note, not a difference", () => {
+  const d = diffSnapshots(snap(), snap({ server: { name: "inventory", version: "2.0.0", protocol: "2026-07-28", mode: "modern" } }));
+  assert.equal(d.equal, true);
+  assert.equal(d.ignored.length, 1);
+  assert.match(d.ignored[0].note, /server changed/);
+});
+
+test("the CLI exits 1 and names the new failure; the server note carries no schema count", async () => {
+  const d = mkdtempSync(join(tmpdir(), "diff-"));
+  writeFileSync(join(d, "a.json"), JSON.stringify(snap()));
+  writeFileSync(join(d, "b.json"), JSON.stringify(snap({ problems: ["resources/list: Internal error"], server: { name: "x", version: "2", protocol: "p", mode: "m" } })));
+  const r = await new Promise((res) => execFile("node", [probe, "--diff", join(d, "a.json"), join(d, "b.json")], { encoding: "utf8" }, (err, stdout) => res({ status: err ? err.code : 0, stdout })));
+  assert.equal(r.status, 1);
+  assert.match(r.stdout, /ADDED problem resources\/list: Internal error/);
+  assert.match(r.stdout, /note: server changed/);
+  assert.ok(!/schema\)/.test(r.stdout), "no '(1 schema)' suffix on the server note");
 });

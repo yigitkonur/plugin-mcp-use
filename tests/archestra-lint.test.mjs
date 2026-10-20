@@ -159,3 +159,9 @@ test("solidus-fused <script/src> is fixed too", () => {
   lint([join(d, "s.html"), "--fix"]);
   assert.ok(!readFileSync(join(d, "s.html"), "utf8").includes("archestra-app-sdk"));
 });
+
+test("a finding in a script body is reported on the body's line even when an attribute repeats the body text", () => {
+  const html = '<html><head></head><body>\n<script\n  data-x="localStorage"\n>localStorage</script>\n</body></html>\n';
+  const f = lintHtml(html).find((x) => x.rule_id === "AW03");
+  assert.equal(f.line, 4);
+});

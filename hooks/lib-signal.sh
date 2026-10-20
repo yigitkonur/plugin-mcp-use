@@ -1,6 +1,7 @@
 # Shared pre-filter for the hooks (sourced, POSIX sh). Sets HAS=1 when the project looks like an MCP server project.
 # A package.json (root, or up to three levels down, never inside node_modules) must name an MCP dependency,
-# or the settings file must declare owned_app_paths.
+# or the settings file must declare owned_app_paths. Only the first 60 package.json files found are read: a monorepo
+# with more than 60 workspace manifests before the MCP package gets no hook output (explicit commands still work).
 mcp_use_has_signal() {
   SIGNAL='"(mcp-use|@modelcontextprotocol/(sdk|server|ext-apps)|@openai/apps-sdk-ui)"[[:space:]]*:'
   HAS=0

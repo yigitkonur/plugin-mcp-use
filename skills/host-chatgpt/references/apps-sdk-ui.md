@@ -19,7 +19,7 @@ npm install @openai/apps-sdk-ui tailwindcss @tailwindcss/vite
 import { defineConfig } from "vite";
 export default defineConfig({ optimizeDeps: { exclude: ["@openai/apps-sdk-ui"] } });
 ```
-With it, both projects rendered under `mcp-use dev` (2 of 2 screenshots each, zero error lines). Production (`mcp-use build` + `mcp-use start`) rendered without it. Views that import only `@openai/apps-sdk-ui/theme` are unaffected.
+With it, both projects rendered under `mcp-use dev` (2 of 2 screenshots each, zero error lines). Production (`mcp-use build` + `mcp-use start`) rendered without it. Views that import only `@openai/apps-sdk-ui/theme` are unaffected. This config was run (S19), not compiled in CI.
 
 ## Provider and theme
 - `AppsSDKUIProvider` is **optional**. It supplies the router `linkComponent` for `TextLink`, `ButtonLink` and `Menu.Link`. **When used, `linkComponent` is required** (`ComponentType | ForwardRefExoticComponent | "a"`).

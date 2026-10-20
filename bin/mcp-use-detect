@@ -2,49 +2,59 @@
 // Detect the project stack, MCP signals, scenario, and next actions (03 §1).
 import { detect, brief, nextActions, preflight } from "../lib/detect.mjs";
 import { envelope, emit, EXIT } from "../lib/envelope.mjs";
+import { parseCli, usage, requireDir, kindOf } from "../lib/cli.mjs";
 import { readFileSync } from "node:fs";
 
-const args = process.argv.slice(2);
-const flag = (n) => args.includes(n);
-const val = (n) => { const i = args.indexOf(n); return i >= 0 ? args[i + 1] : undefined; };
+const TOOL = "mcp-use-detect";
+const hookCall = process.argv.slice(2).includes("--brief"); // hooks never fail a session: bad input means silence
+const { values: o } = parseCli(TOOL, {
+  dir: { type: "string" }, json: { type: "boolean" }, brief: { type: "boolean" }, format: { type: "string" }, preflight: { type: "boolean" },
+}, { quiet: hookCall });
 
-if (flag("-h") || flag("--help")) {
+if (o.help) {
   process.stdout.write(`mcp-use-detect [--dir <path>] [--json] [--brief [--format hook]] [--preflight]
 
 Reads data/signals.tsv and reports stack, MCP signals, scenario, versions, hosts, next actions.
   --brief           print the SessionStart brief (empty output when the project is out of scope or has no MCP signal)
   --format hook     with --brief: print the SessionStart hook JSON instead of plain text
   --preflight       Node version, package managers, and whether the target dir is empty (for /mcp-use:new)
-  --json            full envelope
-Exit: 0 ok · 3 usage · 4 out of scope (non-Node project, --json only)
+  --json            accepted for symmetry with the other engines; the full JSON envelope is the only output besides --brief
+Exit: 0 ok · 3 usage · 4 out of scope (a non-Node project; not with --brief, which stays silent)
 `);
   process.exit(0);
 }
 
-let dir = val("--dir") || process.env.CLAUDE_PROJECT_DIR || process.cwd();
-if (!val("--dir") && flag("--format") && val("--format") === "hook") {
+if (o.format !== undefined && o.format !== "hook") usage(TOOL, `--format ${o.format}: only "hook" is supported`, o.json);
+if (o.format && !o.brief) usage(TOOL, "--format hook only applies together with --brief", o.json);
+
+let dir = o.dir || process.env.CLAUDE_PROJECT_DIR || process.cwd();
+if (o.dir) {
+  if (hookCall) { if (kindOf(dir) !== "dir") process.exit(0); }
+  else requireDir(TOOL, dir, "--dir", o.json);
+}
+if (!o.dir && o.format === "hook" && !process.stdin.isTTY) {
   try { const p = JSON.parse(readFileSync(0, "utf8")); if (p.cwd) dir = p.cwd; } catch { /* no stdin payload */ }
 }
 
 try {
-  if (flag("--preflight")) {
-    emit(envelope("mcp-use-detect", { result: preflight(dir) }), true);
+  if (o.preflight) {
+    emit(envelope(TOOL, { result: preflight(dir) }), true);
     process.exit(EXIT.OK);
   }
   const r = detect(dir);
-  if (flag("--brief")) {
+  if (o.brief) {
     const quiet = !r.settings.enabled || r.scenario === "NONE" || r.scenario === "OUT_OF_SCOPE";
     if (quiet) process.exit(0);
     const text = brief(r);
-    if (val("--format") === "hook") emit({ hookSpecificOutput: { hookEventName: "SessionStart", additionalContext: text } }, true);
+    if (o.format === "hook") emit({ hookSpecificOutput: { hookEventName: "SessionStart", additionalContext: text } }, true);
     else emit(text + "\n", false);
     process.exit(0);
   }
-  const env = envelope("mcp-use-detect", { result: r, next_actions: nextActions(r) });
+  const env = envelope(TOOL, { result: r, next_actions: nextActions(r) });
   emit(env, true);
   process.exit(r.scenario === "OUT_OF_SCOPE" ? EXIT.SCOPE : EXIT.OK);
 } catch (e) {
-  if (flag("--brief")) process.exit(0); // hooks never fail a session
-  emit(envelope("mcp-use-detect", { ok: false, error: { code: "internal", message: String(e?.message ?? e), suggestion: "re-run with --json in the project dir" } }), true);
+  if (o.brief) process.exit(0); // hooks never fail a session
+  emit(envelope(TOOL, { ok: false, error: { code: "internal", message: String(e?.message ?? e), suggestion: "re-run with --json in the project dir" } }), true);
   process.exit(EXIT.USAGE);
 }

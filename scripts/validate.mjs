@@ -3,6 +3,7 @@
 import { readFileSync, readdirSync, statSync, existsSync, accessSync, constants } from "node:fs";
 import { join, dirname, relative } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
+import { findBrokenRefs } from "../lib/refs.mjs";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 const errors = [];
@@ -57,6 +58,8 @@ for (const f of walk(join(root, "skills"))) {
 for (const f of [...walk(join(root, "bin")), ...walk(join(root, "hooks")).filter((x) => x.endsWith(".sh")), ...walk(join(root, "skills")).filter((x) => x.includes("/scripts/"))]) {
   try { accessSync(f, constants.X_OK); } catch { err(`${relative(root, f)}: not executable`); }
 }
+// docs: every backticked path resolves, written so it works from wherever the model reads it (lib/refs.mjs)
+for (const b of findBrokenRefs(root)) err(`${b.file}:${b.line}: \`${b.ref}\` ${b.problem}`);
 // checklists: every referenced static rule exists in guard-rules.tsv, every probe rule is emitted by lib/probe.mjs
 const ruleIds = new Set(readFileSync(join(root, "data", "guard-rules.tsv"), "utf8").split("\n").filter((l) => l && !l.startsWith("#")).map((l) => l.split("\t")[0]));
 const probeSrc = readFileSync(join(root, "lib", "probe.mjs"), "utf8");

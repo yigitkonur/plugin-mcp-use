@@ -15,7 +15,7 @@ Archestra has **two app routes that share almost nothing at runtime**. Decide wh
 | Checked with | `mcp-use-probe --host archestra`, `mcp-use-scan --host archestra` | `archestra-app-lint` (user runs `/mcp-use:archestra-app`) |
 | Reference | `references/route-a-installed.md` | `references/route-b-sdk.md`, `route-b-policy.md`, `route-b-authoring.md` |
 
-Facts come from Archestra's two public docs pages (A1, A2) and from its source read as behavioral evidence only (A3, AGPL, nothing copied). Anything those do not support is listed in `references/unverified.md`; do not state it as fact. For newer details, query the `archestra` docs MCP server (read-only search tools).
+Facts come from Archestra's two public docs pages (A1, A2) and from its source read as behavioral evidence only (A3, AGPL, nothing copied). Anything those do not support is listed in `references/unverified.md`; do not state it as fact. For newer details, query the `archestra-docs` MCP server (read-only tools: `search_docs`, `read_doc`, `list_docs`).
 
 ## Route A: the rules that fail renders
 1. **`_meta.ui.resourceUri` on the tool** (mcp-use writes it from `view`). Archestra's source reads that nested key; a legacy `ui/resourceUri` or `openai/outputTemplate` alone is not confirmed to work.
