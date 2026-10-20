@@ -239,7 +239,7 @@
     },
     {
       "id": "CG-R05",
-      "title": "frameDomains only for the server's own registrable domain, with a written justification",
+      "title": "frameDomains normally only for the server's own registrable domain (third-party only when the embed is essential), with a written justification",
       "methods": [
         "probe",
         "manual"

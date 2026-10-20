@@ -14,7 +14,7 @@ Archestra's agents build apps with built-in tools (full names are `archestra__<t
 | show it, restore a version, share it | `render_app`, `restore_app_version`, `publish_app` |
 | move files between a chat and the open app | `copy_file` |
 
-`scaffold_app` starts every app from a page with its name and the organization's logo. HTML is capped at 512 KB.
+Every new app starts from a stock page, so the first `edit_app` replaces it. HTML is capped at 512 KB.
 
 ## Where `archestra-app-lint` fits
 It runs the documented rules on a local file before the first save, so a repo copy or an agent's draft is fixed without a round trip. It cannot see the real platform: assigned tools, the sandbox domain, the viewer's grants, or what the browser does at render time. So:

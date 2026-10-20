@@ -17,8 +17,8 @@ Choose it for a quick internal dashboard, form or tracker that only needs Arches
 |---|---|---|
 | Bridge | standard MCP Apps (`ui/*` messages) | injected `window.archestra`; own bridge setup is rejected on save |
 | Data | your server's tools, any network your server can reach | assigned MCP tools only; the page itself has no network |
-| Styling | any CSS; ChatGPT-styled libraries work | injected variables and `.arch-*` classes, then your CSS |
-| Libraries | bundled by `mcp-use build` | five CDNs only, version-pinned, no build step |
+| Styling | any CSS you bundle (ChatGPT-styled libraries such as Apps SDK UI are untested here) | injected variables and `.arch-*` classes, then your CSS |
+| Libraries | bundled by `mcp-use build` | load from the five CDNs and pin versions (recommended); no bundler |
 | State | your server | `storage.user` / `storage.shared`, `files` |
 | Credentials | **unconfirmed** (`unverified.md`) | the viewer's own MCP credentials, never held by the app |
 | Gate | host diagnostics at render time | save gate, `validate_app`, then render diagnostics |

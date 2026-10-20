@@ -15,12 +15,12 @@ Archestra has **two app routes that share almost nothing at runtime**. Decide wh
 | Checked with | `mcp-use-probe --host archestra`, `mcp-use-scan --host archestra` | `archestra-app-lint` (user runs `/mcp-use:archestra-app`) |
 | Reference | `references/route-a-installed.md` | `references/route-b-sdk.md`, `route-b-policy.md`, `route-b-authoring.md` |
 
-Facts come from Archestra's two public docs pages (A1, A2) and from its source read as behavioral evidence only (A3, AGPL, nothing copied). Anything those do not support is listed in `references/unverified.md`; do not state it as fact. For newer details, query the `archestra` docs MCP server (read-only tools; never call `submit_feedback`).
+Facts come from Archestra's two public docs pages (A1, A2) and from its source read as behavioral evidence only (A3, AGPL, nothing copied). Anything those do not support is listed in `references/unverified.md`; do not state it as fact. For newer details, query the `archestra` docs MCP server (read-only search tools).
 
 ## Route A: the rules that fail renders
 1. **`_meta.ui.resourceUri` on the tool** (mcp-use writes it from `view`). Archestra's source reads that nested key; a legacy `ui/resourceUri` or `openai/outputTemplate` alone is not confirmed to work.
 2. **`resources/read` returns `text/html;profile=mcp-app`** and every tool's `inputSchema.type` is `"object"`.
-3. **Declare exact CSP origins** in the view config; the host applies the resource's CSP and reports violations as diagnostics.
+3. **Declare exact CSP origins** in the view config; the host reads the resource's CSP and permissions and hands them to the sandbox.
 4. **A tool the view calls must not be `visibility: "model"`**; use `"app"` for helpers.
 5. **No hard dependency on `window.openai`**; guard model-context calls (support is unconfirmed).
 6. **Archestra cannot be inferred from code.** Declare it: `.mcp-use-plugin/settings.md` with `hosts: [archestra]`.
@@ -28,9 +28,9 @@ Facts come from Archestra's two public docs pages (A1, A2) and from its source r
 ## Route B: the rules that fail a save or a render
 1. **Never set up the host connection yourself**: no SDK script, no `postMessage` wiring, no platform stylesheet link. The save is rejected.
 2. **`await archestra.ready`, then use only `ready, user, context, storage, files, llm, tools, ui`.** Storage is `storage.user` or `storage.shared`; values are plain JSON objects, never `JSON.stringify`.
-3. **No network.** Data comes only from assigned tools (`archestra.tools.call`, name as `tools.list()` returns it). Libraries load only from the five CDNs, version-pinned; other-host images do not load.
+3. **No network.** Data comes only from assigned tools (`archestra.tools.call`, name as `tools.list()` returns it). Scripts, styles, fonts and images load only from the five CDNs (pin versions); other-host images do not load.
 4. **No iframes, native form submits or `target="_blank"`**; use `preventDefault()` and `archestra.ui.openLink(url)`.
-5. **HTML up to 512 KB**; `localStorage`, `sessionStorage` and IndexedDB are not available.
+5. **HTML up to 512 KB**; do not use `localStorage`, `sessionStorage` or IndexedDB (they throw without a sandbox domain and are private to one browser otherwise).
 6. **`validate_app` and `get_app_diagnostics` are the authority.** `archestra-app-lint` is a pre-flight that mirrors the documented rules (`references/lint-rules.md`).
 
 ## Where to read

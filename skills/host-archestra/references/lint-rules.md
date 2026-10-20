@@ -1,6 +1,6 @@
 # Owned-App lint rules
 
-`archestra-app-lint <file.html>` reports these. IDs are stable; the severity classes mirror the platform: **AA** errors are rejected on save, **AW** warnings are what `validate_app` reports, **AD** advisories come from the SDK reference and render diagnostics. The scan is lexical, like the platform's own: SDK-member checks ignore JS comments, browser-storage and CSS checks do not, and unquoted-URL edge cases are covered by the corpus in `tests/fixtures/f17`.
+`archestra-app-lint <file.html>` reports these. IDs are stable; the severity classes mirror the platform: **AA** errors are rejected on save (AA04 and AA06 follow the documented limits; the exact rejection behavior is unconfirmed, `unverified.md`), **AW** are the warnings `validate_app` is documented to report, **AD** rules come from the SDK reference and render diagnostics; AD01 to AD05 are reported as warnings and AD06 to AD14 as advisories. The scan is lexical, like the platform's own: SDK-member checks ignore JS comments, browser-storage and CSS checks do not, and unquoted-URL edge cases are covered by the corpus in `tests/fixtures/f17`.
 
 Fix modes: **auto** = `--fix` edits the file (clean git tree required, a report is written first); **suggest** = `fix-recipes.md` has the change, applied with judgment; **manual** = needs a decision outside the file.
 

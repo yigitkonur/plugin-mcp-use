@@ -3,7 +3,7 @@
 Source: OpenAI "UI guidelines" (O3), checked 2026-10-20. Rules marked (⚠) are where OpenAI's own pages disagree; the plugin treats them as advisories.
 
 ## Display modes
-Every app starts **inline**, before the model's reply. Use a richer mode only when it improves the workflow.
+OpenAI's UI guidelines (O3) say every app starts **inline**, before the model's reply, and to use a richer mode only when it improves the workflow. (⚠) The MCP extensions spec (O6) says that when `availableDisplayModes` lists both `inline` and `fullscreen`, ChatGPT defaults to `fullscreen` unless `preferredDisplayMode` says otherwise, and that entrypoints always open fullscreen; mcp-use declares both modes by default and the F14 render opened in a side panel (S7). To ask for an inline card, set `preferredDisplayMode: "inline"` in the view's `viewConfig`: mcp-use then emits `_meta["openai/ui"].preferredDisplayMode` (observed, S26), and the spec says ChatGPT considers it; that ChatGPT honors it was not tested here (`mcp-apps/references/display-and-state.md`).
 
 ### Inline card
 Use for one action or decision, a small amount of structured data, or a self-contained widget.
@@ -35,4 +35,4 @@ A floating window for live sessions (games, collaboration). It must respond to c
 ## What the plugin checks
 `mcp-use-scan --host chatgpt` flags: custom `font-family`/web fonts (CG-U08), nested scroll (CG-U10), more than two buttons in a card (CG-U11), tabs (CG-U12), `<img>` without `alt` (CG-U14), custom gradients (CG-U15), `<iframe>` (CG-U16), `pip` in display modes (CG-R07). Carousel size (CG-U17) and WCAG contrast need a human or a screenshot review.
 
-Sources: O3, O6, O1.
+Sources: O3, O6, O1, S7, S26.

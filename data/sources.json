@@ -140,6 +140,10 @@
     "S25": {
       "title": "Spike S25: restoration of troubleshooting, deploy and auth knowledge, verified claim by claim",
       "url": "spikes/S25-restoration.md"
+    },
+    "S26": {
+      "title": "Spike S26: settings tools, preferredDisplayMode and Apps SDK UI facts checked after the host-reference review",
+      "url": "spikes/S26-host-ref-checks.md"
     }
   }
 }

@@ -8,7 +8,7 @@ user-invocable: false
 
 ## Source of truth, in this order
 1. The installed package: `node_modules/mcp-use/dist/**/*.d.ts`, the generated `mcp-env.d.ts`, and `package.json` `exports`. Read the declaration before using an API you are not certain of.
-2. The docs MCP servers this plugin ships. `mcp-use-docs` has `search_mcp_use` and `query_docs_filesystem_mcp_use`; `openai-docs` and `archestra-docs` cover the hosts. Never call `submit_feedback`.
+2. The docs MCP servers this plugin ships. `mcp-use-docs` has `search_mcp_use` and `query_docs_filesystem_mcp_use`; `openai-docs` and `archestra-docs` cover the hosts. Never call a feedback tool (the mcp-use docs server has `submit_feedback`).
 3. The references below. If one disagrees with the installed types, the types win: say so, and fix the code to match the types.
 
 mcp-use moved from 2.8.2 to 2.11.0 in ten days. Do not trust memory for signatures. `data/versions.json` records the version these references were checked against (`known_good`).

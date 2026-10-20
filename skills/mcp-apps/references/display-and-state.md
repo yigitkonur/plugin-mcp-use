@@ -19,11 +19,11 @@ export default function Card() {
 }
 ```
 - `DisplayMode` in the types is `"inline" | "fullscreen" | "pip"`, but `preferredDisplayMode` accepts only `inline` or `fullscreen`.
-- Observed default: a bound view's resource advertises `openai/ui.availableDisplayModes = ["inline", "fullscreen"]`.
+- Observed default: a bound view's resource advertises `openai/ui.availableDisplayModes = ["inline", "fullscreen"]`; `preferredDisplayMode` is copied to `openai/ui.preferredDisplayMode` (S26). ChatGPT's extensions spec says it defaults to fullscreen when both modes are listed and no preference is given, so set `preferredDisplayMode: "inline"` for a card.
 - Whether a host honors a mode is host behavior. ChatGPT's own docs disagree about picture-in-picture (its extensions spec says `inline` and `fullscreen` only; its UI guidelines list PiP). Do not depend on `pip` until the live check in `host-chatgpt` says otherwise.
 
 ## Requesting a mode
-`useDisplayMode()` returns `{ displayMode, availableDisplayModes, requestDisplayMode({ mode }) }`. Check `availableDisplayModes` before offering a control (`hooks.md`). Inline is the default surface; use fullscreen for tasks that need room (editors, maps, tables), and give a way back.
+`useDisplayMode()` returns `{ displayMode, availableDisplayModes, requestDisplayMode({ mode }) }`. Check `availableDisplayModes` before offering a control (`hooks.md`). Inline is the surface OpenAI's UI guidelines start from; use fullscreen for tasks that need room (editors, maps, tables), and give a way back.
 
 ## View state
 `useViewState(default)` persists JSON-serializable UI state across turns and tab switches and returns `[state, setState]`. Keep it small, non-sensitive and serializable; do not store credentials or personal data in it. Server data belongs in tool results, not in view state.
@@ -36,4 +36,4 @@ export default function Card() {
 ## Theme and locale
 Read theme and locale from the host (`useViewTheme()`, `useHostContext().locale`), not from `prefers-color-scheme`. A view that paints no background shows the host's backdrop, which is what hosts want for inline cards, but then it must not rely on default text colors: set foreground and background for both themes (or use the Apps SDK UI tokens). The `mcp-use screenshot` harness draws a black backdrop in both themes (S22), so an unstyled view is unreadable there.
 
-Sources: M2, O6, O3, S22.
+Sources: M2, O6, O3, S22, S26.

@@ -13,7 +13,7 @@ OpenAI's guidance (O1, O5): start with the open MCP Apps bridge; use `window.ope
 | Open a link | `useOpenExternal` | `openExternal({ href, redirectUrl })`; redirect targets need `redirect_domains` |
 | Files | `useFiles` | `uploadFile(file, { library? })`, `selectFiles()` (feature-detect: the library may be unavailable), `getFileDownloadUrl({ fileId })` |
 | Modal, close, height | — | `requestModal({ template? })`, `requestClose()`, `notifyIntrinsicHeight(...)`, `setOpenInAppUrl({ href })` |
-| Checkout | — | physical goods only, external checkout (O4) |
+| Checkout | — | `requestCheckout` is a private beta for select marketplaces (O1); commerce rules are in `submission.md` |
 
 Rules:
 1. `window.openai?.method` or `typeof window.openai?.method === "function"` before use. Never branch on a host or product name.

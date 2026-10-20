@@ -1,6 +1,6 @@
 ---
 type: regex
-pattern: <AppsSDKUIProvider[^>]*\blinkComponent\b
+pattern: ^(?![\s\S]*<AppsSDKUIProvider)|<AppsSDKUIProvider[^>]*\blinkComponent\b
 target:
   source: file
   path: views/order-card/view.tsx

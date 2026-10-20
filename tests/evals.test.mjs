@@ -84,3 +84,12 @@ test("every skill-fired grader names a skill that exists", () => {
     for (const n of names) assert.ok(skills.has(n), `${c}/${f}: skill ${n} does not exist`);
   }
 });
+
+test("apps-sdk-ui-view provider-link: no provider passes, provider with linkComponent passes, provider without it fails", () => {
+  const { fm } = frontmatter(readFileSync(join(evals, "apps-sdk-ui-view", "graders", "provider-link.md"), "utf8"));
+  const re = new RegExp(fm.pattern, fm.flags ?? "");
+  assert.equal(re.test('export default function V() { return <Badge color="info">x</Badge>; }'), true);
+  assert.equal(re.test('<AppsSDKUIProvider linkComponent="a"><Badge color="info">x</Badge></AppsSDKUIProvider>'), true);
+  assert.equal(re.test('<AppsSDKUIProvider\n  linkComponent="a"\n>x</AppsSDKUIProvider>'), true);
+  assert.equal(re.test("<AppsSDKUIProvider><Badge>x</Badge></AppsSDKUIProvider>"), false);
+});

@@ -48,7 +48,7 @@ form.addEventListener("submit", async (e) => { e.preventDefault(); /* read field
 **AD08** Put `await archestra.ready;` before the first SDK call (inside the async function that uses it).
 **AD09** Use the name `tools.list()` returns (`github__list_issues`). The built-in `read_file` and `edit_file` are the exceptions.
 **AD10** Remove the `display` from the rule, or put it on an inner wrapper that is not hidden: the platform hides `[hidden]` regardless, and logs the override.
-**AD11** Device API in use: ask the user to add the matching `uiPermissions` when the app is created or updated (`scaffold_app`), and remember it needs a sandbox domain outside localhost.
+**AD11** Device API in use: the matching `uiPermissions` are declared when the app is created (`scaffold_app`); no documented tool changes them afterwards, so ask the user to recreate the app or ask the platform admin. They also need a sandbox domain outside localhost.
 **AD12** Shorten the context line to one sentence under 500 characters.
 **AD13** Pin the version: `chart.js` → `chart.js@4.4.1`; for cdnjs the version is in the path (`/ajax/libs/d3/7.9.0/`).
 **AD14** Use a plain filename (`q1-report.csv`, not `reports/q1.csv`), at most 256 characters, no leading dot.

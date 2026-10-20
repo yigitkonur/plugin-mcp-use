@@ -21,7 +21,7 @@ Empty or omitted means nothing beyond the server's own origin. List every origin
 Domains are normalized to origins and de-duplicated. A request from a view to an origin not in the final list is blocked by the host, which shows up as a blank or half-rendered view.
 
 ## Production checklist
-- Set `MCP_URL` (and `MCP_ASSETS_URL` if assets live elsewhere) to the public origin. Without them the resource points at `http://127.0.0.1:<port>`, which no host can reach.
+- Set `MCP_URL` (and `MCP_ASSETS_URL` if assets live elsewhere) to the public origin. Without them the resource points at `http://127.0.0.1:<port>`, which a host that is not on the same machine as the server cannot reach.
 - Prefer `view.csp` for origins specific to one view and env vars for deploy-wide ones. `CSP_URLS` widens `frame-src` and `base-uri`: use the specific variables instead.
 - After a change, read the resource metadata back: `mcp-use client <name> resources read ui://views/<name>.html` (or `mcp-use-probe`, Phase 2) and compare against the origins in the view code.
 
@@ -31,4 +31,4 @@ Domains are normalized to origins and de-duplicated. A request from a view to an
 ## `domain`
 `view.domain` sets the app's own domain for hosts that need it (ChatGPT submission requires `_meta.ui.domain`; see `host-chatgpt`). Mcp-use emits it only when you set it.
 
-Sources: M2, S11, O1, O5.
+Sources: M2, S11, O1, O5, S25.

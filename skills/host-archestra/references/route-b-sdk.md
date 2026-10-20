@@ -1,12 +1,12 @@
 # Route B: the `window.archestra` surface
 
-Injected when the page loads; do not import it. Await `archestra.ready` before the first call. Every method is async except `files.onChange`, `ui.updateModelContext` and `llm.prompt`. If the host connection fails, `ready` and every method reject with that error.
+The platform injects `window.archestra` into the page; never import or load an SDK yourself. Wait for `archestra.ready` before the first call. Methods return promises, except the three synchronous ones: `files.onChange`, `ui.updateModelContext` and `llm.prompt`. When the host connection cannot be made, `ready` and all the methods reject.
 
 ```html
 <script type="module">
   await archestra.ready;
-  const saved = await archestra.storage.user.get("settings");
-  render(saved ? saved.value : { theme: "light" });
+  const notes = await archestra.storage.user.get("notes");   // null when nothing was saved yet
+  document.body.textContent = notes ? notes.value.join(", ") : "No notes yet";
 </script>
 ```
 

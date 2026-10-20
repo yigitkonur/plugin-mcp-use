@@ -1,6 +1,6 @@
 # `@openai/apps-sdk-ui` (optional)
 
-Verified against the published package `@openai/apps-sdk-ui@0.2.2` (types read from `dist/types`, 2026-10-20) and compiled in CI. The library is optional; it gives ChatGPT visual parity. It needs React 18 or 19 and Tailwind CSS 4 (`tailwindcss ^4.0.10`).
+Verified against the published package `@openai/apps-sdk-ui@0.2.2` (types read from `dist/types`, 2026-10-20) and compiled in CI. The library is optional; it gives ChatGPT visual parity. It needs React 18 or 19 and Tailwind CSS 4 (the package's peer range is `tailwindcss ^4.0.10`, S26).
 
 ## Setup
 ```sh
@@ -160,4 +160,4 @@ export default function Bad() {
 }
 ```
 
-Sources: O3, O7, M2, S19.
+Sources: O3, O7, M2, S19, S26.

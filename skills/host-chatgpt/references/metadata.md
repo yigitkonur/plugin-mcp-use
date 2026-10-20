@@ -59,7 +59,7 @@ Not in OpenAI's reference: `openai/toolInvocation/ephemeral` (an older note ment
 | `_meta.ui.prefersBorder` | bordered card hint. mcp-use: `view.prefersBorder`. |
 | `_meta.ui.csp` | `connectDomains`, `resourceDomains`, `frameDomains` (see `csp-and-iframes.md`). mcp-use: `view.csp`, merged with env and server origin. |
 | `_meta.ui.domain` | dedicated origin for the hosted component; **required to submit a plugin with UI, unique per plugin**; default `https://web-sandbox.oaiusercontent.com`. mcp-use: `view.domain`. |
-| `_meta["openai/ui"].availableDisplayModes` | `inline`, `fullscreen`, `pip` per O5; O6 says ChatGPT supports only `inline` and `fullscreen`. Declaring them lets ChatGPT open a fullscreen-only UI without an inline loading state. mcp-use emits `["inline","fullscreen"]` by default (observed). |
+| `_meta["openai/ui"].availableDisplayModes` | `inline`, `fullscreen`, `pip` per O5; O6 says ChatGPT supports only `inline` and `fullscreen`. Declaring them lets ChatGPT open a fullscreen-only UI without an inline loading state. mcp-use emits `["inline","fullscreen"]` by default (observed, S18); with both declared ChatGPT defaults to fullscreen unless `preferredDisplayMode` is set (O6). |
 | `_meta["openai/widgetDescription"]` | summary surfaced to the model when the UI loads. mcp-use ≥ 2.10.1 copies `view.description` here (observed). |
 | `_meta["openai/widgetCSP"]` | legacy snake_case CSP; still needed for `redirect_domains` |
 
@@ -77,4 +77,4 @@ Names unique, human-readable, verb-based. Descriptions accurate, non-empty, stat
 ## Client-sent `_meta` (O5)
 `openai/locale`, `openai/userAgent`, `openai/userLocation`, and anonymized `openai/subject`, `openai/session`, `openai/organization` are hints, not identity. In mcp-use they surface through `ctx.client.user()`; never authorize with them.
 
-Sources: O1, O4, O5, O6, M2, S11, S7.
+Sources: O1, O4, O5, O6, M2, S11, S7, S16, S18.

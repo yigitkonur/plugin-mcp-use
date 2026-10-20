@@ -23,6 +23,6 @@ mcp-use implements the bridge for you: `useToolContext`, `useCallTool`, `useSend
 - Assets under `<basePath>/_mcp-use/views/<name>/…` and `public/` files under `<basePath>/_mcp-use/public/…`.
 
 ## Hosts
-The standard is portable; each host adds rules and extensions. ChatGPT: `${CLAUDE_PLUGIN_ROOT}/skills/host-chatgpt/SKILL.md`. Archestra's installed-server route is the same standard, and its Owned Apps are a different runtime (`${CLAUDE_PLUGIN_ROOT}/skills/host-archestra/SKILL.md`; both ship in later versions).
+The standard is portable; each host adds rules and extensions. ChatGPT: `${CLAUDE_PLUGIN_ROOT}/skills/host-chatgpt/SKILL.md`. Archestra's installed-server route is the same standard, and its Owned Apps are a different runtime (`${CLAUDE_PLUGIN_ROOT}/skills/host-archestra/SKILL.md`).
 
 Sources: M1, M2, O1, A3.

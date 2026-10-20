@@ -5,8 +5,8 @@ An mcp-use server with a `view` already speaks the contract Archestra reads. Wha
 ## What the host reads (A3, behavioral evidence)
 1. `tools/list` on the server-scoped MCP endpoint; each UI tool must expose `_meta.ui.resourceUri`.
 2. `resources/read` on that `ui://` URI: HTML with MIME `text/html;profile=mcp-app`.
-3. Every tool's `inputSchema.type` must be `"object"` (the host's proxy relies on it).
-4. The resource content item's `_meta.ui.csp` and `_meta.ui.permissions` are applied to the sandbox iframe; violations surface as diagnostics.
+3. Every tool's `inputSchema.type` must be `"object"` (a host test asserts it: "a host needs a usable JSON-Schema inputSchema for every listed tool", A3).
+4. The resource content item's `_meta.ui.csp` and `_meta.ui.permissions` are read and handed to the sandbox iframe (A3). Render diagnostics are documented for Owned Apps only; for installed servers see `unverified.md`.
 5. Tool calls from the view go back through the host, which enforces the allowlist and each tool's `visibility`.
 
 ## Checklist, in the order failures show up
@@ -28,7 +28,7 @@ An mcp-use server with a `view` already speaks the contract Archestra reads. Wha
 - Declare origins with `view.csp` (`${CLAUDE_PLUGIN_ROOT}/skills/mcp-apps/references/csp.md`); the probe compares them with the `src`/`href` origins in the HTML text it reads, so it cannot see origins added by scripts at runtime. Read Archestra's diagnostics for those.
 - A helper the view calls (refresh, save) is a tool with `visibility: "app"`. A tool the model should call but the view never does can be `"model"`; the scan only complains when a view calls a model-only tool by a literal name (`useCallTool("name")`, `callTool("name")`).
 - Keep tools useful without UI. Route A servers are also used by chat agents.
-- Do not make correctness depend on `@openai/apps-sdk-ui`; it works but is ChatGPT-styled.
+- Do not make correctness depend on `@openai/apps-sdk-ui`; it is ChatGPT-styled, and whether it renders in Archestra was not tested here (`unverified.md`).
 
 ## Declaring the host
 Nothing in an mcp-use project identifies Archestra, so declare it in `.mcp-use-plugin/settings.md`:

@@ -56,7 +56,7 @@ export default server;
 ```
 
 ## Settings (`server.settings`)
-Fields are `{ schema, title, description? }` (a primitive Standard Schema: boolean, string, string enum, number or integer). `read(ctx)` and `update(set, ctx)` **both return every effective value**. `layout` groups use `kind: "group"` with items of `{ kind: "property", property }` or `{ kind: "tool", tool, title }`. There is no `type`, `label`, `default`, `secret`, or `void` return. Persistence and authorization are yours. mcp-use registers the read and update tools (`settings.read`, `settings.update` by default): the read tool is `readOnlyHint: true`; in the 2.11.0 types the update tool carries no annotations, so a strict CG-T01 probe flags it.
+Fields are `{ schema, title, description? }` (a primitive Standard Schema: boolean, string, string enum, number or integer). `read(ctx)` and `update(set, ctx)` **both return every effective value**. `layout` groups use `kind: "group"` with items of `{ kind: "property", property }` or `{ kind: "tool", tool }` (a `title` on a tool item is deprecated and ignored: the label comes from the referenced tool's own `title`, O6). There is no `type`, `label`, `default`, `secret`, or `void` return. Persistence and authorization are yours. mcp-use registers the read and update tools (named `settings.read` and `settings.update`): observed on 2.11.0 (S26), the read tool carries only `readOnlyHint: true`, the update tool carries no annotations, and neither has a description, so the CG-T01 and CG-T05 probes flag them as warnings.
 **Never put credentials here** (API keys, passwords, one-time codes are restricted data, O4).
 
 <!-- fixture: chatgpt-settings -->
@@ -145,4 +145,4 @@ mcp-use normalizes older host `path`/`query` payloads to the same URL shape. Rou
 ## Platform caveats to tell the user
 File entrypoints and mentions are desktop only; deep links are not on Android; forms need MRTR and are not on mobile; check O6's table for web and iOS asterisks before promising a surface.
 
-Sources: O2, O4, O6, M2.
+Sources: O2, O4, O6, M2, S26.

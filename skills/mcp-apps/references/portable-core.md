@@ -12,6 +12,6 @@ ChatGPT and Archestra's installed-server route both consume the open standard; n
 8. **No credentials in views.** Tokens belong on the server; the view calls tools.
 9. **Handle `pending`, `error` and cancellation** in every view (`views.md`).
 
-Hosts differ in display modes (`pip` support is disputed for ChatGPT), review requirements (ChatGPT only), and extensions (ChatGPT entrypoints, settings, deep links; Archestra credential and visibility behavior). Those live in the host skills, with checklists the plugin can run.
+Hosts differ in display modes (`pip` support is disputed for ChatGPT), review requirements (ChatGPT has a public submission review, O4; Archestra has per-organization gates such as new apps being disabled or locked by default, and no public approval criteria were found), and extensions (ChatGPT entrypoints, settings, deep links; Archestra credential and visibility behavior). Those live in the host skills, with checklists the plugin can run.
 
 Sources: M2, O1, O6, A3.

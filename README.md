@@ -25,7 +25,7 @@ Inside a session: `/plugin marketplace add yigitkonur/plugin-mcp-use`, then `/pl
 Node/TypeScript projects only. In other stacks the hooks print nothing and an explicit command prints a one-line scope notice. mcp-use has a Python SDK without MCP Apps support; this plugin does not target it.
 
 ## Privacy and control
-- The three docs MCP servers send your search queries to `docs.mcp-use.com`, `developers.openai.com` and `archestra.ai`. Disable any of them in `/mcp`. The plugin never calls their `submit_feedback` tools.
+- The three docs MCP servers send your search queries to `docs.mcp-use.com`, `developers.openai.com` and `archestra.ai`. Disable any of them in `/mcp`. The plugin never calls a feedback tool (the mcp-use docs server offers `submit_feedback`).
 - Hooks make no network calls and write nothing.
 - Off switch: `MCP_USE_PLUGIN=off` in the environment, or `enabled: false` in `.mcp-use-plugin/settings.md`.
 - Project settings live in `.mcp-use-plugin/settings.md` (gitignore it): `hosts: [chatgpt, archestra]`. Archestra cannot be inferred from code, so it is declared.
