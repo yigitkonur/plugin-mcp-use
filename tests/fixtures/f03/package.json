@@ -1,0 +1,16 @@
+{
+  "name": "f03",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": { "build": "tsc", "start": "node src/index.ts" },
+  "dependencies": {
+    "@modelcontextprotocol/node": "2.1.1",
+    "@modelcontextprotocol/server": "2.3.1",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "@types/node": "^22.20.0",
+    "typescript": "^7.0.2"
+  }
+}

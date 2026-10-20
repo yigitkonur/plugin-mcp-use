@@ -1,0 +1,4 @@
+[
+  { "tool": "lookup-sku", "arguments": { "sku": "SKU-1" } },
+  { "tool": "list-low-stock", "arguments": { "threshold": 5 } }
+]

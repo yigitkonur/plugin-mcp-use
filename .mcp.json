@@ -1,0 +1,7 @@
+{
+  "mcpServers": {
+    "mcp-use-docs":   { "type": "http", "url": "https://docs.mcp-use.com/mcp" },
+    "openai-docs":    { "type": "http", "url": "https://developers.openai.com/mcp" },
+    "archestra-docs": { "type": "http", "url": "https://archestra.ai/mcp" }
+  }
+}

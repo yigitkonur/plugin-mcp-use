@@ -1,0 +1,15 @@
+{
+  "as_of": "2026-10-19",
+  "note": "sha256 (first 16 hex) of each page body; scripts/drift.mjs compares live pages to these. A change means: re-read the page, update the affected references and rules, then run scripts/drift.sh --update-hashes.",
+  "pages": {
+    "https://developers.openai.com/plugins/reference.md": "c4479095e718215f",
+    "https://developers.openai.com/plugins/concepts/ui-guidelines.md": "20f5a48aec06032d",
+    "https://developers.openai.com/plugins/plugin-guidelines.md": "d756819aa5e7c9db",
+    "https://developers.openai.com/plugins/build/chatgpt-ui.md": "9403394ff61d97fd",
+    "https://developers.openai.com/plugins/build/extensions.md": "79befbc71f52887b",
+    "https://raw.githubusercontent.com/openai/mcp-extensions/main/docs/spec.md": "07955af1e60984e1",
+    "https://raw.githubusercontent.com/archestra-ai/archestra/main/docs/pages/reference/apps-sdk.md": "eb778606600efba8",
+    "https://raw.githubusercontent.com/archestra-ai/archestra/main/docs/pages/chat/apps.md": "4d7a75a41daa5a53",
+    "https://raw.githubusercontent.com/archestra-ai/archestra/main/docs/pages/reference/archestra-mcp-server.md": "9f77849a63970a57"
+  }
+}

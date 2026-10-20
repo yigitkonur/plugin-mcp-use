@@ -1,0 +1,17 @@
+# id	kind	glob	pattern	meaning
+# kinds: dep = dependency name regex (package.json); src = line regex over files matching glob; path = file existence glob
+M-USE	dep	package.json	^mcp-use$	mcp-use is a dependency (server, client, or agent)
+M-USE-SRV	src	**/*.{ts,mts,tsx,js,mjs}	new\s+MCPServer\s*\(	an mcp-use server is constructed
+M-USE-V1-IMPORT	src	**/*.{ts,mts,tsx,js,mjs}	from\s+["']mcp-use/server["']	legacy mcp-use v1 server import
+M-USE-V1-WIDGET	path	**/resources/*/widget.tsx	-	legacy mcp-use v1 widget folder
+M-SDK1-DEP	dep	package.json	^@modelcontextprotocol/sdk$	official MCP TypeScript SDK (v1 package)
+M-SDK1-SRC	src	**/*.{ts,mts,tsx,js,mjs}	from\s+["']@modelcontextprotocol/sdk/server	official SDK server import (client-only use is ignored)
+M-SDK2-DEP	dep	package.json	^@modelcontextprotocol/server$	official MCP TypeScript SDK (v2 split package)
+M-SDK2-SRC	src	**/*.{ts,mts,tsx,js,mjs}	from\s+["']@modelcontextprotocol/server["']	official SDK v2 server import
+M-EXT	dep	package.json	^@modelcontextprotocol/ext-apps$	hand-built MCP Apps UI with ext-apps
+M-OAI-WIDGET	src	**/*.{ts,mts,tsx,js,mjs}	ui://widget/|openai/outputTemplate	server built from OpenAI Apps SDK examples
+V-VIEWS-PATH	path	**/views/*/view.tsx	-	mcp-use view folder
+V-VIEWS-SRC	src	**/*.{ts,mts,tsx,js,mjs}	\bview\s*:\s*\{\s*name\s*:|["']ui://views/	server tool bound to a view
+H-GPT-DEP	dep	package.json	^@openai/apps-sdk-ui$	ChatGPT Apps SDK UI
+H-GPT-SRC	src	**/*.{ts,mts,tsx,js,mjs}	["']openai/(?:outputTemplate|widget[A-Za-z]*|toolInvocation/[a-z]+|fileParams|profile|ui|extensions|mentions|visibility|deepLink)["']|\bserver\.settings\s*\(|\bserver\.mentions\s*\(|window\.openai|\bentrypoints\s*:\s*\[\s*\{\s*type\s*:	ChatGPT-specific metadata or APIs
+O-APP	src	**/*.html	window\.archestra|archestra\.ready|archestra\.tools\.call	Archestra Owned App source

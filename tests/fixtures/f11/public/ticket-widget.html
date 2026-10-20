@@ -1,0 +1,36 @@
+<div id="root"></div>
+<style>
+  body { font-family: system-ui, sans-serif; margin: 0; }
+  .card { padding: 16px; border: 1px solid #ddd; border-radius: 12px; }
+  h2 { margin: 0 0 4px; font-size: 1.1rem; }
+  .meta { color: #666; font-size: .85rem; }
+  button { margin-top: 8px; padding: 6px 12px; border-radius: 8px; border: 1px solid #ccc; background: #fff; cursor: pointer; }
+  .dark { background: #111; color: #eee; }
+</style>
+<script type="module">
+  const root = document.getElementById("root");
+
+  function render() {
+    const out = window.openai.toolOutput;
+    const theme = window.openai.theme;
+    document.body.classList.toggle("dark", theme === "dark");
+    if (!out) { root.textContent = "Loading…"; return; }
+    root.innerHTML = "";
+    const card = document.createElement("div");
+    card.className = "card";
+    card.innerHTML = `<h2></h2><div class="meta"></div><button type="button">Refresh status</button>`;
+    card.querySelector("h2").textContent = out.subject;
+    card.querySelector(".meta").textContent = `${out.id} · ${out.status}`;
+    card.querySelector("button").addEventListener("click", async () => {
+      const res = await window.openai.callTool("refresh-ticket", { id: out.id });
+      const next = res?.structuredContent?.status;
+      if (next) card.querySelector(".meta").textContent = `${out.id} · ${next}`;
+      await window.openai.setWidgetState({ lastRefreshed: out.id });
+    });
+    root.appendChild(card);
+    window.openai.notifyIntrinsicHeight?.(card.scrollHeight);
+  }
+
+  window.addEventListener("openai:set_globals", render);
+  render();
+</script>

@@ -1,0 +1,316 @@
+{
+  "host": "archestra",
+  "as_of": "2026-10-20",
+  "note": "Route A (installed MCP server, ids AR-A*) is checked with mcp-use-probe --host archestra and mcp-use-scan --host archestra. Route B (Owned Apps, ids AO-*) is checked with archestra-app-lint; Archestra's validate_app and get_app_diagnostics stay authoritative.",
+  "items": [
+    {
+      "id": "AR-A01",
+      "title": "Every UI tool exposes _meta.ui.resourceUri in tools/list (not only a legacy ui/resourceUri or openai/outputTemplate key), and every ui:// resource is linked by a tool",
+      "methods": [
+        "probe"
+      ],
+      "severity": "error",
+      "fix_mode": "manual",
+      "submission_only": false,
+      "static_rules": [],
+      "probe_rules": [
+        "AR-A01"
+      ],
+      "lint_rules": [],
+      "source": "A3",
+      "route": "server",
+      "unverified": false
+    },
+    {
+      "id": "AR-A02",
+      "title": "resources/read on each ui:// resource returns HTML with MIME text/html;profile=mcp-app",
+      "methods": [
+        "probe"
+      ],
+      "severity": "error",
+      "fix_mode": "manual",
+      "submission_only": false,
+      "static_rules": [],
+      "probe_rules": [
+        "AR-A02"
+      ],
+      "lint_rules": [],
+      "source": "A3",
+      "route": "server",
+      "unverified": false
+    },
+    {
+      "id": "AR-A03",
+      "title": "Every tool's inputSchema.type is \"object\"",
+      "methods": [
+        "probe"
+      ],
+      "severity": "error",
+      "fix_mode": "suggest",
+      "submission_only": false,
+      "static_rules": [],
+      "probe_rules": [
+        "AR-A03"
+      ],
+      "lint_rules": [],
+      "source": "A3",
+      "route": "server",
+      "unverified": false
+    },
+    {
+      "id": "AR-A04",
+      "title": "Resource _meta.ui.csp lists exactly the origins the HTML loads from (no wildcards); no CSP violations in the host's diagnostics",
+      "methods": [
+        "probe",
+        "manual"
+      ],
+      "severity": "warning",
+      "fix_mode": "suggest",
+      "submission_only": false,
+      "static_rules": [],
+      "probe_rules": [
+        "AR-A04"
+      ],
+      "lint_rules": [],
+      "source": "A3",
+      "route": "server",
+      "judge": "Open the app in Archestra and read get_app_diagnostics or the app card for CSP violations; the probe only sees origins in the HTML text.",
+      "unverified": false
+    },
+    {
+      "id": "AR-A05",
+      "title": "_meta.ui.permissions requests only what the view uses",
+      "methods": [
+        "probe",
+        "manual"
+      ],
+      "severity": "advisory",
+      "fix_mode": "manual",
+      "submission_only": false,
+      "static_rules": [],
+      "probe_rules": [
+        "AR-A05"
+      ],
+      "lint_rules": [],
+      "source": "A3",
+      "route": "server",
+      "judge": "Confirm each requested device permission is used by the view code.",
+      "unverified": false
+    },
+    {
+      "id": "AR-A06",
+      "title": "Every tool a view calls is reachable from the view: not declared visibility \"model\"",
+      "methods": [
+        "static"
+      ],
+      "severity": "error",
+      "fix_mode": "suggest",
+      "submission_only": false,
+      "static_rules": [
+        "AR-A06"
+      ],
+      "probe_rules": [],
+      "lint_rules": [],
+      "source": "A3",
+      "route": "server",
+      "unverified": false
+    },
+    {
+      "id": "AR-A07",
+      "title": "The viewer has access to the installation (the host answers 403 otherwise)",
+      "methods": [
+        "manual"
+      ],
+      "severity": "advisory",
+      "fix_mode": "manual",
+      "submission_only": false,
+      "static_rules": [],
+      "probe_rules": [],
+      "lint_rules": [],
+      "source": "A3",
+      "route": "server",
+      "judge": "UNVERIFIED: documented only in the earlier skill, not in the Archestra pages read here. Check in a real Archestra with a second user.",
+      "unverified": true
+    },
+    {
+      "id": "AR-A08",
+      "title": "The credential model is confirmed: viewer's credentials or the installation's own",
+      "methods": [
+        "manual"
+      ],
+      "severity": "advisory",
+      "fix_mode": "manual",
+      "submission_only": false,
+      "static_rules": [],
+      "probe_rules": [],
+      "lint_rules": [],
+      "source": "A3",
+      "route": "server",
+      "judge": "UNVERIFIED: Archestra's apps page says tools run with the active viewer's credentials; the earlier skill says the installation's. Test with two users before relying on either.",
+      "unverified": true
+    },
+    {
+      "id": "AR-A09",
+      "title": "Inline height is reported by the host size notification (mcp-use autoResize, on by default)",
+      "methods": [
+        "manual"
+      ],
+      "severity": "advisory",
+      "fix_mode": "manual",
+      "submission_only": false,
+      "static_rules": [],
+      "probe_rules": [],
+      "lint_rules": [],
+      "source": "A3",
+      "route": "server",
+      "judge": "Check the view does not set autoResize false or a fixed height.",
+      "unverified": false
+    },
+    {
+      "id": "AR-A10",
+      "title": "Theme comes from the host context (useViewTheme), not prefers-color-scheme",
+      "methods": [
+        "manual"
+      ],
+      "severity": "advisory",
+      "fix_mode": "manual",
+      "submission_only": false,
+      "static_rules": [],
+      "probe_rules": [],
+      "lint_rules": [],
+      "source": "A3",
+      "route": "server",
+      "judge": "Search the view and its CSS for prefers-color-scheme.",
+      "unverified": false
+    },
+    {
+      "id": "AR-A11",
+      "title": "No unguarded dependency on window.openai or other ChatGPT-only APIs",
+      "methods": [
+        "static"
+      ],
+      "severity": "warning",
+      "fix_mode": "suggest",
+      "submission_only": false,
+      "static_rules": [
+        "AR-A11"
+      ],
+      "probe_rules": [],
+      "lint_rules": [],
+      "source": "A3",
+      "route": "server",
+      "unverified": false
+    },
+    {
+      "id": "AR-A12",
+      "title": "Model-context features are guarded; support for installed servers is not confirmed",
+      "methods": [
+        "static"
+      ],
+      "severity": "advisory",
+      "fix_mode": "suggest",
+      "submission_only": false,
+      "static_rules": [
+        "AR-A12"
+      ],
+      "probe_rules": [],
+      "lint_rules": [],
+      "source": "A3",
+      "route": "server",
+      "unverified": true
+    },
+    {
+      "id": "AO-SAVE",
+      "title": "Owned-App HTML passes the save gate (no SDK self-bootstrap, no platform script or stylesheet tags, parses, at most 512 KB, known uiPermissions)",
+      "methods": [
+        "static"
+      ],
+      "severity": "error",
+      "fix_mode": "mixed",
+      "submission_only": false,
+      "static_rules": [],
+      "probe_rules": [],
+      "lint_rules": [
+        "AA01",
+        "AA02",
+        "AA03",
+        "AA04",
+        "AA05",
+        "AA06"
+      ],
+      "source": "A2",
+      "route": "owned-app",
+      "unverified": false
+    },
+    {
+      "id": "AO-WARN",
+      "title": "Owned-App HTML passes validate_app without warnings (document root, CDN allowlist, async storage partitions, SDK members)",
+      "methods": [
+        "static"
+      ],
+      "severity": "warning",
+      "fix_mode": "mixed",
+      "submission_only": false,
+      "static_rules": [],
+      "probe_rules": [],
+      "lint_rules": [
+        "AW01",
+        "AW02",
+        "AW03",
+        "AW04",
+        "AW05"
+      ],
+      "source": "A2",
+      "route": "owned-app",
+      "unverified": false
+    },
+    {
+      "id": "AO-SANDBOX",
+      "title": "Owned-App HTML respects the sandbox: no external network calls, iframes, native form submits, popups or media from non-allowlisted hosts",
+      "methods": [
+        "static"
+      ],
+      "severity": "warning",
+      "fix_mode": "mixed",
+      "submission_only": false,
+      "static_rules": [],
+      "probe_rules": [],
+      "lint_rules": [
+        "AD01",
+        "AD02",
+        "AD03",
+        "AD04",
+        "AD05"
+      ],
+      "source": "A2",
+      "route": "owned-app",
+      "unverified": false
+    },
+    {
+      "id": "AO-DOC",
+      "title": "Owned-App HTML follows the documented SDK usage (storage values, ready, tool names, hidden, device permissions, limits, pinned CDN versions)",
+      "methods": [
+        "static"
+      ],
+      "severity": "advisory",
+      "fix_mode": "mixed",
+      "submission_only": false,
+      "static_rules": [],
+      "probe_rules": [],
+      "lint_rules": [
+        "AD06",
+        "AD07",
+        "AD08",
+        "AD09",
+        "AD10",
+        "AD11",
+        "AD12",
+        "AD13",
+        "AD14"
+      ],
+      "source": "A2",
+      "route": "owned-app",
+      "unverified": false
+    }
+  ]
+}

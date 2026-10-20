@@ -1,0 +1,4 @@
+[
+  { "tool": "show-ticket", "arguments": { "id": "T-100" } },
+  { "tool": "refresh-ticket", "arguments": { "id": "T-101" } }
+]

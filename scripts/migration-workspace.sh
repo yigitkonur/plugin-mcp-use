@@ -1,0 +1,37 @@
+#!/bin/sh
+# Prepare the workspace for the migration fixtures (F02, F03, F11): installs the official MCP SDK packages pinned in
+# tests/types/migration/package.json, copies each fixture next to a node_modules symlink, and prints the workspace path.
+# Usage: scripts/migration-workspace.sh [--check]   (--check also compiles every fixture with tsc)
+set -u
+HERE=$(cd "$(dirname "$0")/.." && pwd)
+WS="${MCP_USE_WORK:-${TMPDIR:-/tmp}}/mcp-use-plugin-migration"
+mkdir -p "$WS/fixtures"
+cp "$HERE/tests/types/migration/package.json" "$WS/package.json"
+if [ ! -d "$WS/node_modules/@modelcontextprotocol/sdk" ] || [ "$(cat "$WS/.pkg-hash" 2>/dev/null)" != "$(shasum "$WS/package.json" | cut -d' ' -f1)" ]; then
+  (cd "$WS" && npm install --no-audit --no-fund --loglevel=error) >&2 || { echo "npm install failed" >&2; exit 2; }
+  shasum "$WS/package.json" | cut -d' ' -f1 > "$WS/.pkg-hash"
+fi
+for f in f02 f03 f11; do
+  rm -rf "$WS/fixtures/$f"
+  cp -R "$HERE/tests/fixtures/$f" "$WS/fixtures/$f"
+  if grep -q '"zod": "^3' "$HERE/tests/fixtures/$f/package.json"; then
+    # a fixture on zod 3 (the usual state of an SDK v1 server) gets its own complete install from its package.json
+    (cd "$WS/fixtures/$f" && npm install --no-audit --no-fund --loglevel=error) >&2 || { echo "npm install failed for $f" >&2; exit 2; }
+  else
+    ln -s ../../node_modules "$WS/fixtures/$f/node_modules"
+  fi
+done
+if [ "${1:-}" = "--check" ]; then
+  FAIL=0
+  # "before" snippets from the playbook (<!-- fixture-sdk1/sdk2 -->) must compile against the pinned official SDK
+  mkdir -p "$WS/generated"
+  COUNTS=$(node "$HERE/scripts/extract-fixtures.mjs" "$WS/generated") || exit 2
+  echo "snippets: $COUNTS" >&2
+  cp "$HERE/tests/types/migration/tsconfig.json" "$WS/tsconfig.json"
+  if (cd "$WS" && npx tsc -p tsconfig.json >"$WS/tsc-snippets.log" 2>&1); then echo "sdk snippets: compile" >&2; else echo "sdk snippets: FAIL" >&2; head -30 "$WS/tsc-snippets.log" >&2; FAIL=1; fi
+  for f in f02 f03 f11; do
+    if (cd "$WS/fixtures/$f" && npx tsc -p . >"$WS/tsc-$f.log" 2>&1); then echo "$f: compiles" >&2; else echo "$f: FAIL" >&2; head -20 "$WS/tsc-$f.log" >&2; FAIL=1; fi
+  done
+  [ "$FAIL" = 0 ] || exit 1
+fi
+echo "$WS"

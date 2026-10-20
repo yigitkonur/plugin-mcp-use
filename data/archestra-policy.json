@@ -1,0 +1,31 @@
+{
+  "as_of": "2026-10-20",
+  "note": "Snapshot of Archestra's documented Owned-App policy (docs A1/A2) and the behavior observed in its public source at the pinned SHA (A3, read as evidence only; AGPL, nothing copied). archestra-app-lint reads this file; scripts/drift.mjs watches the docs pages. validate_app and render diagnostics on a real Archestra stay authoritative.",
+  "source_sha": "dde27729222ddd919bc3a750899ac38b5fbd392d",
+  "cdn_allowlist": ["cdn.jsdelivr.net", "unpkg.com", "cdnjs.cloudflare.com", "fonts.googleapis.com", "fonts.gstatic.com"],
+  "sdk_surface": {
+    "top_level": ["ready", "user", "context", "storage", "files", "llm", "tools", "ui"],
+    "storage_partitions": ["user", "shared"],
+    "storage_methods": ["get", "set", "list", "delete"],
+    "files": ["list", "read", "save", "delete", "onChange"],
+    "tools": ["list", "call"],
+    "llm": ["complete", "prompt"],
+    "ui": ["openLink", "requestDisplayMode", "updateModelContext"]
+  },
+  "limits": {
+    "html_bytes": 524288,
+    "value_bytes": 262144,
+    "keys_per_partition": 1000,
+    "key_length": 256,
+    "files_listed": 200,
+    "filename_length": 256,
+    "llm_prompt_chars": 100000,
+    "llm_system_chars": 10000,
+    "model_context_visible_chars": 500
+  },
+  "permissions_allowed": ["camera", "microphone", "geolocation", "clipboardWrite"],
+  "bootstrap_markers": ["__ARCHESTRA_APP_SDK_URL__", "__ARCHESTRA_APP_CONTEXT__", "PostMessageTransport"],
+  "platform_script_markers": ["archestra-app-sdk", "ext-apps-app"],
+  "platform_css_marker": "archestra-app-base",
+  "builtin_file_tools": ["read_file", "edit_file"]
+}

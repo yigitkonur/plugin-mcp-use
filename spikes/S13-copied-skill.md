@@ -1,0 +1,5 @@
+# S13 — the official `mcp-apps-builder` skill copied by `create-mcp-use-app`
+`npx create-mcp-use-app@2.1.0 s13-apps --template mcp-apps --npm --install --skills` created `.claude/skills/mcp-apps-builder/`, `.agents/skills/mcp-apps-builder/`, `.cursor/skills/mcp-apps-builder/` (SKILL.md 3,697 B + 7 references, 24,627 B total). Its description: "Build, modify, debug, migrate, review, or verify TypeScript MCP servers and MCP Apps with mcp-use…". Its first rule: "Treat the installed `mcp-use` package, its exported types … as the source of truth." No mentions of `useModelContext`, `server.settings`, `attachments`, `openai/outputTemplate`, `?route`, `destructiveHint`, so it does not contradict our rules.
+The scaffolded template already has `readOnlyHint/destructiveHint/openWorldHint` and `view:` with CSP; `npm run typecheck` → "no type errors".
+
+**Decision (Q4 default holds):** keep the copied skill; `new` passes `--skills`, reports where it landed, and our skills defer to installed types when they disagree.

@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>App name</title>
+<style>
+  body { padding: 16px; }
+  .row { display: flex; gap: 8px; align-items: center; margin-bottom: 12px; }
+  li { margin: 4px 0; }
+</style>
+</head>
+<body>
+<h1>App name</h1>
+<form id="add" class="row">
+  <input id="text" class="arch-input" placeholder="New item" autocomplete="off">
+  <button class="arch-btn arch-btn--primary" type="submit">Add</button>
+</form>
+<p id="error" role="alert" hidden></p>
+<p id="empty" hidden>Nothing here yet.</p>
+<ul id="list"></ul>
+<script>
+(async () => {
+  const $ = (id) => document.getElementById(id);
+
+  // Show an SDK error. auth_required carries a url the viewer must open to connect the tool's server.
+  function showError(e) {
+    const box = $("error");
+    box.textContent = e.message || String(e);
+    if (e.code === "auth_required" && e.url) {
+      const a = document.createElement("a");
+      a.href = e.url;
+      a.textContent = " Connect";
+      a.addEventListener("click", (ev) => { ev.preventDefault(); archestra.ui.openLink(e.url); });
+      box.append(a);
+    }
+    box.hidden = false;
+  }
+
+  function render(items) {
+    $("empty").hidden = items.length > 0;
+    $("list").replaceChildren(...items.map((text) => Object.assign(document.createElement("li"), { textContent: text })));
+  }
+
+  // Read, append, write. A write after a read fails with code "conflict" when someone else wrote the key in between:
+  // read again and retry.
+  async function addItem(text) {
+    for (let attempt = 0; ; attempt++) {
+      const current = await archestra.storage.user.get("items");
+      const next = [...(current ? current.value : []), text];
+      try {
+        await archestra.storage.user.set("items", next);
+        return next;
+      } catch (e) {
+        if (e.code !== "conflict" || attempt >= 2) throw e;
+      }
+    }
+  }
+
+  try {
+    await archestra.ready;
+    // Private to this viewer. Use archestra.storage.shared for data every viewer sees.
+    const saved = await archestra.storage.user.get("items");
+    render(saved ? saved.value : []);
+
+    let saving = false; // ignore a second submit while a save is in flight
+    $("add").addEventListener("submit", async (ev) => {
+      ev.preventDefault();
+      const text = $("text").value.trim();
+      if (!text || saving) return;
+      saving = true;
+      try {
+        render(await addItem(text));
+        $("text").value = "";
+        $("error").hidden = true;
+      } catch (e) {
+        showError(e);
+      } finally {
+        saving = false;
+      }
+    });
+
+    // To read data from an assigned MCP tool, list the tools once and call one by the exact name listed:
+    //   const tools = await archestra.tools.list();
+    //   const name = tools.find((t) => t.name.endsWith("__list_issues")).name;
+    //   const issues = await archestra.tools.call(name, { state: "open" });
+  } catch (e) {
+    showError(e);
+  }
+})();
+</script>
+</body>
+</html>

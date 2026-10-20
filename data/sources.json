@@ -1,0 +1,149 @@
+{
+  "as_of": "2026-10-20",
+  "note": "Every rule and reference cites an id from this file. URLs are the origin of the claim; no vendor text is copied into this repository.",
+  "sources": {
+    "M1": {
+      "title": "mcp-use documentation (TypeScript)",
+      "url": "https://docs.mcp-use.com",
+      "also": [
+        "https://docs.mcp-use.com/mcp"
+      ]
+    },
+    "M2": {
+      "title": "Published type declarations of mcp-use@2.11.0 (and 2.8.2), @mcp-use/cli@4.5.0, @modelcontextprotocol/ext-apps@2.0.3",
+      "url": "https://www.npmjs.com/package/mcp-use"
+    },
+    "O1": {
+      "title": "OpenAI: Build your ChatGPT UI",
+      "url": "https://developers.openai.com/plugins/build/chatgpt-ui"
+    },
+    "O2": {
+      "title": "OpenAI: Extensions overview",
+      "url": "https://developers.openai.com/plugins/build/extensions"
+    },
+    "O3": {
+      "title": "OpenAI: UI guidelines",
+      "url": "https://developers.openai.com/plugins/concepts/ui-guidelines"
+    },
+    "O4": {
+      "title": "OpenAI: Plugin guidelines (review)",
+      "url": "https://developers.openai.com/plugins/plugin-guidelines"
+    },
+    "O5": {
+      "title": "OpenAI: Plugins reference (window.openai, _meta)",
+      "url": "https://developers.openai.com/plugins/reference"
+    },
+    "O6": {
+      "title": "OpenAI MCP extensions specification",
+      "url": "https://github.com/openai/mcp-extensions/blob/main/docs/spec.md"
+    },
+    "O7": {
+      "title": "OpenAI Apps SDK UI",
+      "url": "https://github.com/openai/apps-sdk-ui"
+    },
+    "O8": {
+      "title": "OpenAI Learn: front-end designs (a Codex use case; verification pattern only)",
+      "url": "https://learn.chatgpt.com/use-cases/frontend-designs"
+    },
+    "A1": {
+      "title": "Archestra: Apps (chat)",
+      "url": "https://archestra.ai/docs/chat/apps"
+    },
+    "A2": {
+      "title": "Archestra: Apps SDK reference",
+      "url": "https://archestra.ai/docs/reference/apps-sdk"
+    },
+    "A3": {
+      "title": "Archestra source, read as behavioral evidence only (AGPL, nothing copied)",
+      "url": "https://github.com/archestra-ai/archestra"
+    },
+    "D1": {
+      "title": "Vendor docs MCP servers (mcp-use, OpenAI, Archestra)",
+      "url": "https://developers.openai.com/mcp",
+      "also": [
+        "https://docs.mcp-use.com/mcp",
+        "https://archestra.ai/mcp"
+      ]
+    },
+    "P1": {
+      "title": "Claude Code plugin documentation",
+      "url": "https://code.claude.com/docs/en/plugins-reference"
+    },
+    "S1": {
+      "title": "Spike: paths gating",
+      "file": "spikes/S1-paths-gating.md"
+    },
+    "S3": {
+      "title": "Spike: arguments",
+      "file": "spikes/S3-arguments.md"
+    },
+    "S6": {
+      "title": "Spike: docs MCP servers in a plugin",
+      "file": "spikes/S6-docs-mcp.md"
+    },
+    "S11": {
+      "title": "Spike: resource URI stability",
+      "file": "spikes/S11-resource-uri.md"
+    },
+    "S12": {
+      "title": "Spike: stdio in mcp-use 2.11.0",
+      "file": "spikes/S12-stdio.md"
+    },
+    "S13": {
+      "title": "Spike: copied official skill",
+      "file": "spikes/S13-copied-skill.md"
+    },
+    "S16": {
+      "title": "Verify tooling facts",
+      "file": "spikes/S16-verify-tooling.md"
+    },
+    "S17": {
+      "title": "Skills over MCP wire shape",
+      "file": "spikes/S17-skills-over-mcp.md"
+    },
+    "S18": {
+      "title": "Spike: ChatGPT auth challenge",
+      "file": "spikes/S18-chatgpt-challenge.md"
+    },
+    "S19": {
+      "title": "Spike: apps-sdk-ui in mcp-use dev (Vite pre-bundling)",
+      "file": "spikes/S19-apps-sdk-ui-dev.md"
+    },
+    "S7": {
+      "title": "Spike: F14 rendered in ChatGPT through a dev tunnel",
+      "file": "spikes/S7-chatgpt-live.md"
+    },
+    "A4": {
+      "title": "Archestra: Archestra MCP Server reference (built-in app authoring tools and their schemas)",
+      "url": "https://archestra.ai/docs/reference/archestra-mcp-server"
+    },
+    "S20": {
+      "title": "Spike S20: zod 3 does not work with mcp-use 2.11.0 (typecheck error, empty tools/list)",
+      "url": "spikes/S20-zod3.md"
+    },
+    "S22": {
+      "title": "Spike S22: mcp-use screenshot paints a black backdrop in both themes",
+      "url": "spikes/S22-screenshot-backdrop.md"
+    },
+    "S23": {
+      "title": "Spike S23: OAuth behavior observed on mcp-use 2.11.0 with a local issuer (status codes, headers, errors)",
+      "url": "spikes/S23-auth-runtime.md"
+    },
+    "S24": {
+      "title": "Spike S24: allowedOrigins and allowedHosts take hostnames; a URL is rejected with 403",
+      "url": "spikes/S24-allowed-origins.md"
+    },
+    "S21": {
+      "title": "Spike S21: /mcp-use:migrate on F02, F03 and F11 with snapshot parity",
+      "url": "spikes/S21-migration.md"
+    },
+    "S25": {
+      "title": "Spike S25: restoration of troubleshooting, deploy and auth knowledge, verified claim by claim",
+      "url": "spikes/S25-restoration.md"
+    },
+    "S26": {
+      "title": "Spike S26: settings tools, preferredDisplayMode and Apps SDK UI facts checked after the host-reference review",
+      "url": "spikes/S26-host-ref-checks.md"
+    }
+  }
+}
