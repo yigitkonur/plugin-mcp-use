@@ -2,7 +2,7 @@
 
 `mcp-use-probe --diff before.json after.json` compares two snapshots: tools (title, description, annotations, input/output schema, security schemes, `_meta`), resources, templates, prompts, UI resources, and the sample calls (error flag, `structuredContent`, `content`). It exits 1 when anything differs. Snapshots are taken with `mcp-use-probe --snapshot`, from a stdio command (`--stdio`) or a URL; transport details are not compared.
 
-The diff already ignores JSON key order and a top-level `$schema` (the official SDK writes draft-07, mcp-use 2020-12); it prints a `note:` for that. Everything else it shows is a real difference to classify.
+The diff already ignores JSON key order and a top-level `$schema` (the official SDK writes draft-07, mcp-use 2020-12); it prints a `note:` for that. A changed `server` block (name, version, protocol, transport) is also only a `note:`: it changes in every migration. Everything else it shows is a real difference to classify.
 
 | Line | Class | Action |
 |---|---|---|
@@ -16,6 +16,8 @@ The diff already ignores JSON key order and a top-level `$schema` (the official 
 | `CHANGED call X` (`structuredContent`, `isError`, `content`) | **regression** | the handler behaves differently; compare line by line |
 | `CHANGED tool X: _meta` | intended when mcp-use adds `ui.visibility` or `ui.resourceUri`; check widget keys | otherwise investigate |
 | `CHANGED ui …` | expected when widgets are ported | verify with a screenshot |
+| `ADDED problem <list method>: <message>` | **regression**: a list endpoint (`tools/list`, `resources/list`, `resources/templates/list`, `prompts/list`) that answered on the old server now errors | fix the handler or the capability registration, then re-snapshot |
+| `REMOVED problem …` | the old server's list error is gone | list it as an improvement |
 
 ## Serializer-only differences (zod 3 on SDK v1, zod 4 on mcp-use)
 Observed on the inventory fixture (S21). The meaning of the schema is unchanged; confirm that nothing else changed in the same schema before calling it benign.

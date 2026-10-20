@@ -1,5 +1,5 @@
 # rule_id	host	file_glob	kind	pattern	when	unless	severity	fix_mode	replacement	message	source	min_mcp_use	max_mcp_use
-# kinds: regex (every match is a finding; flags gm) · absent (when matches and pattern does not) · tooldef (server.tool definitions: require:a,b.c | imply:a=>b) · count>N (more than N matches)
+# kinds: regex (every match is a finding; flags gm) · absent (when matches and pattern does not) · tooldef (server.tool definitions: require:a,b.c | imply:a=>b | bool:a,b.c = a literal that is not true or false) · count>N (more than N matches)
 # severity: error|warning|advisory · fix_mode: auto|suggest|manual · replacement uses $1.. for regex, {{nm}} = relative path to node_modules
 # min_mcp_use / max_mcp_use: optional version gate (applicable() in lib/scan.mjs). Every rule leaves both empty: no evidence was collected for the version that added or removed each API, and the supported floor is 2.8.0. Fill them only together with a cited version.
 STK-01	stack	**/*.{ts,tsx,mts,js,mjs}	regex	from\s+(["'])mcp-use/server\1			error	auto	from $1mcp-use$1	"mcp-use/server" is the v1 import; v2 imports from "mcp-use".	M2
@@ -17,6 +17,8 @@ STK-12	stack	**/*.{ts,tsx,mts,js,mjs}	regex	\b(?:useWidget|useWidgetProps|McpUse
 STK-13	stack	package.json	regex	(?:(?<="mcp-use"\s*:\s*"[\s\S]*)|(?=[\s\S]*"mcp-use"\s*:\s*"))"zod"\s*:\s*"[\^~>=\s]*3\.			error	manual		zod 3 cannot produce JSON Schema for mcp-use (typecheck fails and tools/list returns nothing). Use zod >= 4.2.0 (the scaffolds pin ^4.4.3).	S20
 STK-14	stack	**/*.{ts,mts,js,mjs}	regex	allowed(?:Origins|Hosts)\s*:\s*\[[^\]]*["']https?://			error	suggest		allowedOrigins/allowedHosts take hostnames ("chatgpt.com"), not URLs; a URL never matches and the request gets 403 Invalid Origin.	S24
 CG-T01	chatgpt	**/*.{ts,mts,js,mjs}	tooldef	require:annotations.readOnlyHint,annotations.destructiveHint,annotations.openWorldHint			error	suggest		Tool must set readOnlyHint, destructiveHint and openWorldHint as explicit booleans (ChatGPT review).	O4
+CG-T01b	chatgpt	**/*.{ts,mts,js,mjs}	tooldef	bool:annotations.readOnlyHint,annotations.destructiveHint,annotations.openWorldHint			error	suggest		Annotation values must be the literals true or false; a string, number or null is not a boolean (ChatGPT review).	O4
+
 CG-T08	chatgpt	**/*.{ts,mts,js,mjs}	regex	["']openai/toolInvocation/(?:invoking|invoked)["']\s*:\s*["'`][^"'`]{65,}["'`]			warning	suggest		Invocation status text must be 64 characters or fewer.	O5
 CG-T09	chatgpt	**/*.{ts,mts,js,mjs}	tooldef	imply:@structuredContent=>outputSchema			warning	suggest		Tool returns structuredContent but declares no outputSchema.	O5
 CG-R03	chatgpt	**/*.{ts,mts,js,mjs}	tooldef	imply:view=>view.domain			advisory	suggest		View has no domain; ChatGPT plugin submission requires _meta.ui.domain (unique per plugin).	O5

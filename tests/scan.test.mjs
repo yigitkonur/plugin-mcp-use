@@ -147,3 +147,37 @@ test("STK-14: a URL in allowedOrigins/allowedHosts is an error; hostnames and co
   assert.deepEqual(ids(mk('allowedOrigins: ["chatgpt.com"], allowedHosts: ["catalog.internal"]')), []);
   assert.deepEqual(ids(mk('cors: { origin: ["https://chatgpt.com"], credentials: true }')), []);
 });
+
+// ---- CG-T01b: an annotation that is present but not a boolean ------------------------------------------
+function toolProject(annotations) {
+  const d = mkdtempSync(join(tmpdir(), "t01b-"));
+  writeFileSync(join(d, "package.json"), JSON.stringify({ name: "t", type: "module", dependencies: { "mcp-use": "2.11.0" } }));
+  writeFileSync(join(d, "index.ts"), `import { MCPServer } from "mcp-use";
+const server = new MCPServer({ name: "t", version: "1.0.0" });
+const isRead = true;
+const readOnlyHint = true;
+export const lookup = server.tool(
+  { name: "lookup", description: "x", annotations: ${annotations} },
+  async () => ({ content: [] }),
+);
+export default server;
+`);
+  return d;
+}
+
+test("CG-T01b flags a string, null, number or array where a boolean belongs, with the offending values", () => {
+  const { out, status } = runScan(toolProject('{ readOnlyHint: "yes", destructiveHint: null, openWorldHint: 0 }'), ["--host", "chatgpt"]);
+  const f = out.result.findings.find((x) => x.rule_id === "CG-T01b");
+  assert.ok(f, "finding present");
+  assert.equal(f.severity, "error");
+  assert.deepEqual(f.invalid.sort(), ["annotations.destructiveHint", "annotations.openWorldHint", "annotations.readOnlyHint"]);
+  assert.match(f.evidence, /readOnlyHint: "yes"/);
+  assert.equal(status, 2);
+});
+
+test("CG-T01b leaves booleans, expressions and shorthand properties alone", () => {
+  for (const annotations of ["{ readOnlyHint: true, destructiveHint: false, openWorldHint: false }", "{ readOnlyHint: isRead, destructiveHint: !isRead, openWorldHint: false }", "{ readOnlyHint, destructiveHint: false, openWorldHint: false }"]) {
+    const { out } = runScan(toolProject(annotations), ["--host", "chatgpt"]);
+    assert.ok(!out.result.findings.some((x) => x.rule_id === "CG-T01b"), annotations);
+  }
+});

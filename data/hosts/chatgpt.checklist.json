@@ -13,7 +13,8 @@
       "fix_mode": "suggest",
       "submission_only": false,
       "static_rules": [
-        "CG-T01"
+        "CG-T01",
+        "CG-T01b"
       ],
       "probe_rules": [
         "CG-T01"

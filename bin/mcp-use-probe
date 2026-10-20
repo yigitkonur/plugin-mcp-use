@@ -47,7 +47,7 @@ if (o.diff) {
     return s;
   });
   const d = diffSnapshots(a, b);
-  const noted = d.ignored.length ? "\n" + [...new Set(d.ignored.map((x) => x.note))].map((n) => `note: ${n} (${d.ignored.filter((x) => x.note === n).length} schema${d.ignored.filter((x) => x.note === n).length === 1 ? "" : "s"})`).join("\n") : "";
+  const noted = d.ignored.length ? "\n" + [...new Set(d.ignored.map((x) => x.note))].map((n) => { const hits = d.ignored.filter((x) => x.note === n); return `note: ${n}${hits[0].field ? ` (${hits.length} schema${hits.length === 1 ? "" : "s"})` : ""}`; }).join("\n") : "";
   emit({ result: d, ok: d.equal }, (d.equal ? "snapshots are equal" : d.differences.map((x) => `${x.change.toUpperCase()} ${x.kind} ${x.id}${x.fields ? ": " + x.fields.map((f) => f.field).join(", ") : ""}`).join("\n")) + noted);
   process.exit(d.equal ? EXIT.OK : EXIT.WARN);
 }
