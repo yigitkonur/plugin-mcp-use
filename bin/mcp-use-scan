@@ -1,49 +1,66 @@
 #!/usr/bin/env node
 // Static checks for mcp-use servers and views (stack rules + host rules), driven by data/guard-rules.tsv.
-import { readFileSync, mkdirSync, appendFileSync, existsSync } from "node:fs";
-import { join, relative, isAbsolute } from "node:path";
+import { readFileSync, mkdirSync, appendFileSync, existsSync, statSync } from "node:fs";
+import { join, relative, resolve, isAbsolute, sep } from "node:path";
 import { tmpdir } from "node:os";
 import { detect } from "../lib/detect.mjs";
 import { loadRules, scanFiles, projectFiles, applyFixes, writeReport, SEVERITY_RANK } from "../lib/scan.mjs";
-import { readSettings, globToRegex, readText } from "../lib/project.mjs";
+import { readSettings, globToRegex, readText, MAX_TEXT_BYTES } from "../lib/project.mjs";
 import { lintHtml } from "../lib/archestra-lint.mjs";
 import { envelope, EXIT } from "../lib/envelope.mjs";
+import { parseCli, usage, requireDir, kindOf } from "../lib/cli.mjs";
 
-const args = process.argv.slice(2);
-const flag = (n) => args.includes(n);
-const vals = (n) => args.flatMap((a, i) => (a === n ? [args[i + 1]] : []));
-const val = (n) => vals(n)[0];
+const TOOL = "mcp-use-scan";
+const HOSTS = ["stack", "chatgpt", "archestra", "all"];
+const hookMode = process.argv.slice(2).includes("--hook");
+const { values: o } = parseCli(TOOL, {
+  dir: { type: "string" }, file: { type: "string", multiple: true }, host: { type: "string" }, json: { type: "boolean" },
+  fix: { type: "boolean" }, force: { type: "boolean" }, hook: { type: "boolean" }, session: { type: "string" },
+}, { quiet: hookMode });
 
-if (flag("-h") || flag("--help")) {
-  process.stdout.write(`mcp-use-scan [--dir <project>] [--file <path>]... [--host stack|chatgpt|all] [--json] [--fix [--force]] [--hook --session <id>]
+if (o.help) {
+  process.stdout.write(`mcp-use-scan [--dir <project>] [--file <path>]... [--host stack|chatgpt|archestra|all] [--json] [--fix [--force]] [--hook --session <id>]
 
 Static rules from data/guard-rules.tsv. Exit: 0 clean · 1 warnings/advisories only · 2 errors · 3 usage · 4 out of scope.
   --host     rule groups to run. Default: stack plus every host declared in .mcp-use-plugin/settings.md or inferred from code.
+  --file     scan only this file (relative to the current directory or to --dir; it must exist). Repeatable.
   --fix      apply only fix_mode=auto rules. Needs a clean git state for each file (or --force). Writes a report first.
   --hook     read a PostToolUse payload on stdin and print at most 3 new error/warning findings as additionalContext JSON (silent otherwise).
+Files over ${MAX_TEXT_BYTES / 1000} KB are not read; the result lists them under "skipped".
 `);
   process.exit(0);
 }
 
+const posix = (p) => p.split(sep).join("/");
+const json = !!o.json;
+let root = o.dir || process.env.CLAUDE_PROJECT_DIR || process.cwd();
+if (o.dir && !hookMode) requireDir(TOOL, root, "--dir", json);
+if (o.host !== undefined && !HOSTS.includes(o.host)) usage(TOOL, `--host ${o.host}: expected one of ${HOSTS.join(", ")}`, json);
+let session = o.session || "no-session";
+let hookFile = null;
+
 // Archestra Owned-App HTML: a declared owned_app_paths glob, or a file that uses the injected window.archestra.
 const OWNED_SIGNATURE = /\barchestra\.(?:ready|user|context|storage|files|llm|tools|ui)\b/;
-function ownedFindings(root, files, requestedHost) {
+const OWNED_DECLARED_MAX_BYTES = 8_000_000; // read a declared Owned App far enough to report AA05 (over 512 KB)
+const sizeOf = (abs) => { try { return statSync(abs).size; } catch { return 0; } };
+function ownedFindings(rootDir, files, requestedHost, skipped) {
   if (requestedHost && requestedHost !== "all" && requestedHost !== "archestra") return [];
-  const globs = readSettings(root).owned_app_paths.map(globToRegex);
+  const globs = readSettings(rootDir).owned_app_paths.map(globToRegex);
   const out = [];
   for (const rel of files) {
     if (!/\.html?$/i.test(rel)) continue;
-    const text = readText(join(root, rel));
-    if (!text || !(globs.some((g) => g.test(rel)) || OWNED_SIGNATURE.test(text))) continue;
+    const abs = join(rootDir, rel);
+    const declared = globs.some((g) => g.test(rel));
+    const bytes = sizeOf(abs);
+    if (bytes > MAX_TEXT_BYTES && !declared) { skipped.push({ file: rel, bytes }); continue; }
+    const text = readText(abs, declared ? OWNED_DECLARED_MAX_BYTES : MAX_TEXT_BYTES);
+    if (!text || !(declared || OWNED_SIGNATURE.test(text))) continue;
     out.push(...lintHtml(text, { file: rel }));
   }
   return out;
 }
 
 const short = (m) => (m.length <= 112 ? m : m.slice(0, 112).replace(/\s+\S*$/, "") + "…");
-const hookMode = flag("--hook");
-let root = val("--dir") || process.env.CLAUDE_PROJECT_DIR || process.cwd();
-let hookFile = null, session = val("--session") || "no-session";
 try {
   if (hookMode) {
     const p = JSON.parse(readFileSync(0, "utf8"));
@@ -53,6 +70,17 @@ try {
   }
 } catch { if (hookMode) process.exit(0); }
 
+// --file: a path relative to the current directory or to --dir (the one inside the project wins when both exist);
+// always reported as a project-relative POSIX path.
+const inside = (abs) => !posix(relative(root, abs)).startsWith("..");
+const fileArgs = (o.file ?? []).map((f) => {
+  const fromCwd = resolve(f), fromRoot = resolve(root, f);
+  const abs = isAbsolute(f) ? f : existsSync(fromCwd) && inside(fromCwd) ? fromCwd : existsSync(fromRoot) ? fromRoot : fromCwd;
+  if (kindOf(abs) !== "file") usage(TOOL, `--file ${f}: ${kindOf(abs) === null ? "no such file" : "not a file"}`, json);
+  if (!inside(abs)) usage(TOOL, `--file ${f}: outside the project directory ${root}`, json);
+  return posix(relative(root, abs));
+});
+
 try {
   const d = detect(root);
   if (hookMode && (!d.settings.enabled || d.scenario === "NONE" || d.scenario === "OUT_OF_SCOPE")) {
@@ -60,23 +88,29 @@ try {
     process.exit(0);
   }
   if (!hookMode && d.scenario === "OUT_OF_SCOPE") {
-    process.stdout.write(JSON.stringify(envelope("mcp-use-scan", { ok: false, error: { code: "out_of_scope", message: "This plugin targets Node/TypeScript projects.", suggestion: `Detected: ${d.stack.other.join(", ") || "no package.json"}` } })) + "\n");
+    process.stdout.write(JSON.stringify(envelope(TOOL, { ok: false, error: { code: "out_of_scope", message: "This plugin targets Node/TypeScript projects.", suggestion: `Detected: ${d.stack.other.join(", ") || "no package.json"}` } })) + "\n");
     process.exit(EXIT.SCOPE);
   }
-  const requested = val("--host");
+  const requested = o.host;
   const hosts = requested && requested !== "all" ? [requested] : requested === "all" ? ["chatgpt", "archestra"] : [...new Set([...d.hosts.declared, ...d.hosts.inferred])];
   const mcpUse = d.versions["mcp-use"]?.effective ?? null;
   const rules = loadRules();
 
   let files;
-  if (hookMode) files = hookFile ? [isAbsolute(hookFile) ? relative(root, hookFile) : hookFile] : [];
-  else if (vals("--file").length) files = vals("--file").map((f) => (isAbsolute(f) ? relative(root, f) : f));
+  if (hookMode) files = hookFile ? [posix(relative(root, resolve(root, hookFile)))] : [];
+  else if (fileArgs.length) files = fileArgs;
   else files = projectFiles(root);
   files = files.filter((f) => !f.startsWith(".."));
 
-  const allFiles = (hookMode || vals("--file").length) && rules.some((r) => r.kind.startsWith("project:")) ? projectFiles(root) : null;
+  const allFiles = (hookMode || fileArgs.length) && rules.some((r) => r.kind.startsWith("project:")) ? projectFiles(root) : null;
   const sortFindings = (fs) => fs.sort((a, b) => SEVERITY_RANK[a.severity] - SEVERITY_RANK[b.severity] || a.file.localeCompare(b.file) || a.line - b.line);
-  const gather = () => sortFindings([...scanFiles(root, files, rules, { hosts, mcpUse, allFiles }), ...ownedFindings(root, files, requested)]);
+  let skipped = [];
+  const gather = () => {
+    const skip = [];
+    const found = sortFindings([...scanFiles(root, files, rules, { hosts, mcpUse, allFiles, skipped: skip }), ...ownedFindings(root, files, requested, skip)]);
+    skipped = [...new Map(skip.map((s) => [s.file, s])).values()];
+    return found;
+  };
   let findings = gather();
 
   if (hookMode) {
@@ -101,32 +135,33 @@ try {
 
   const nextActions = (fs) => {
     const a = [];
-    if (fs.some((f) => f.fix_mode === "auto" && f.host !== "archestra-owned") && !flag("--fix")) a.push({ cmd: "mcp-use-scan --fix", why: "apply the auto-fixable findings (clean git tree required)" });
+    if (fs.some((f) => f.fix_mode === "auto" && f.host !== "archestra-owned") && !o.fix) a.push({ cmd: "mcp-use-scan --fix", why: "apply the auto-fixable findings (clean git tree required)" });
     for (const file of new Set(fs.filter((f) => f.fix_mode === "auto" && f.host === "archestra-owned").map((f) => f.file))) a.push({ cmd: `archestra-app-lint --fix ${file}`, why: "apply the auto-fixable Owned-App findings (clean git tree required)" });
     return a;
   };
   const counts = (fs) => ({ error: fs.filter((f) => f.severity === "error").length, warning: fs.filter((f) => f.severity === "warning").length, advisory: fs.filter((f) => f.severity === "advisory").length });
   const result = { root, hosts: ["stack", ...hosts], files_scanned: files.length, before: counts(findings), findings };
 
-  if (flag("--fix")) {
+  if (o.fix) {
     const report = writeReport(root, "scan", { phase: "before-fix", findings });
-    const fixes = applyFixes(root, findings.filter((f) => f.host !== "archestra-owned"), rules, { force: flag("--force") });
+    const fixes = applyFixes(root, findings.filter((f) => f.host !== "archestra-owned"), rules, { force: !!o.force });
     const after = gather();
     Object.assign(result, { report, fixes, after: counts(after), findings: after });
     findings = after;
   }
+  result.skipped = skipped;
 
-  if (flag("--json")) process.stdout.write(JSON.stringify(envelope("mcp-use-scan", { result, next_actions: nextActions(findings) })) + "\n");
+  const worst = findings.length ? Math.min(...findings.map((f) => SEVERITY_RANK[f.severity])) : 3;
+  if (json) process.stdout.write(JSON.stringify(envelope(TOOL, { ok: worst !== 0, result, next_actions: nextActions(findings) })) + "\n");
   else {
     for (const f of findings) process.stdout.write(`${f.severity.toUpperCase().padEnd(8)} ${f.rule_id.padEnd(8)} ${f.file}:${f.line}  ${f.message}  [fix: ${f.fix_mode}] [${f.source}]\n`);
     const c = counts(findings);
     if (result.fixes) process.stdout.write(`fixed: ${result.fixes.fixed.join(", ") || "none"}${result.fixes.skipped.length ? `; skipped: ${result.fixes.skipped.map((s) => s.file + " (" + s.reason + ")").join("; ")}` : ""}\nreport: ${result.report}\nbefore: ${JSON.stringify(result.before)}  after: ${JSON.stringify(result.after)}\n`);
+    if (skipped.length) process.stdout.write(`not read (over ${MAX_TEXT_BYTES / 1000} KB): ${skipped.map((s) => `${s.file} (${s.bytes} bytes)`).join(", ")}\n`);
     process.stdout.write(`${files.length} files scanned · ${c.error} errors · ${c.warning} warnings · ${c.advisory} advisories\n`);
   }
-  const worst = findings.length ? Math.min(...findings.map((f) => SEVERITY_RANK[f.severity])) : 3;
   process.exit(worst === 0 ? EXIT.ERROR : worst <= 2 ? EXIT.WARN : EXIT.OK);
 } catch (e) {
   if (hookMode) process.exit(0);
-  process.stderr.write(`mcp-use-scan: ${e?.message ?? e}\n`);
-  process.exit(EXIT.USAGE);
+  usage(TOOL, e?.message ?? String(e), json, "re-run with --json for the envelope; report a bug if this persists");
 }
