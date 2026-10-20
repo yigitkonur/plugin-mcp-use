@@ -6,9 +6,10 @@ A [Claude Code](https://code.claude.com) plugin for building, migrating, and har
 |---|---|
 | building a new mcp-use server | `/mcp-use:new [name] [--template mcp-server\|mcp-apps] [--hosts chatgpt,archestra]` |
 | on the **official MCP TypeScript SDK** (v1 or v2, with or without widgets) and want to move to mcp-use | `/mcp-use:migrate [--stdio "<command>"] [--url <http://.../mcp>]` |
-| on mcp-use but have no UI yet | `/mcp-use:apps` |
+| on mcp-use but have no UI yet | `/mcp-use:apps [tool names…]` |
 | serving one host and need another, or the integration is weak | `/mcp-use:host <chatgpt\|archestra> <add\|audit\|fix>` |
 | writing an Archestra Owned App (one HTML file on `window.archestra`) | `/mcp-use:archestra-app <lint\|fix\|new> <file.html>` |
+| want proof that a server works (typecheck, build, dev server, real tool calls, screenshots) | `/mcp-use:verify [--tool <name>] [--host chatgpt\|archestra]` |
 | not sure | `/mcp-use:start` (detects your project and prints the next command) |
 
 > Status: 0.9.0. Everything below was run for real on fixture projects and is recorded in `spikes/`. The two things that need your own Archestra (an Owned App rendered with `validate_app` and `get_app_diagnostics`, and an installed server rendered in its gallery) have **not** been run; see [What is not verified](#what-is-not-verified).
@@ -46,7 +47,7 @@ Node/TypeScript projects only. In other stacks the hooks print nothing and an ex
 - An Owned App passing `validate_app` / `get_app_diagnostics` on a real Archestra, and the parity between the linter and the platform (`spikes/S8.md`).
 - An installed mcp-use server rendering in Archestra's gallery.
 - Archestra's credential model for installed servers, model-context support there, and CSP diagnostics for installed servers (`skills/host-archestra/references/unverified.md`).
-- ChatGPT: one live render was done (`spikes/S7`); mobile, picture-in-picture and honoring of `preferredDisplayMode` were not tested.
+- ChatGPT: one live render was done (`spikes/S7-chatgpt-live.md`); mobile, picture-in-picture and honoring of `preferredDisplayMode` were not tested.
 - Windows (macOS and Linux CI only).
 
 ## Privacy and control
