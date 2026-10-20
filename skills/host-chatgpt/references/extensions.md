@@ -111,7 +111,7 @@ export default server;
 ```
 
 ## Mentions
-The search tool is read-only and visible to the app (mcp-use sets `ui.visibility` to include `"app"`). Arguments `{ query }`, result `{ items: ResourceLink[] }`.
+The search tool is read-only and visible to the app (mcp-use sets `ui.visibility` to `["app"]`). Arguments `{ query }`, result `{ items: ResourceLink[] }`. Observed on 2.11.0 (S26): the tool carries the **deprecated** form `_meta["openai/extensions"]["mentions/search"]: {}` and `initialize` advertises no `openai/mentions` capability; O6 says the old form keeps working while that capability is absent, so mentions work today but may need an mcp-use update when ChatGPT drops it.
 <!-- fixture: chatgpt-mentions -->
 ```ts
 import { MCPServer } from "mcp-use";

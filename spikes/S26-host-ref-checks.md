@@ -13,6 +13,14 @@ WARNING CG-T01 tool:settings.update Missing explicit boolean readOnlyHint, destr
 WARNING CG-T05 tool:settings.update Tool has no description.
 ```
 
+## Mentions advertising (mcp-use 2.11.0)
+`server.mentions({ name: "search-notes", ... })`, `initialize` and `tools/list` over HTTP:
+```
+initialize capabilities: {"logging":{},"tools":{"listChanged":true},"prompts":{"listChanged":true},"resources":{"listChanged":true,"subscribe":true}}
+tool search-notes annotations {"readOnlyHint": true}  _meta {"openai/extensions": {"mentions/search": {}}, "ui": {"visibility": ["app"]}}
+```
+So only the deprecated `mentions/search` extension form is emitted and no `openai/mentions` capability is advertised (U12 in the host matrix).
+
 ## `preferredDisplayMode`
 A view exporting `viewConfig = { displayModes: ["inline","fullscreen"], preferredDisplayMode: "inline" } satisfies ViewConfig`; resource metadata read through `mcp-use-probe`: `_meta["openai/ui"] = { availableDisplayModes: ["inline","fullscreen"], preferredDisplayMode: "inline" }`. OpenAI's extensions spec: "If `availableDisplayModes` includes both `inline` and `fullscreen`, ChatGPT defaults to `fullscreen` unless `preferredDisplayMode` specifies otherwise." That ChatGPT honors the emitted preference was not tested (S7 only observed the default: a side panel).
 
