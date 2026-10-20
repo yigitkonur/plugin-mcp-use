@@ -29,6 +29,6 @@ Observed on the inventory fixture (S21). The meaning of the schema is unchanged;
 Handler side effects, performance, auth behavior, behavior on inputs not in the sample calls, log output, and anything a write tool does. Cover them by reading the ported handler beside the old one, by running the project's own tests, and by calling write tools only with the user's go-ahead against a safe target.
 
 ## A clean result looks like
-`before` and `after` differ only in annotations that mcp-use now sets explicitly, the serializer-only schema differences above, and the dialect note, and every sample call is identical. That was the outcome for the inventory fixture (3 tools, 1 resource, 1 prompt, 2 calls): see `spikes/S21-migration.md`.
+`before` and `after` differ only in annotations that mcp-use now sets explicitly, the serializer-only schema differences above, the dialect note (and the server note when the transport or protocol changed, as it does from stdio to HTTP), and every sample call is identical. That was the outcome for the inventory fixture (3 tools, 1 resource, 1 prompt, 2 calls): see `spikes/S21-migration.md`.
 
 Sources: M2, S12, S20, S21.
