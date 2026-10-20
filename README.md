@@ -12,7 +12,7 @@ A [Claude Code](https://code.claude.com) plugin for building, migrating, and har
 | want proof that a server works (typecheck, build, dev server, real tool calls, screenshots) | `/mcp-use:verify [--tool <name>] [--host chatgpt\|archestra]` |
 | not sure | `/mcp-use:start` (detects your project and prints the next command) |
 
-> Status: 0.9.0. Everything below was run for real on fixture projects and is recorded in `spikes/`. The two things that need your own Archestra (an Owned App rendered with `validate_app` and `get_app_diagnostics`, and an installed server rendered in its gallery) have **not** been run; see [What is not verified](#what-is-not-verified).
+> Status: 0.9.1. Everything below was run for real on fixture projects and is recorded in `spikes/`. The two things that need your own Archestra (an Owned App rendered with `validate_app` and `get_app_diagnostics`, and an installed server rendered in its gallery) have **not** been run; see [What is not verified](#what-is-not-verified).
 
 ## Install
 ```sh
