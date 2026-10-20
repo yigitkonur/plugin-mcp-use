@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 // Live protocol probe for MCP servers over Streamable HTTP: snapshots, diffs, and host checks.
-import { readFileSync, writeFileSync } from "node:fs";
+import { readFileSync, writeFileSync, mkdirSync } from "node:fs";
+import { dirname } from "node:path";
 import { connect } from "../lib/mcp-http.mjs";
 import { connectStdio } from "../lib/mcp-stdio.mjs";
 import { takeSnapshot, diffSnapshots, chatgptChecks, archestraChecks, authChallengeCheck } from "../lib/probe.mjs";
@@ -56,12 +57,17 @@ try {
   if (host === "chatgpt") {
     findings = chatgptChecks(snap, { submit: flag("--submit") });
     if (uaString) {
-      const c2 = await connect({ url, ua: uaString, token });
-      const a = await authChallengeCheck(snap, c2);
-      findings.push(...a.findings);
-      if (a.note) notes.push(a.note);
-      if (a.tested) notes.push(`CG-A01: unauthenticated call with user agent "${uaString}" to ${a.tested.join(", ")} checked`);
-      await c2.close();
+      // CG-A01 tests an UNAUTHENTICATED call: this connection never carries the token (it could also run authenticated writes).
+      let c2 = null;
+      try { c2 = await connect({ url, ua: uaString }); }
+      catch (e) { notes.push(`CG-A01 not checked: the server does not accept an unauthenticated connection (${e.message})`); }
+      if (c2) {
+        const a = await authChallengeCheck(snap, c2);
+        findings.push(...a.findings);
+        if (a.note) notes.push(a.note);
+        if (a.tested) notes.push(`CG-A01: unauthenticated call with user agent "${uaString}" to ${a.tested.join(", ")} checked`);
+        await c2.close();
+      }
     }
   } else if (host === "archestra") {
     findings = archestraChecks(snap);
@@ -69,7 +75,7 @@ try {
   } else if (host && host !== "stack") { process.stderr.write(`mcp-use-probe: host "${host}" has no probe rules in this version\n`); process.exit(EXIT.USAGE); }
   if (client.state.noise?.length) findings.push({ rule_id: "PROBE", severity: "warning", host: host ?? "stack", method: "probe", target: "stdout", message: `Server wrote ${client.state.noise.length} non-JSON line(s) to stdout, which corrupts the stdio protocol (first: ${JSON.stringify(client.state.noise[0])}). Log to stderr.`, source: "M2" });
   for (const p of snap.problems) findings.push({ rule_id: "PROBE", severity: "warning", host: host ?? "stack", method: "probe", target: "server", message: p, source: "M2" });
-  if (val("--snapshot")) writeFileSync(val("--snapshot"), JSON.stringify(snap, null, 2));
+  if (val("--snapshot")) { mkdirSync(dirname(val("--snapshot")), { recursive: true }); writeFileSync(val("--snapshot"), JSON.stringify(snap, null, 2)); }
   await client.close();
   const counts = { error: findings.filter((x) => x.severity === "error").length, warning: findings.filter((x) => x.severity === "warning").length, advisory: findings.filter((x) => x.severity === "advisory").length };
   const summary = { server: snap.server, tools: snap.tools.length, resources: snap.resources.length, resource_templates: snap.resourceTemplates.length, prompts: snap.prompts.length, ui_resources: snap.ui.length, calls: snap.calls.length, counts, notes, findings, ...(val("--snapshot") ? { snapshot: val("--snapshot") } : {}) };

@@ -16,10 +16,11 @@ jobs:
           node-version: 24
       - name: Compare npm latest and vendor docs with the pinned snapshot
         id: drift
+        shell: bash
         run: |
           set +e
           node scripts/drift.mjs | tee drift.txt
-          echo "code=$?" >> "$GITHUB_OUTPUT"
+          echo "code=${PIPESTATUS[0]}" >> "$GITHUB_OUTPUT"
       - name: Open an issue on drift
         if: steps.drift.outputs.code != '0'
         env:
