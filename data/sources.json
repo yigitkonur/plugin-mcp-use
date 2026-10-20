@@ -108,6 +108,10 @@
     "S19": {
       "title": "Spike: apps-sdk-ui in mcp-use dev (Vite pre-bundling)",
       "file": "spikes/S19-apps-sdk-ui-dev.md"
+    },
+    "S7": {
+      "title": "Spike: F14 rendered in ChatGPT through a dev tunnel",
+      "file": "spikes/S7-chatgpt-live.md"
     }
   }
 }

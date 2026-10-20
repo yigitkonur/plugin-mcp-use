@@ -40,8 +40,8 @@ npx mcp-use screenshot --mcp http://localhost:<port>/mcp --tool <tool> key=value
 ```
 Use `--delay`, not `--wait-for` with a selector inside the view (the selector is evaluated in the outer page and times out; checked against the production build too). If every capture times out with `View did not become ready in time.`, read the dev log: a line `…does not provide an export named 't'` means the apps-sdk-ui dev-mode problem; add the `vite.config.ts` from `${CLAUDE_PLUGIN_ROOT}/skills/host-chatgpt/references/apps-sdk-ui.md`, or capture against `mcp-use build` + `mcp-use start --port <port>` instead. Then **open each PNG with the Read tool and say what it shows**: the real data from `structuredContent` (not "Loading…"), nothing clipped, readable text. A light-theme PNG of a view that paints no background shows the capture host's black backdrop; say so instead of calling it a bug, and judge contrast in the dark one.
 
-## Rung 5 — host (guided, ships with the host skills)
-ChatGPT developer mode through `mcp-use dev --tunnel`, and Archestra with the user's own Archestra URL. Without access, report the rung as UNVERIFIED with the reason.
+## Rung 5 — host (guided; only with the user's go-ahead)
+ChatGPT: `${CLAUDE_PLUGIN_ROOT}/skills/verify/references/chatgpt-dev-mode.md` (tunnel, custom MCP server, call the tool, look at the card, clean up). Archestra: with the user's own Archestra URL (ships in 0.3.0). Without access, report the rung as UNVERIFIED with the reason.
 
 ## Cleanup
 Stop the dev server, run `mcp-use client remove dev`, and leave `.mcp-use-plugin/` out of version control.

@@ -18,11 +18,11 @@ Verified against `@mcp-use/cli@4.5.0` by running `--help` and the commands below
 - `screenshot --wait-for <selector>` is evaluated in the **outer page**, not inside the view's iframe: `--wait-for body` works, `--wait-for "[data-status='ready']"` times out with `browser_timeout`. Use `--delay 1500` instead.
 - A view that paints no background looks black with dark text in the light-theme PNG (the capture host's backdrop shows through). Judge light-mode contrast only for views that paint their own surface.
 - Default screenshot width is 768 px (an inline ChatGPT card).
-- `mcp-use dev --tunnel` opens a public URL to your local server. Do not use it with real credentials or data.
+- `mcp-use dev --tunnel` opens a public URL (`https://<name>.tunnel.mcp-use.run/mcp`) to your local server. Do not use it with real credentials or data. The Inspector is not reachable through it (`/mcp/inspector` → 404, verified, S7).
 - `create-mcp-use-app` is a separate package: `npx create-mcp-use-app@latest <name> --template mcp-server|mcp-apps|blank [--npm|--pnpm|--bun] [--install|--no-install] [--skills|--no-skills] [--sdk-version <v>]`. `--skills` copies the official `mcp-apps-builder` skill into `.claude/skills`, `.agents/skills` and `.cursor/skills`.
 
 ## Two layers of verification
 1. Protocol: tools, resources, prompts and skills through `mcp-use client` (or `mcpc`). Exit codes and JSON, no model involved.
 2. Model: does an LLM pick the right tool and does the view render? That needs a host (Inspector chat, ChatGPT developer mode, Archestra). `/mcp-use:verify` walks both.
 
-Sources: M1, S16.
+Sources: M1, S16, S7.

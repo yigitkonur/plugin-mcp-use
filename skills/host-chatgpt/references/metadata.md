@@ -46,7 +46,7 @@ export default server;
 |---|---|
 | `_meta.ui.resourceUri` | the UI template for this tool (standard). mcp-use writes it for `view: { name }`. |
 | `_meta.ui.visibility` | `["model","app"]` default; `["app"]` hides a tool from the model. mcp-use: `visibility: "app"` (`mcp-use-server/references/tools-and-results.md`). |
-| `_meta["openai/outputTemplate"]` | optional ChatGPT-only alias of `ui.resourceUri`. Not required; mcp-use 2.11.0 does not emit it. It is a **URI in `_meta`**, not a format string in `annotations`. |
+| `_meta["openai/outputTemplate"]` | optional ChatGPT-only alias of `ui.resourceUri`. Not required: ChatGPT rendered a view that carried only `_meta.ui.resourceUri` (S7); mcp-use 2.11.0 does not emit it. It is a **URI in `_meta`**, not a format string in `annotations`. |
 | `_meta["openai/toolInvocation/invoking"]`, `…/invoked` | short status text, each **≤ 64 characters** |
 | `_meta["openai/fileParams"]` | input fields that carry files |
 | `_meta["openai/profile"]` | marks the authenticated read-only profile tool |
@@ -77,4 +77,4 @@ Names unique, human-readable, verb-based. Descriptions accurate, non-empty, stat
 ## Client-sent `_meta` (O5)
 `openai/locale`, `openai/userAgent`, `openai/userLocation`, and anonymized `openai/subject`, `openai/session`, `openai/organization` are hints, not identity. In mcp-use they surface through `ctx.client.user()`; never authorize with them.
 
-Sources: O1, O4, O5, O6, M2, S11.
+Sources: O1, O4, O5, O6, M2, S11, S7.
