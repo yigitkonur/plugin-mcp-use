@@ -60,7 +60,7 @@ for (const f of [...walk(join(root, "bin")), ...walk(join(root, "hooks")).filter
 // checklists: every referenced static rule exists in guard-rules.tsv, every probe rule is emitted by lib/probe.mjs
 const ruleIds = new Set(readFileSync(join(root, "data", "guard-rules.tsv"), "utf8").split("\n").filter((l) => l && !l.startsWith("#")).map((l) => l.split("\t")[0]));
 const probeSrc = readFileSync(join(root, "lib", "probe.mjs"), "utf8");
-const { RULE_IDS: lintIds } = await import(pathToFileURL(join(root, "lib", "archestra-lint.mjs")).href);
+const { RULE_IDS: lintIds, RULE_META } = await import(pathToFileURL(join(root, "lib", "archestra-lint.mjs")).href);
 for (const f of readdirSync(join(root, "data", "hosts"))) {
   const cl = json(`data/hosts/${f}`);
   for (const it of cl?.items ?? []) {
@@ -71,6 +71,10 @@ for (const f of readdirSync(join(root, "data", "hosts"))) {
   }
 }
 const archItems = json("data/hosts/archestra.checklist.json")?.items ?? [];
+const recipes = readFileSync(join(root, "skills", "archestra-app", "references", "fix-recipes.md"), "utf8");
+for (const id of lintIds) if (RULE_META[id].fix_mode !== "auto" && !new RegExp(`\\*\\*[^*\\n]*\\b${id}\\b[^*\\n]*\\*\\*`).test(recipes)) err(`skills/archestra-app/references/fix-recipes.md: no recipe heading for ${id}`);
+const lintDoc = readFileSync(join(root, "skills", "host-archestra", "references", "lint-rules.md"), "utf8");
+for (const id of lintIds) if (!new RegExp(`\\| ${id} \\|`).test(lintDoc)) err(`skills/host-archestra/references/lint-rules.md: no table row for ${id}`);
 for (const id of lintIds) if (!archItems.some((it) => (it.lint_rules ?? []).includes(id))) err(`data/hosts/archestra.checklist.json: lint rule ${id} is not covered by any AO-* item`);
 for (const l of readFileSync(join(root, "data", "guard-rules.tsv"), "utf8").split("\n").filter((x) => x && !x.startsWith("#"))) {
   const c = l.split("\t");

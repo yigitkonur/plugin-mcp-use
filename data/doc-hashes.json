@@ -9,6 +9,7 @@
     "https://developers.openai.com/plugins/build/extensions.md": "79befbc71f52887b",
     "https://raw.githubusercontent.com/openai/mcp-extensions/main/docs/spec.md": "07955af1e60984e1",
     "https://raw.githubusercontent.com/archestra-ai/archestra/main/docs/pages/reference/apps-sdk.md": "eb778606600efba8",
-    "https://raw.githubusercontent.com/archestra-ai/archestra/main/docs/pages/chat/apps.md": "4d7a75a41daa5a53"
+    "https://raw.githubusercontent.com/archestra-ai/archestra/main/docs/pages/chat/apps.md": "4d7a75a41daa5a53",
+    "https://raw.githubusercontent.com/archestra-ai/archestra/main/docs/pages/reference/archestra-mcp-server.md": "9f77849a63970a57"
   }
 }

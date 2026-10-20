@@ -30,6 +30,11 @@ test("every rule has a positive in the corpus", () => {
   assert.deepEqual(RULE_IDS.filter((r) => !covered.has(r)), []);
 });
 
+test("the shipped skeleton lints clean", () => {
+  const text = readFileSync(join(root, "skills", "archestra-app", "assets", "skeleton.html"), "utf8");
+  assert.deepEqual(lintHtml(text), []);
+});
+
 test("every file in the corpus has an expectation", () => {
   const listed = new Set(expectations.map((e) => e.file));
   assert.deepEqual(readdirSync(join(corpus, "apps")).filter((f) => !listed.has(f)), []);

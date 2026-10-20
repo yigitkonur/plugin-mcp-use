@@ -112,6 +112,10 @@
     "S7": {
       "title": "Spike: F14 rendered in ChatGPT through a dev tunnel",
       "file": "spikes/S7-chatgpt-live.md"
+    },
+    "A4": {
+      "title": "Archestra: Archestra MCP Server reference (built-in app authoring tools and their schemas)",
+      "url": "https://archestra.ai/docs/reference/archestra-mcp-server"
     }
   }
 }
