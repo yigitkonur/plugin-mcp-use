@@ -208,3 +208,44 @@ test("lint --fix on a dirty file refuses and writes no report", () => {
   assert.ok(!existsSync(join(d, ".mcp-use-plugin")), "no report directory");
 });
 
+
+// ---- --file and the hook path: symlinks and names that start with dots ----------------------------------------
+import { symlinkSync } from "node:fs";
+const V1 = 'import { MCPServer } from "mcp-use/server";\n';
+function linkedProject() {
+  const base = tmp("symlink-");
+  const real = join(base, "real");
+  mkdirSync(join(real, "src"), { recursive: true });
+  writeFileSync(join(real, "package.json"), JSON.stringify({ name: "p", dependencies: { "mcp-use": "2.11.0" } }));
+  writeFileSync(join(real, "src", "index.ts"), V1);
+  writeFileSync(join(real, "..dots.ts"), V1);
+  symlinkSync(real, join(base, "link"));
+  return { real, link: join(base, "link") };
+}
+
+test("scan --file accepts an absolute path that reaches the project through a symlink", () => {
+  const { link } = linkedProject();
+  // no CLAUDE_PROJECT_DIR: the project directory is process.cwd(), which the OS reports with symlinks resolved
+  const r = JSON.parse(run("mcp-use-scan", ["--file", join(link, "src", "index.ts"), "--json"], { cwd: link, env: { CLAUDE_PROJECT_DIR: "" } }).out);
+  assert.deepEqual(r.result.findings.map((f) => `${f.rule_id} ${f.file}`), ["STK-01 src/index.ts"]);
+});
+
+test("scan --file accepts a file whose name starts with dots, and still rejects a path outside the project", () => {
+  const { link } = linkedProject();
+  const ok = JSON.parse(run("mcp-use-scan", ["--file", "..dots.ts", "--json"], { cwd: link }).out);
+  assert.deepEqual(ok.result.findings.map((f) => f.file), ["..dots.ts"]);
+  const out = run("mcp-use-scan", ["--file", "/etc/hosts"], { cwd: link });
+  assert.equal(out.status, 3);
+  assert.match(out.err, /outside the project directory/);
+});
+
+test("the edit guard finds the file when its path and the session directory differ only by a symlink", () => {
+  const { real, link } = linkedProject();
+  const data = tmp("guard-data-");
+  const r = spawnSync("sh", [join(root, "hooks", "post-edit-guard.sh")], {
+    input: JSON.stringify({ hook_event_name: "PostToolUse", session_id: "s-link", cwd: real, tool_name: "Edit", tool_input: { file_path: join(link, "src", "index.ts") } }),
+    env: { ...process.env, CLAUDE_PLUGIN_ROOT: root, CLAUDE_PLUGIN_DATA: data }, encoding: "utf8",
+  });
+  assert.equal(r.status, 0);
+  assert.match(JSON.parse(r.stdout).hookSpecificOutput.additionalContext, /STK-01/);
+});

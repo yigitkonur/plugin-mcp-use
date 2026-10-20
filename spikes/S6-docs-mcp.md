@@ -6,3 +6,5 @@ Toy `.mcp.json` with `mcp-use-docs`, `openai-docs`, `archestra-docs` (type http,
 - Tool schemas were deferred: the model used `ToolSearch` to load them before calling.
 
 **Decision:** ship all three. Cost is near zero until used. Skills name tool short forms (`search_mcp_use`, `search_openai_docs`, `search_docs`); the full prefix is `mcp__plugin_mcp-use_<server>__`.
+
+**Tool names (observed 2026-10-20 and 21 in the `system` init tool lists of headless sessions with this plugin loaded):** `mcp-use-docs`: `search_mcp_use`, `query_docs_filesystem_mcp_use`, `submit_feedback` (never called); `openai-docs`: `search_openai_docs`, `fetch_openai_doc`, `list_openai_docs`, `list_api_endpoints`, `get_openapi_spec`; `archestra-docs`: `search_docs`, `read_doc`, `list_docs`. The Archestra server connects after session start, so its tools are missing from some init lists.

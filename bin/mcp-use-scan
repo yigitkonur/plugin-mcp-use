@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // Static checks for mcp-use servers and views (stack rules + host rules), driven by data/guard-rules.tsv.
-import { readFileSync, mkdirSync, appendFileSync, existsSync, statSync } from "node:fs";
+import { readFileSync, mkdirSync, appendFileSync, existsSync, statSync, realpathSync } from "node:fs";
 import { join, relative, resolve, isAbsolute, sep } from "node:path";
 import { tmpdir } from "node:os";
 import { detect } from "../lib/detect.mjs";
@@ -72,13 +72,15 @@ try {
 
 // --file: a path relative to the current directory or to --dir (the one inside the project wins when both exist);
 // always reported as a project-relative POSIX path.
-const inside = (abs) => !posix(relative(root, abs)).startsWith("..");
+const real = (p) => { try { return realpathSync(p); } catch { return p; } };
+const escapes = (rel) => rel === ".." || rel.startsWith("../") || isAbsolute(rel); // a ".." path segment, not a name that starts with dots
+const inside = (abs) => !escapes(posix(relative(real(root), real(abs))));
 const fileArgs = (o.file ?? []).map((f) => {
   const fromCwd = resolve(f), fromRoot = resolve(root, f);
   const abs = isAbsolute(f) ? f : existsSync(fromCwd) && inside(fromCwd) ? fromCwd : existsSync(fromRoot) ? fromRoot : fromCwd;
   if (kindOf(abs) !== "file") usage(TOOL, `--file ${f}: ${kindOf(abs) === null ? "no such file" : "not a file"}`, json);
   if (!inside(abs)) usage(TOOL, `--file ${f}: outside the project directory ${root}`, json);
-  return posix(relative(root, abs));
+  return posix(relative(real(root), real(abs)));
 });
 
 try {
@@ -97,10 +99,10 @@ try {
   const rules = loadRules();
 
   let files;
-  if (hookMode) files = hookFile ? [posix(relative(root, resolve(root, hookFile)))] : [];
+  if (hookMode) files = hookFile ? [posix(relative(real(root), real(resolve(root, hookFile))))] : [];
   else if (fileArgs.length) files = fileArgs;
   else files = projectFiles(root);
-  files = files.filter((f) => !f.startsWith(".."));
+  files = files.filter((f) => !escapes(f));
 
   const allFiles = (hookMode || fileArgs.length) && rules.some((r) => r.kind.startsWith("project:")) ? projectFiles(root) : null;
   const sortFindings = (fs) => fs.sort((a, b) => SEVERITY_RANK[a.severity] - SEVERITY_RANK[b.severity] || a.file.localeCompare(b.file) || a.line - b.line);
