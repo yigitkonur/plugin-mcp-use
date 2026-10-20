@@ -4,8 +4,8 @@ A [Claude Code](https://code.claude.com) plugin for building, migrating, and har
 
 | You are… | Start with |
 |---|---|
-| building a new mcp-use server | `/mcp-use:new [name] [--template mcp-server\|mcp-apps]` |
-| on the **official MCP TypeScript SDK** (v1 or v2, with or without widgets) and want to move to mcp-use | `/mcp-use:migrate` |
+| building a new mcp-use server | `/mcp-use:new [name] [--template mcp-server\|mcp-apps] [--hosts chatgpt,archestra]` |
+| on the **official MCP TypeScript SDK** (v1 or v2, with or without widgets) and want to move to mcp-use | `/mcp-use:migrate [--stdio "<command>"] [--url <http://.../mcp>]` |
 | on mcp-use but have no UI yet | `/mcp-use:apps` |
 | serving one host and need another, or the integration is weak | `/mcp-use:host <chatgpt\|archestra> <add\|audit\|fix>` |
 | writing an Archestra Owned App (one HTML file on `window.archestra`) | `/mcp-use:archestra-app <lint\|fix\|new> <file.html>` |
@@ -23,7 +23,7 @@ Inside a session: `/plugin marketplace add yigitkonur/plugin-mcp-use`, then `/pl
 ## What you get
 | Piece | What it does |
 |---|---|
-| Knowledge skills (model-invoked) `mcp-use-server`, `mcp-apps`, `host-chatgpt`, `host-archestra` | Rules for mcp-use v2 verified against its published types and live runs: tools with explicit annotations, result envelopes, auth, elicitation, views, hooks, CSP, ChatGPT review rules and Apps SDK UI, both Archestra routes. Troubleshooting, deploy and OAuth-debugging references are included. Every TypeScript example is compiled in CI. |
+| Knowledge skills (model-invoked) `mcp-use-server`, `mcp-apps`, `host-chatgpt`, `host-archestra` | Rules for mcp-use v2 verified against its published types and live runs: tools with explicit annotations, result envelopes, auth, elicitation, views, hooks, CSP, ChatGPT review rules and Apps SDK UI, both Archestra routes. Troubleshooting, deploy and OAuth-debugging references are included. Every TypeScript example marked as a fixture (45 of the 48 blocks) is compiled in CI; the other three (two Next.js snippets, one Vite config) say they are not. |
 | Workflow skills (you type them) | `start`, `new`, `apps`, `host`, `migrate`, `verify`, `archestra-app` |
 | Agents | `host-reviewer` (audits one host's checklist), `server-surveyor` (inventories an official-SDK server before migration) |
 | `bin/` engines (also usable by the model) | `mcp-use-detect` (stack, signals, scenario), `mcp-use-scan` (static rules, `--fix` for mechanical ones), `mcp-use-probe` (live protocol checks over HTTP or `--stdio`, snapshots and `--diff` for migration parity), `archestra-app-lint` (Owned-App lint, `--fix`) |
@@ -34,7 +34,7 @@ Footprint: about 745 tokens always in context (`claude plugin details mcp-use`);
 
 ## How each journey works
 - **New server:** scaffolds with `create-mcp-use-app`, adds a first tool, and runs a verification ladder: typecheck, build, dev server, real tool calls, light and dark screenshots of views.
-- **Migration (official SDK only):** the surveyor inventories the old server; a read-only baseline snapshot is taken from the old server (stdio or HTTP); you port tool by tool with `references/official-sdk.md`; a second snapshot is diffed against the first, and every difference must be intended. mcp-use 2.11.0 serves HTTP only, so stdio servers become URL-based: the skill asks before porting. Other frameworks (FastMCP, mcp-framework, xmcp, …) are not covered.
+- **Migration (official SDK only):** the surveyor inventories the old server; a read-only baseline snapshot is taken from the old server (stdio or HTTP); you port tool by tool with `skills/migrate/references/official-sdk.md`; a second snapshot is diffed against the first, and every difference must be intended. mcp-use 2.11.0 serves HTTP only, so stdio servers become URL-based: the skill asks before porting. Other frameworks (FastMCP, mcp-framework, xmcp, …) are not covered.
 - **Add MCP Apps:** decides which tools deserve a view, builds each view against the real hooks, and checks them on every declared host.
 - **Add or improve a host:** one gap analysis against `data/hosts/<host>.checklist.json`: static rules, live probe, and a read-only reviewer for the items that need judgment; fixes are applied only for mechanical rules unless you say otherwise.
 - **Archestra Owned Apps:** the linter mirrors Archestra's documented save gate and sandbox rules (25 rules, 4 with a safe `--fix`). Archestra's own `validate_app` and `get_app_diagnostics` stay authoritative.

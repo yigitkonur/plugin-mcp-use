@@ -144,6 +144,6 @@ export const provider = oauthCustomProvider<{ id: string }>({
 ## Security
 - Do not log, echo or store bearer tokens or client secrets.
 - Keep checks next to the sensitive operation or in narrow `mcp:tools/call` middleware.
-- Do not put credentials in `server.settings` or in view state (`host-chatgpt/references/extensions.md`).
+- Do not put credentials in `server.settings` or in view state (`${CLAUDE_PLUGIN_ROOT}/skills/host-chatgpt/references/extensions.md`).
 
 Sources: M1, M2, O5, S18.

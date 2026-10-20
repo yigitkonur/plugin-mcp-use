@@ -59,7 +59,7 @@ Rules that decide the target:
 | `NODE_ENV` | `mcp-use start` sets `production` if unset (never overrides). It does not change the log level | [ran: tool printed `NODE_ENV=production`] [code: cli dist; `resolveLogLevel`] |
 | `MCP_URL` | public origin of the server (scheme and host only). Used for view CSP `connectDomains`/`resourceDomains`; falls back to the request origin when unset. OAuth on `server.fetch` or a public host needs it (or a provider `resource`) | [ran: csp with and without it] [ran: OAuth `fetch` and `listen(0.0.0.0)` threw without it, worked with it] |
 | `MCP_ASSETS_URL` | origin (optionally with path) that hosts view assets. At build it rewrites `manifest.json` to absolute URLs and prints where to publish `views/` and `landing/` | [ran: build with `https://cdn.example.com/mcp-assets`] |
-| `CSP_URLS` | adds the origin to connect, resource, frame and base-uri | [ran: all four lists contained it] [existing: mcp-apps/references/csp.md] |
+| `CSP_URLS` | adds the origin to connect, resource, frame and base-uri | [ran: all four lists contained it] [existing: ${CLAUDE_PLUGIN_ROOT}/skills/mcp-apps/references/csp.md] |
 | `CSP_CONNECT_DOMAINS`, `CSP_RESOURCE_DOMAINS`, `CSP_FRAME_DOMAINS`, `CSP_BASE_URI_DOMAINS` | per-category additions | [ran: `CSP_CONNECT_DOMAINS` changed only connectDomains] [code: strings in mcp-use dist] |
 | `MCP_USE_LOG_LEVEL` | `info`, `debug` or `trace`; overrides `logging.level`; default `info` | [code: `resolveLogLevel`] [types: logging.d.ts] [existing: config-and-lifecycle.md] |
 | `MCP_USE_ANONYMIZED_TELEMETRY` | the value `false` disables mcp-use telemetry | [code: mcp-use dist `env("MCP_USE_ANONYMIZED_TELEMETRY")==="false"`] |

@@ -10,8 +10,8 @@ Spec: OpenAI MCP extensions (O6) and Extensions overview (O2); mcp-use API from 
 | Structured settings | native settings screen from a read tool and an update tool | `server.settings({...})` | all |
 | Deep links | `https://chatgpt.com/plugins/<plugin-id>/app/<tool-name>?path=<encoded-app-relative-url>`; the app reads it from `hostContext["openai/deepLink"]` | `useDeepLink()` → `{ url }` | not Android |
 | Composer @-mentions | search tool backing mentions in the composer | `server.mentions({...})` (mcp-use ≥ 2.9.0) | desktop only |
-| Extended model context | `ui/update-model-context` extensions; each call replaces the app instance's prior context; no image content yet on web | `useModelContext()` (`mcp-apps/references/hooks.md`) | web*, iOS*, desktop, Android |
-| Extended forms | `OpenAIForm` through elicitation; OpenAI-registered servers need multi-round-trip requests (MRTR) | `inputRequired.elicit` (`mcp-use-server/references/elicitation.md`) | desktop; web*; no mobile |
+| Extended model context | `ui/update-model-context` extensions; each call replaces the app instance's prior context; no image content yet on web | `useModelContext()` (`${CLAUDE_PLUGIN_ROOT}/skills/mcp-apps/references/hooks.md`) | web*, iOS*, desktop, Android |
+| Extended forms | `OpenAIForm` through elicitation; OpenAI-registered servers need multi-round-trip requests (MRTR) | `inputRequired.elicit` (`${CLAUDE_PLUGIN_ROOT}/skills/mcp-use-server/references/elicitation.md`) | desktop; web*; no mobile |
 | Plugin onboarding | `extensions["com.openai"].onboardingSkill` in the plugin manifest | n/a (plugin packaging) | all |
 
 The deep-link format is `?path=`, not `?route=`. Entrypoint tools are invoked without model-chosen arguments, and `visibility` is ignored when a tool is invoked as an entrypoint.

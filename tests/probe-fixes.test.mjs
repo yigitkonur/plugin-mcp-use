@@ -85,12 +85,19 @@ const rl = require("node:readline").createInterface({ input: process.stdin });
 rl.on("line", (l) => { const m = JSON.parse(l); if (m.method === "initialize") process.stdout.write(JSON.stringify({ jsonrpc: "2.0", id: m.id, result: { protocolVersion: "2025-06-18", capabilities: {}, serverInfo: { name: "tree", version: "1" } } }) + "\\n"); });
 setInterval(() => {}, 1000);`);
   // two commands force a real wrapper shell, so the node server is a grandchild of the spawned sh
-  const c = await connectStdio({ command: `node ${server}; echo wrapper-done`, cwd: d, timeoutMs: 10000 });
-  const pid = Number(readFileSync(pidfile, "utf8"));
-  assert.doesNotThrow(() => process.kill(pid, 0), "server is running before close");
-  await c.close();
-  const dead = await new Promise((res) => { const t0 = Date.now(); const tick = () => { try { process.kill(pid, 0); } catch { return res(true); } Date.now() - t0 > 3000 ? res(false) : setTimeout(tick, 50); }; tick(); });
-  assert.equal(dead, true, "grandchild server process is gone after close()");
+  let c, pid;
+  try {
+    c = await connectStdio({ command: `node ${server}; echo wrapper-done`, cwd: d, timeoutMs: 10000 });
+    pid = Number(readFileSync(pidfile, "utf8"));
+    assert.doesNotThrow(() => process.kill(pid, 0), "server is running before close");
+    await c.close();
+    const dead = await new Promise((res) => { const t0 = Date.now(); const tick = () => { try { process.kill(pid, 0); } catch { return res(true); } Date.now() - t0 > 3000 ? res(false) : setTimeout(tick, 50); }; tick(); });
+    assert.equal(dead, true, "grandchild server process is gone after close()");
+  } finally {
+    // a failed assertion must not leave the detached server running
+    await c?.close();
+    if (pid) { try { process.kill(pid, "SIGKILL"); } catch { /* already gone */ } }
+  }
 });
 
 test("drift workflow records the exit status of drift.mjs, not of tee", () => {

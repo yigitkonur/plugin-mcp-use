@@ -7,7 +7,7 @@ disable-model-invocation: true
 
 # /mcp-use:archestra-app
 
-Arguments: `$ARGUMENTS` = `<mode> <file.html>`. Modes: `lint` (read-only report; default), `fix` (apply fixes), `new` (create a file from the skeleton and lint it). This works on any HTML file in any repository; no Node project is needed. Read `${CLAUDE_PLUGIN_ROOT}/skills/host-archestra/SKILL.md` and `references/route-b-sdk.md` before writing app code. The platform's `validate_app` and `get_app_diagnostics` are the authority; the lint is a pre-flight.
+Arguments: `$ARGUMENTS` = `<mode> <file.html>`. Modes: `lint` (read-only report; default), `fix` (apply fixes), `new` (create a file from the skeleton and lint it). This works on any HTML file in any repository; no Node project is needed. Read `${CLAUDE_PLUGIN_ROOT}/skills/host-archestra/SKILL.md` and `${CLAUDE_PLUGIN_ROOT}/skills/host-archestra/references/route-b-sdk.md` before writing app code. The platform's `validate_app` and `get_app_diagnostics` are the authority; the lint is a pre-flight.
 
 ## lint
 1. Run `archestra-app-lint <file> --json` (add `--ui-permissions camera,…` if the app's `scaffold_app` call declared any). Exit 0 clean, 1 warnings or advisories, 2 errors.

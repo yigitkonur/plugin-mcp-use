@@ -1,6 +1,6 @@
 # CSP and iframes for ChatGPT
 
-Basis: OpenAI build guide (O1), plugin guidelines (O4), reference (O5). mcp-use produces the standard `_meta.ui.csp` (`mcp-apps/references/csp.md`).
+Basis: OpenAI build guide (O1), plugin guidelines (O4), reference (O5). mcp-use produces the standard `_meta.ui.csp` (`${CLAUDE_PLUGIN_ROOT}/skills/mcp-apps/references/csp.md`).
 
 - **Declare exact domains.** `connectDomains` for fetch/XHR/WebSocket, `resourceDomains` for images, fonts, scripts, styles. OpenAI reviews compare the declared CSP with what the UI actually does.
 - **Nested frames are blocked by default.** The normal case for `frameDomains` is the server's **own registrable domain** (for example `api.example.com` may embed `app.example.com`); shared hosting is not ownership. Third-party origins are limited to cases where the embedded experience is essential. Submission requires a written justification, and iframe use can trigger extra review (O4 "Iframes and embedded pages", O5).

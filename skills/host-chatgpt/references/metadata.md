@@ -45,7 +45,7 @@ export default server;
 | Key | Meaning |
 |---|---|
 | `_meta.ui.resourceUri` | the UI template for this tool (standard). mcp-use writes it for `view: { name }`. |
-| `_meta.ui.visibility` | `["model","app"]` default; `["app"]` hides a tool from the model. mcp-use: `visibility: "app"` (`mcp-use-server/references/tools-and-results.md`). |
+| `_meta.ui.visibility` | `["model","app"]` default; `["app"]` hides a tool from the model. mcp-use: `visibility: "app"` (`${CLAUDE_PLUGIN_ROOT}/skills/mcp-use-server/references/tools-and-results.md`). |
 | `_meta["openai/outputTemplate"]` | optional ChatGPT-only alias of `ui.resourceUri`. Not required: ChatGPT rendered a view that carried only `_meta.ui.resourceUri` (S7); mcp-use 2.11.0 does not emit it. It is a **URI in `_meta`**, not a format string in `annotations`. |
 | `_meta["openai/toolInvocation/invoking"]`, `…/invoked` | short status text, each **≤ 64 characters** |
 | `_meta["openai/fileParams"]` | input fields that carry files |

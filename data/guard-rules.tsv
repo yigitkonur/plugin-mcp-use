@@ -1,6 +1,7 @@
 # rule_id	host	file_glob	kind	pattern	when	unless	severity	fix_mode	replacement	message	source	min_mcp_use	max_mcp_use
 # kinds: regex (every match is a finding; flags gm) · absent (when matches and pattern does not) · tooldef (server.tool definitions: require:a,b.c | imply:a=>b) · count>N (more than N matches)
 # severity: error|warning|advisory · fix_mode: auto|suggest|manual · replacement uses $1.. for regex, {{nm}} = relative path to node_modules
+# min_mcp_use / max_mcp_use: optional version gate (applicable() in lib/scan.mjs). Every rule leaves both empty: no evidence was collected for the version that added or removed each API, and the supported floor is 2.8.0. Fill them only together with a cited version.
 STK-01	stack	**/*.{ts,tsx,mts,js,mjs}	regex	from\s+(["'])mcp-use/server\1			error	auto	from $1mcp-use$1	"mcp-use/server" is the v1 import; v2 imports from "mcp-use".	M2
 STK-02	stack	**/*.{ts,mts,js,mjs}	regex	^[ \t]*(?:(?:const|let|var)\s+\w+\s*=\s*)?server\.tool\(			advisory	suggest		Tool is not exported; views and useCallTool resolve tools through exported refs (export const x = server.tool(...)).	M2
 STK-03	stack	**/*.{ts,mts,js,mjs}	absent	\bexport\s+default\b	new\s+MCPServer\s*\(		warning	suggest		Server module has no default export; mcp-use dev/build/start load the default export.	M1

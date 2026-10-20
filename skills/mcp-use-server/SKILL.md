@@ -25,8 +25,8 @@ mcp-use moved from 2.8.2 to 2.11.0 in ten days. Do not trust memory for signatur
 9. Prove it by running it: `/mcp-use:verify`.
 
 ## Guardrails (each one has bitten real code)
-- `useModelContext()` returns `attachments` as a **readonly array** of `{ key, block }`, and `add`/`remove`/`clearAttachments` return **Promises**. The Record/synchronous version in older notes is wrong (`mcp-apps/references/hooks.md`).
-- `server.settings(...)` fields are `{ schema, title, description? }` and `read`/`update` both return the values. There is no `type`, `label`, `default` or `secret`, and credentials must not be stored there (`host-chatgpt/references/extensions.md`).
+- `useModelContext()` returns `attachments` as a **readonly array** of `{ key, block }`, and `add`/`remove`/`clearAttachments` return **Promises**. The Record/synchronous version in older notes is wrong (`${CLAUDE_PLUGIN_ROOT}/skills/mcp-apps/references/hooks.md`).
+- `server.settings(...)` fields are `{ schema, title, description? }` and `read`/`update` both return the values. There is no `type`, `label`, `default` or `secret`, and credentials must not be stored there (`${CLAUDE_PLUGIN_ROOT}/skills/host-chatgpt/references/extensions.md`).
 - `useViewTheme()` returns the string `"light" | "dark"`, not `{ theme }`.
 - `<AppsSDKUIProvider>` requires `linkComponent`. `Card` does not exist in `@openai/apps-sdk-ui`.
 - There is no `ctx.elicit()`, `ctx.sample()`, `ctx.log()` or `supportsApps()` in v2, and `ctx.req`, `widget()`, `text()`, `object()` and the other response helpers are deprecated. See `references/elicitation.md` and `references/versions.md`.

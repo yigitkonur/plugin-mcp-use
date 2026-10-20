@@ -15,8 +15,8 @@ Reads data/signals.tsv and reports stack, MCP signals, scenario, versions, hosts
   --brief           print the SessionStart brief (empty output when the project is out of scope or has no MCP signal)
   --format hook     with --brief: print the SessionStart hook JSON instead of plain text
   --preflight       Node version, package managers, and whether the target dir is empty (for /mcp-use:new)
-  --json            full envelope
-Exit: 0 ok · 3 usage · 4 out of scope (non-Node project, --json only)
+  --json            accepted for symmetry with the other engines; the full JSON envelope is the only output besides --brief
+Exit: 0 ok · 3 usage · 4 out of scope (a non-Node project; not with --brief, which stays silent)
 `);
   process.exit(0);
 }

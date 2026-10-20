@@ -56,7 +56,7 @@ try {
 try {
   const d = detect(root);
   if (hookMode && (!d.settings.enabled || d.scenario === "NONE" || d.scenario === "OUT_OF_SCOPE")) {
-    // Owned-App HTML in a Node project still counts; scenario OWNED_APP is handled by the Archestra rules in a later version.
+    // No MCP signal (or the plugin is disabled): the hook stays silent, Owned-App HTML included.
     process.exit(0);
   }
   if (!hookMode && d.scenario === "OUT_OF_SCOPE") {

@@ -1,6 +1,6 @@
 ---
 name: host-reviewer
-description: Use this agent to audit an mcp-use server against one host's checklist (ChatGPT or Archestra Route A) and return findings in the plugin's finding schema. It runs the static scan and the live probe, reads the flagged code, judges the manual checklist items, and never edits files. Used by /mcp-use:host and /mcp-use:apps. Example - "audit this project for ChatGPT with the dev server at http://localhost:3000/mcp".
+description: Use this agent to audit an mcp-use server against one host's checklist (ChatGPT or Archestra Route A) and return findings in the plugin's finding schema. It runs the static scan and the live probe, reads the flagged code, judges the manual checklist items, and never edits files. Used by /mcp-use:host. Example - "audit this project for ChatGPT with the dev server at http://localhost:3000/mcp".
 tools: Read, Grep, Glob, Bash
 model: sonnet
 skills:
