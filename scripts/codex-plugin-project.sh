@@ -5,7 +5,8 @@
 #   global-on / -off  $CODEX_HOME/config.toml         same section, user level (default ~/.codex)
 # Codex ignores a project's .codex/config.toml unless the project is trusted in the user config:
 #   [projects."<abs path>"] trust_level = "trusted"
-# --trust adds that block (trusting a project also enables its hooks and rules, so it is opt-in).
+# --trust adds that block, or flips an existing "untrusted" one (trusting a project also enables its hooks and rules, so it is opt-in).
+# Tables are matched by their parsed key path, so [plugins."x"], [plugins.'x'] and an indented header are the same table.
 set -eu
 mode="${1:?usage: $0 on|off|global-on|global-off <plugin@marketplace> [project-dir] [--trust]}"; id="${2:?plugin@marketplace}"; shift 2
 dir="$PWD"; trust=0
@@ -16,29 +17,102 @@ python3 -I - "$id" "$val" "$dir" "$home" "$trust" "$mode" <<'PY'
 import os, re, sys
 pid, val, d, home, trust, mode = sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4], sys.argv[5] == "1", sys.argv[6]
 glob = mode.startswith("global")
+
+def parse_key(text):
+    """Dotted TOML key -> list of segments (bare, "basic" or 'literal'), or None if it is not a plain key path."""
+    segs, i, n = [], 0, len(text)
+    while i < n:
+        while i < n and text[i] in " \t": i += 1
+        if i >= n: return None
+        c = text[i]
+        if c == '"':
+            i += 1; buf = ""
+            while i < n and text[i] != '"':
+                if text[i] == "\\" and i + 1 < n: buf += text[i + 1]; i += 2
+                else: buf += text[i]; i += 1
+            if i >= n: return None
+            i += 1
+        elif c == "'":
+            j = text.find("'", i + 1)
+            if j < 0: return None
+            buf = text[i + 1:j]; i = j + 1
+        else:
+            m = re.match(r"[A-Za-z0-9_-]+", text[i:])
+            if not m: return None
+            buf = m.group(0); i += len(buf)
+        segs.append(buf)
+        while i < n and text[i] in " \t": i += 1
+        if i < n:
+            if text[i] != ".": return None
+            i += 1
+    return segs or None
+
+HDR = re.compile(r"^[ \t]*\[(?!\[)(.*)\][ \t]*(#.*)?$")
+def table_range(lines, path):
+    """(header index, end index) of the [path] table, or None. The body ends at the next header of any kind."""
+    for i, ln in enumerate(lines):
+        m = HDR.match(ln.rstrip("\n"))
+        if m and parse_key(m.group(1)) == path:
+            j = i + 1
+            while j < len(lines) and not re.match(r"^[ \t]*\[", lines[j]): j += 1
+            return i, j
+    return None
+
+def q(x): return '"' + x.replace("\\", "\\\\").replace('"', '\\"') + '"'
+
+def set_in_table(path, key, value, create_if_missing=True, only_if=None):
+    """Make `key = value` true in table `path` of file `p`; returns the old value (or None)."""
+    global lines
+    r = table_range(lines, path)
+    if not r:
+        if not create_if_missing: return None
+        if lines and not lines[-1].endswith("\n"): lines[-1] += "\n"
+        if lines and lines[-1].strip(): lines.append("\n")
+        lines += ["[" + ".".join(q(x) if not re.fullmatch(r"[A-Za-z0-9_-]+", x) else x for x in path) + "]\n", "%s = %s\n" % (key, value)]
+        return None
+    i, j = r
+    for k in range(i + 1, j):
+        m = re.match(r"^([ \t]*)%s[ \t]*=[ \t]*(.*?)[ \t]*(#.*)?$" % re.escape(key), lines[k].rstrip("\n"))
+        if m:
+            old = m.group(2)
+            if only_if is None or only_if(old): lines[k] = "%s%s = %s\n" % (m.group(1), key, value)
+            return old
+    at = j
+    while at > i + 1 and not lines[at - 1].strip(): at -= 1
+    if lines[at - 1].endswith("\n") is False: lines[at - 1] += "\n"
+    lines.insert(at, "%s = %s\n" % (key, value))
+    return None
+
+def load(path):
+    return open(path).read().splitlines(True) if os.path.exists(path) else []
+
 p = os.path.join(home, "config.toml") if glob else os.path.join(d, ".codex", "config.toml")
 os.makedirs(os.path.dirname(p), exist_ok=True)
-s = open(p).read() if os.path.exists(p) else ""
-hdr = '[plugins."%s"]' % pid
-m = re.search(r'^' + re.escape(hdr) + r'[ \t]*(?:#[^\n]*)?\n((?:(?!\[).*\n?)*)', s, re.M)
-if m:
-    body = m.group(1)
-    nb = re.sub(r'^[ \t]*enabled[ \t]*=[^\n]*$', 'enabled = ' + val, body, flags=re.M) if re.search(r'^[ \t]*enabled[ \t]*=', body, re.M) else 'enabled = %s\n' % val + body
-    s = s[:m.start(1)] + nb + s[m.end(1):]
-else:
-    s = s.rstrip("\n") + ("\n\n" if s.strip() else "") + hdr + "\nenabled = %s\n" % val
-open(p, "w").write(s)
-print("wrote", p, "->", hdr, "enabled =", val)
+lines = load(p)
+set_in_table(["plugins", pid], "enabled", val)
+open(p, "w").write("".join(lines))
+print("wrote", p, '-> [plugins."%s"] enabled = %s' % (pid, val))
 if glob:
     sys.exit(0)
+
 cfg = os.path.join(home, "config.toml")
-t = open(cfg).read() if os.path.exists(cfg) else ""
-thdr = '[projects."%s"]' % d
-if thdr in t:
-    print("project is already listed in", cfg, "(left as is)")
+lines = load(cfg)
+path = ["projects", d]
+if table_range(lines, path):
+    if trust:
+        old = set_in_table(path, "trust_level", q("trusted"), only_if=lambda v: v != q("trusted"))
+        open(cfg, "w").write("".join(lines))
+        print("project already listed in %s; trust_level was %s, now trusted" % (cfg, old) if old and old != q("trusted") else "project already trusted in " + cfg if old else "trusted %s in %s" % (d, cfg))
+    else:
+        r = table_range(lines, path); body = "".join(lines[r[0] + 1:r[1]])
+        if not re.search(r'^[ \t]*trust_level[ \t]*=[ \t]*"trusted"', body, re.M):
+            print("NOTE: %s is listed in %s but not trusted, so Codex ignores this file. Re-run with --trust." % (d, cfg))
+        else:
+            print("project is already trusted in", cfg)
 elif trust:
-    open(cfg, "a").write(("\n" if t and not t.endswith("\n") else "") + "\n" + thdr + '\ntrust_level = "trusted"\n')
+    set_in_table(path, "trust_level", q("trusted"))
+    open(cfg, "w").write("".join(lines))
     print("trusted", d, "in", cfg)
 else:
-    print("NOTE: %s is not trusted, so Codex ignores this file. Re-run with --trust or add:\n  %s\n  trust_level = \"trusted\"" % (d, thdr))
+    print("NOTE: %s is not trusted, so Codex ignores this file. Re-run with --trust or add:\n  [projects.%s]\n  trust_level = \"trusted\"" % (d, q(d)))
 PY
