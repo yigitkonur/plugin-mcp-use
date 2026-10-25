@@ -4,72 +4,81 @@ a [claude code](https://code.claude.com) plugin for shipping **typescript mcp se
 
 > status: pre-1.0 (the current version is in `.claude-plugin/plugin.json` and on the releases page). tested on macos and linux ci. the bits that need your own archestra (an owned app checked by `validate_app` / `get_app_diagnostics`, and an installed server rendering in its gallery) haven't been run yet. see [what's not verified](#whats-not-verified).
 
+<!-- kit:install:start -->
 ## install
 
-the one-liner (claude code 2.1.275+). it adds the marketplace if it isn't there yet and installs the plugin:
+Every plugin of ours is installed **once, globally, and off**, then **turned on per project**. Nothing runs and no tokens are spent in chats that don't switch it on. It works the same in Claude Code and Codex.
 
-```sh
-claude plugin install mcp-use --marketplace yigitkonur/plugin-mcp-use
-```
+### 1. install it globally
 
-older claude code, or you like two steps:
+**Claude Code**
 
 ```sh
 claude plugin marketplace add yigitkonur/plugin-mcp-use
-claude plugin install mcp-use@plugin-mcp-use
+claude plugin install mcp-use@plugin-mcp-use -s user          # stays off: defaultEnabled is false in the manifest
 ```
 
-it loads the next time you start claude code (or run `/reload-plugins` in a session that's already open). check it landed:
+**Codex** (0.163+)
 
 ```sh
-claude plugin details mcp-use   # 12 skills, 2 agents, 2 hook events, 3 docs mcp servers, ~1.2k tokens always on
+codex plugin marketplace add yigitkonur/plugin-mcp-use
+codex plugin add mcp-use@plugin-mcp-use
+codex-plugin-project.sh global-off mcp-use@plugin-mcp-use     # Codex has no enable/disable command; this keeps it off everywhere
 ```
 
-- **inside a session instead:** `/plugin marketplace add yigitkonur/plugin-mcp-use`, then `/plugin install mcp-use@plugin-mcp-use` (opens the plugin panel so you can review it and pick a scope).
-- **installed everywhere, on only where you want it (costs no tokens while off):** install once for your user and switch it off:
+All our plugins, both hosts, plus the `plugin` command and the 6-hourly update job, in one line:
 
-  ```sh
-  claude plugin install mcp-use --marketplace yigitkonur/plugin-mcp-use   # installs disabled (defaultEnabled: false)
-  claude plugin disable mcp-use@plugin-mcp-use --scope user              # only needed for installs older than 0.11
-  ```
+```sh
+curl -fsSL https://raw.githubusercontent.com/yigitkonur/plugin-kit/main/install.sh | sh -s -- --all
+```
 
-  then, in any project, turn it on for that project only (writes `"mcp-use@plugin-mcp-use": true` to the project's `.claude/settings.json`):
+### 2. turn it on in a project
 
-  ```sh
-  claude plugin enable  mcp-use@plugin-mcp-use --scope project   # on here
-  claude plugin disable mcp-use@plugin-mcp-use --scope project   # off again
-  claude plugin list                                             # what's on, and at which scope
-  ```
-- **one repo only, no global install:** `claude plugin marketplace add yigitkonur/plugin-mcp-use --scope project`, then `claude plugin install mcp-use@plugin-mcp-use --scope project`. that turns it on for the repo (commit `.claude/settings.json` and teammates get it; each runs the install once). add `claude plugin disable mcp-use@plugin-mcp-use --scope project` right after if you want it installed but off.
-- **auto-update:** third-party marketplaces are off by default in claude code. turn it on once with `/plugin` > marketplaces > plugin-mcp-use > enable auto-update, or declare it in `settings.json` (user or project):
+```sh
+cd your-project
+plugin on mcp-use    # Claude Code and Codex, this folder only
+plugin off mcp-use   # undo
+plugin               # or pick from a list (TUI)
+```
 
-  ```json
-  { "extraKnownMarketplaces": { "plugin-mcp-use": { "source": { "source": "github", "repo": "yigitkonur/plugin-mcp-use" }, "autoUpdate": true } } }
-  ```
+By hand, without the `plugin` command:
 
-  per the docs, claude code checks a random delay (up to ten minutes) after your first message, then tells you `Plugin updated … run /reload-plugins`; new sessions pick it up on their own. every merge to main that changes what you receive is released automatically (version bump, tag, release), so an enabled auto-update always has something to find.
-- **update by hand:** `claude plugin marketplace update plugin-mcp-use`, then `claude plugin update mcp-use@plugin-mcp-use` (restart to apply).
-- **uninstall:** `claude plugin uninstall mcp-use@plugin-mcp-use`.
+```sh
+claude plugin enable mcp-use@plugin-mcp-use --scope project      # undo: claude plugin disable mcp-use@plugin-mcp-use --scope project
+codex-plugin-project.sh on mcp-use@plugin-mcp-use . --trust      # undo: codex-plugin-project.sh off mcp-use@plugin-mcp-use
+```
+
+Restart `claude` / `codex` in that folder afterwards.
+Codex reads a folder's `.codex/config.toml` only when the folder is trusted; `--trust` adds that, and it also enables the folder's hooks and rules, so use it for your own projects only. `plugin` and `codex-plugin-project.sh` come from [plugin-kit](https://github.com/yigitkonur/plugin-kit) (the one-line installer above).
+
+### 3. updates
+
+A plugin updates only when its `version` changes, and this repo's `release` workflow bumps it on every shipped change. Machines pick it up with `plugin update`, or by themselves with the 6-hourly job (`plugin autoupdate install`). By hand:
+
+```sh
+claude plugin marketplace update plugin-mcp-use && claude plugin update mcp-use@plugin-mcp-use
+codex plugin marketplace upgrade plugin-mcp-use        # then start a new session
+```
+
+No GitHub SSH key on the machine? `export CLAUDE_CODE_PLUGIN_PREFER_HTTPS=1` (`plugin install` sets it in Claude's settings for you).
+
+### 4. uninstall
+
+```sh
+claude plugin uninstall mcp-use@plugin-mcp-use -s user
+claude plugin marketplace remove plugin-mcp-use
+codex plugin remove mcp-use@plugin-mcp-use
+codex plugin marketplace remove plugin-mcp-use
+```
+<!-- kit:install:end -->
+
+### check it loaded
+
+`claude plugin details mcp-use` lists 12 skills, 2 agents, 2 hook events, 3 docs mcp servers and about 1.2k tokens always on once the plugin is enabled in a project (nothing while it is off).
 
 ### codex
 
-the same plugin runs in codex (codex-cli 0.163.0 tested). global install, off by default, on per project:
-
-```sh
-curl -fsSL https://raw.githubusercontent.com/yigitkonur/plugin-mcp-use/main/scripts/codex-plugin-project.sh -o ~/.local/bin/codex-plugin-project.sh && chmod +x ~/.local/bin/codex-plugin-project.sh
-codex plugin marketplace add yigitkonur/plugin-mcp-use
-codex plugin add mcp-use@plugin-mcp-use
-codex-plugin-project.sh global-off mcp-use@plugin-mcp-use      # installed, but off everywhere
-```
-
-```sh
-codex-plugin-project.sh on  mcp-use@plugin-mcp-use . --trust   # in a project you own: on here
-codex-plugin-project.sh off mcp-use@plugin-mcp-use             # off again
-codex plugin list                                              # "installed, enabled" inside the project, "installed, disabled" elsewhere
-codex plugin marketplace upgrade plugin-mcp-use                # update (start a new session to load it)
-```
-
-codex has no `plugin enable/disable` command, so the helper writes `[plugins."mcp-use@plugin-mcp-use"] enabled = true` into the project's `.codex/config.toml`. codex ignores that file unless the project is trusted (`--trust` adds it to `~/.codex/config.toml`; trusting also turns on the project's hooks and rules, so only for projects you own). the first time, codex asks you to review the plugin's hooks.
+the same plugin runs in codex (codex-cli 0.163.0 tested). the first time you turn it on in a project, codex asks you to review the plugin's hooks.
 
 what differs from claude code: no plugin agents (the host and migrate skills tell codex to read `agents/*.md` and do that job itself), no slash commands (each `/mcp-use:<x>` is the skill `<x>`), `bin/` is not on `PATH` (the skills and the session brief give the `node <plugin root>/bin/<name>` form), and the edit guard listens for `apply_patch`.
 
