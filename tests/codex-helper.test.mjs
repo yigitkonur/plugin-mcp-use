@@ -37,3 +37,12 @@ test("helper: --trust flips an untrusted project; without --trust it says so", {
   t.run("off", ID, t.proj);
   assert.equal(t.project().plugins[ID].enabled, false);
 });
+
+test("helper: a ']' in a header comment and a quoted \"trust_level\" key are read as TOML reads them", { skip: !have }, () => {
+  const t = setup((proj) => `[plugins."${ID}"] # [installed]\nenabled = true\n\n[projects."${proj}"]\n"trust_level" = "untrusted" # was off\n`);
+  assert.equal(t.run("on", ID, t.proj, "--trust").status, 0);
+  assert.equal(t.run("global-off", ID).status, 0);
+  const u = t.user(); // a duplicate key or table would make this unparseable
+  assert.equal(u.plugins[ID].enabled, false);
+  assert.equal(u.projects[t.proj].trust_level, "trusted");
+});

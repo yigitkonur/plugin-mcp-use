@@ -47,7 +47,7 @@ def parse_key(text):
             i += 1
     return segs or None
 
-HDR = re.compile(r"^[ \t]*\[(?!\[)(.*)\][ \t]*(#.*)?$")
+HDR = re.compile(r"^[ \t]*\[(?!\[)(.*?)\][ \t]*(#.*)?$")  # non-greedy: a "]" inside a trailing comment is not part of the key
 def table_range(lines, path):
     """(header index, end index) of the [path] table, or None. The body ends at the next header of any kind."""
     for i, ln in enumerate(lines):
@@ -60,6 +60,14 @@ def table_range(lines, path):
 
 def q(x): return '"' + x.replace("\\", "\\\\").replace('"', '\\"') + '"'
 
+ASSIGN = re.compile(r"""^([ \t]*)("(?:[^"\\]|\\.)*"|'[^']*'|[A-Za-z0-9_-]+)[ \t]*=[ \t]*(.*?)[ \t]*(#.*)?$""")
+def find_assign(i, j, key):
+    """(line index, match) of `key = ...` in lines i+1..j-1; the key may be bare or quoted. group(1) indent, group(3) value."""
+    for k in range(i + 1, j):
+        m = ASSIGN.match(lines[k].rstrip("\n"))
+        if m and parse_key(m.group(2)) == [key]: return k, m
+    return None, None
+
 def set_in_table(path, key, value, create_if_missing=True, only_if=None):
     """Make `key = value` true in table `path` of file `p`; returns the old value (or None)."""
     global lines
@@ -71,12 +79,11 @@ def set_in_table(path, key, value, create_if_missing=True, only_if=None):
         lines += ["[" + ".".join(q(x) if not re.fullmatch(r"[A-Za-z0-9_-]+", x) else x for x in path) + "]\n", "%s = %s\n" % (key, value)]
         return None
     i, j = r
-    for k in range(i + 1, j):
-        m = re.match(r"^([ \t]*)%s[ \t]*=[ \t]*(.*?)[ \t]*(#.*)?$" % re.escape(key), lines[k].rstrip("\n"))
-        if m:
-            old = m.group(2)
-            if only_if is None or only_if(old): lines[k] = "%s%s = %s\n" % (m.group(1), key, value)
-            return old
+    k, m = find_assign(i, j, key)
+    if m:
+        old = m.group(3)
+        if only_if is None or only_if(old): lines[k] = "%s%s = %s\n" % (m.group(1), key, value)
+        return old
     at = j
     while at > i + 1 and not lines[at - 1].strip(): at -= 1
     if lines[at - 1].endswith("\n") is False: lines[at - 1] += "\n"
@@ -104,8 +111,8 @@ if table_range(lines, path):
         open(cfg, "w").write("".join(lines))
         print("project already listed in %s; trust_level was %s, now trusted" % (cfg, old) if old and old != q("trusted") else "project already trusted in " + cfg if old else "trusted %s in %s" % (d, cfg))
     else:
-        r = table_range(lines, path); body = "".join(lines[r[0] + 1:r[1]])
-        if not re.search(r'^[ \t]*trust_level[ \t]*=[ \t]*"trusted"', body, re.M):
+        r = table_range(lines, path); _, m = find_assign(r[0], r[1], "trust_level")
+        if not (m and m.group(3) == q("trusted")):
             print("NOTE: %s is listed in %s but not trusted, so Codex ignores this file. Re-run with --trust." % (d, cfg))
         else:
             print("project is already trusted in", cfg)
