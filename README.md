@@ -29,8 +29,8 @@ claude plugin details mcp-use   # 12 skills, 2 agents, 2 hook events, 3 docs mcp
 - **installed everywhere, on only where you want it (costs no tokens while off):** install once for your user and switch it off:
 
   ```sh
-  claude plugin install mcp-use --marketplace yigitkonur/plugin-mcp-use
-  claude plugin disable mcp-use@plugin-mcp-use --scope user
+  claude plugin install mcp-use --marketplace yigitkonur/plugin-mcp-use   # installs disabled (defaultEnabled: false)
+  claude plugin disable mcp-use@plugin-mcp-use --scope user              # only needed for installs older than 0.11
   ```
 
   then, in any project, turn it on for that project only (writes `"mcp-use@plugin-mcp-use": true` to the project's `.claude/settings.json`):
@@ -50,6 +50,28 @@ claude plugin details mcp-use   # 12 skills, 2 agents, 2 hook events, 3 docs mcp
   per the docs, claude code checks a random delay (up to ten minutes) after your first message, then tells you `Plugin updated … run /reload-plugins`; new sessions pick it up on their own. every merge to main that changes what you receive is released automatically (version bump, tag, release), so an enabled auto-update always has something to find.
 - **update by hand:** `claude plugin marketplace update plugin-mcp-use`, then `claude plugin update mcp-use@plugin-mcp-use` (restart to apply).
 - **uninstall:** `claude plugin uninstall mcp-use@plugin-mcp-use`.
+
+### codex
+
+the same plugin runs in codex (codex-cli 0.163.0 tested). global install, off by default, on per project:
+
+```sh
+curl -fsSL https://raw.githubusercontent.com/yigitkonur/plugin-mcp-use/main/scripts/codex-plugin-project.sh -o ~/.local/bin/codex-plugin-project.sh && chmod +x ~/.local/bin/codex-plugin-project.sh
+codex plugin marketplace add yigitkonur/plugin-mcp-use
+codex plugin add mcp-use@plugin-mcp-use
+codex-plugin-project.sh global-off mcp-use@plugin-mcp-use      # installed, but off everywhere
+```
+
+```sh
+codex-plugin-project.sh on  mcp-use@plugin-mcp-use . --trust   # in a project you own: on here
+codex-plugin-project.sh off mcp-use@plugin-mcp-use             # off again
+codex plugin list                                              # "installed, enabled" inside the project, "installed, disabled" elsewhere
+codex plugin marketplace upgrade plugin-mcp-use                # update (start a new session to load it)
+```
+
+codex has no `plugin enable/disable` command, so the helper writes `[plugins."mcp-use@plugin-mcp-use"] enabled = true` into the project's `.codex/config.toml`. codex ignores that file unless the project is trusted (`--trust` adds it to `~/.codex/config.toml`; trusting also turns on the project's hooks and rules, so only for projects you own). the first time, codex asks you to review the plugin's hooks.
+
+what differs from claude code: no plugin agents (the host and migrate skills tell codex to read `agents/*.md` and do that job itself), no slash commands (each `/mcp-use:<x>` is the skill `<x>`), `bin/` is not on `PATH` (the skills and the session brief give the `node <plugin root>/bin/<name>` form), and the edit guard listens for `apply_patch`.
 
 you need: claude code (tested on 2.1.302 to 2.1.307), node on your `PATH` (the engines and hooks run on it; without node the hooks just stay quiet), and node ≥ 22.22.2 in the projects you build (that floor is mcp-use's, not ours).
 

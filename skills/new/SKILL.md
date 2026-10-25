@@ -7,6 +7,8 @@ disable-model-invocation: true
 
 # /mcp-use:new
 
+> In Codex: `bin/` is not on PATH and `${CLAUDE_PLUGIN_ROOT}` is unset. The plugin root is two folders above this file: run engines as `node <root>/bin/<name>` and read `${CLAUDE_PLUGIN_ROOT}` as `<root>`. `/mcp-use:<x>` means the skill `<x>`.
+
 Arguments: `$ARGUMENTS`. Use what was given; ask only for what is missing and what you cannot choose sensibly (name, template, hosts, first tool's purpose). If the user said to use defaults, use `mcp-server`, no hosts, and a small example tool, and do not ask.
 
 1. **Preflight.** Run `mcp-use-detect --preflight --dir .` and read `result`. If `node_ok` is false, stop: show `node` against `required` (`>=22.22.2`), and if `version_manager_files` is non-empty name the matching tool's command (for `.nvmrc`: `nvm use`). Never install Node. If the target directory has files other than a bare repo, scaffold into a new subdirectory.

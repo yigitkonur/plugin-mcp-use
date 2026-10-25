@@ -1,0 +1,23 @@
+{
+  "name": "mcp-use",
+  "version": "0.10.0",
+  "description": "Build, migrate, and harden TypeScript MCP servers on mcp-use, add MCP Apps, and target ChatGPT and Archestra with host-specific checks, linting, and live verification.",
+  "author": { "name": "yigitkonur", "url": "https://github.com/yigitkonur" },
+  "homepage": "https://github.com/yigitkonur/plugin-mcp-use",
+  "repository": "https://github.com/yigitkonur/plugin-mcp-use",
+  "license": "MIT",
+  "keywords": ["mcp", "mcp-use", "mcp-apps", "chatgpt", "archestra", "typescript"],
+  "interface": {
+    "displayName": "mcp-use",
+    "shortDescription": "Build and harden mcp-use MCP servers and MCP Apps",
+    "longDescription": "Detects what an MCP server project is and walks it through the journey: a new mcp-use server, a migration from the official SDK, MCP Apps views, and ChatGPT or Archestra host checks. Static rules, a live protocol probe, an Archestra Owned App linter, and docs MCP servers for mcp-use, OpenAI and Archestra. Silent in projects that are not MCP servers.",
+    "developerName": "yigitkonur",
+    "category": "Developer Tools",
+    "capabilities": ["Interactive", "Read", "Write"],
+    "websiteURL": "https://github.com/yigitkonur/plugin-mcp-use",
+    "defaultPrompt": ["Use the start skill to see what mcp-use applies to this project."]
+  },
+  "skills": "./skills/",
+  "mcpServers": "./.codex-mcp.json",
+  "hooks": "./hooks/codex-hooks.json"
+}

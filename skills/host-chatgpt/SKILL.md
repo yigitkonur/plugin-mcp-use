@@ -6,6 +6,8 @@ user-invocable: false
 
 # ChatGPT as a host
 
+> In Codex: `bin/` is not on PATH and `${CLAUDE_PLUGIN_ROOT}` is unset. The plugin root is two folders above this file: run engines as `node <root>/bin/<name>` and read `${CLAUDE_PLUGIN_ROOT}` as `<root>`. `/mcp-use:<x>` means the skill `<x>`.
+
 ChatGPT implements the open MCP Apps standard and adds optional extensions in `window.openai` and `_meta["openai/*"]`. Build the portable core first (`${CLAUDE_PLUGIN_ROOT}/skills/mcp-apps/references/portable-core.md`), then add what ChatGPT specifically needs. Facts here come from OpenAI's docs (O1–O6), the Apps SDK UI package types, and mcp-use's types; each reference ends with its sources. For anything newer, query the `openai-docs` MCP server (`search_openai_docs`, `fetch_openai_doc`). Never call a docs server's feedback tool (`submit_feedback` on the mcp-use docs server).
 
 ## The rules that fail reviews and renders

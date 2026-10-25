@@ -1,0 +1,5 @@
+interface:
+  display_name: "mcp-use apps"
+  short_description: "Add MCP Apps views to an mcp-use server"
+policy:
+  allow_implicit_invocation: false

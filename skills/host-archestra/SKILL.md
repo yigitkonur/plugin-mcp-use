@@ -6,6 +6,8 @@ user-invocable: false
 
 # Archestra as a host
 
+> In Codex: `bin/` is not on PATH and `${CLAUDE_PLUGIN_ROOT}` is unset. The plugin root is two folders above this file: run engines as `node <root>/bin/<name>` and read `${CLAUDE_PLUGIN_ROOT}` as `<root>`. `/mcp-use:<x>` means the skill `<x>`.
+
 Archestra has **two app routes that share almost nothing at runtime**. Decide which one the task is before applying any rule (`references/routes.md`).
 
 | | Route A: installed MCP server | Route B: Owned App |

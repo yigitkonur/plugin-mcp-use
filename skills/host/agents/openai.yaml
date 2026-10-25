@@ -1,0 +1,5 @@
+interface:
+  display_name: "mcp-use host"
+  short_description: "Add, audit or fix ChatGPT or Archestra integration"
+policy:
+  allow_implicit_invocation: false

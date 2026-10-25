@@ -92,3 +92,52 @@ test("Write tool and MultiEdit-less payloads are handled the same", () => {
   const d = copy("f15");
   assert.notEqual(edit(d, "legacy.ts", "s-write", {}, "Write").stdout, "");
 });
+
+// Codex edits files through apply_patch: the patch text is in tool_input.command, paths relative to cwd
+const patchFor = (file) => `*** Begin Patch\n*** Update File: ${file}\n@@\n-x\n+y\n*** End Patch\n`;
+function applyPatch(dir, command, session, cwd = dir) {
+  return spawnSync("sh", [hook], {
+    input: JSON.stringify({ hook_event_name: "PostToolUse", session_id: session, cwd, tool_name: "apply_patch", tool_input: { command } }),
+    env: { ...process.env, CLAUDE_PLUGIN_ROOT: "", PLUGIN_ROOT: root, CLAUDE_PLUGIN_DATA: data },
+    encoding: "utf8",
+  });
+}
+
+test("Codex apply_patch on an F15 view: same nudge as an Edit", () => {
+  const r = applyPatch(copy("f15"), patchFor("views/product-card/view.tsx"), "s-patch");
+  assert.equal(r.status, 0);
+  assert.match(JSON.parse(r.stdout).hookSpecificOutput.additionalContext, /^mcp-use guard: views\/product-card\/view\.tsx/);
+});
+
+test("Codex apply_patch with an absolute path and an Add File line", () => {
+  const d = copy("f15");
+  const r = applyPatch(d, `*** Begin Patch\n*** Add File: ${join(d, "views/product-card/view.tsx")}\n+x\n*** End Patch\n`, "s-patch-abs");
+  assert.match(JSON.parse(r.stdout).hookSpecificOutput.additionalContext, /views\/product-card\/view\.tsx/);
+});
+
+test("Codex apply_patch is silent outside an MCP project and for non-candidate files", () => {
+  const plain = mkdtempSync(join(tmpdir(), "g-plain-"));
+  writeFileSync(join(plain, "package.json"), '{"name":"x","dependencies":{"express":"^5"}}');
+  writeFileSync(join(plain, "a.ts"), "export const a = 1;\n");
+  assert.equal(applyPatch(plain, patchFor("a.ts"), "s-plain").stdout, "");
+  assert.equal(applyPatch(copy("f15"), patchFor("README.md"), "s-md").stdout, "");
+});
+
+test("Codex SessionStart brief names how to run the engines; the Claude brief does not", () => {
+  const run = (arg) => spawnSync("sh", [join(root, "hooks", "session-detect.sh"), ...arg], {
+    input: JSON.stringify({ hook_event_name: "SessionStart", cwd: copy("f15") }), env: { ...process.env, CLAUDE_PLUGIN_ROOT: "" }, encoding: "utf8",
+  });
+  const codex = JSON.parse(run(["codex"]).stdout).hookSpecificOutput.additionalContext;
+  assert.ok(codex.includes(`node ${root}/bin/<name>`), codex);
+  assert.ok(!JSON.parse(run([]).stdout).hookSpecificOutput.additionalContext.includes("Codex:"));
+});
+
+test("Codex multi-file apply_patch names the file on each finding", () => {
+  const d = copy("f15");
+  const patch = "*** Begin Patch\n*** Update File: legacy.ts\n@@\n-x\n+y\n*** Update File: views/product-card/view.tsx\n@@\n-x\n+y\n*** End Patch\n";
+  const r = applyPatch(d, patch, "s-multi");
+  const text = JSON.parse(r.stdout).hookSpecificOutput.additionalContext;
+  assert.ok(text.length <= 600, `len ${text.length}`);
+  assert.match(text, /^mcp-use guard:\n/);
+  for (const line of text.split("\n").slice(1)) assert.match(line, /^- \S+\.(ts|tsx) [A-Z]+-[A-Za-z0-9]+ line \d+/);
+});

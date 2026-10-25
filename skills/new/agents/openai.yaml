@@ -1,0 +1,5 @@
+interface:
+  display_name: "mcp-use new"
+  short_description: "Scaffold a new mcp-use MCP server"
+policy:
+  allow_implicit_invocation: false

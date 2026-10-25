@@ -1,0 +1,5 @@
+interface:
+  display_name: "mcp-use migrate"
+  short_description: "Migrate an official-SDK or v1 server to mcp-use v2"
+policy:
+  allow_implicit_invocation: false

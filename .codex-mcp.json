@@ -1,0 +1,7 @@
+{
+  "mcpServers": {
+    "mcp-use-docs":   { "url": "https://docs.mcp-use.com/mcp", "startup_timeout_sec": 30 },
+    "openai-docs":    { "url": "https://developers.openai.com/mcp", "startup_timeout_sec": 30 },
+    "archestra-docs": { "url": "https://archestra.ai/mcp", "startup_timeout_sec": 30 }
+  }
+}
