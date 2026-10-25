@@ -2,19 +2,21 @@
 
 a [claude code](https://code.claude.com) plugin for shipping **typescript mcp servers on [mcp-use](https://mcp-use.com)**, bolting **mcp apps** (react views) onto them, and making them actually behave in **chatgpt** and **archestra**: two hosts with very different rules, so the plugin treats them as two targets, not one. five journeys plus a linter for archestra owned apps. no vibes-based claims: everything below was run for real, and the receipts live in `spikes/`.
 
-> status: 0.9.2. tested on macos and linux ci. the bits that need your own archestra (an owned app checked by `validate_app` / `get_app_diagnostics`, and an installed server rendering in its gallery) haven't been run yet. see [what's not verified](#whats-not-verified).
+> status: 0.9.3. tested on macos and linux ci. the bits that need your own archestra (an owned app checked by `validate_app` / `get_app_diagnostics`, and an installed server rendering in its gallery) haven't been run yet. see [what's not verified](#whats-not-verified).
 
 ## install
+
+the one-liner (claude code 2.1.275+). it adds the marketplace if it isn't there yet and installs the plugin:
+
+```sh
+claude plugin install mcp-use --marketplace yigitkonur/plugin-mcp-use
+```
+
+older claude code, or you like two steps:
 
 ```sh
 claude plugin marketplace add yigitkonur/plugin-mcp-use
 claude plugin install mcp-use@plugin-mcp-use
-```
-
-or the one-liner (claude code 2.1.275+), which adds the marketplace for you if it isn't there yet:
-
-```sh
-claude plugin install mcp-use --marketplace yigitkonur/plugin-mcp-use
 ```
 
 it loads the next time you start claude code (or run `/reload-plugins` in a session that's already open). check it landed:
@@ -24,11 +26,20 @@ claude plugin details mcp-use   # 11 skills, 2 agents, 2 hook events, 3 docs mcp
 ```
 
 - **inside a session instead:** `/plugin marketplace add yigitkonur/plugin-mcp-use`, then `/plugin install mcp-use@plugin-mcp-use` (opens the plugin panel so you can review it and pick a scope).
-- **for the whole team:** run both commands with `--scope project` and commit `.claude/settings.json` (it records the marketplace and turns the plugin on for the repo). each teammate runs the install once too.
+- **one repo only, switched off until you want it:** nothing global, nothing running, one command to turn it on later.
+
+  ```sh
+  claude plugin marketplace add yigitkonur/plugin-mcp-use --scope project
+  claude plugin install mcp-use@plugin-mcp-use --scope project
+  claude plugin disable mcp-use@plugin-mcp-use --scope project   # installed, but off
+  claude plugin enable  mcp-use@plugin-mcp-use --scope project   # whenever you want it
+  ```
+
+  that records the marketplace and `"mcp-use@plugin-mcp-use": false` in the repo's `.claude/settings.json`. skip the `disable` line and the plugin is on for the repo (commit the file and teammates get it too; each runs the install once).
 - **update:** `claude plugin marketplace update plugin-mcp-use`, then `claude plugin update mcp-use@plugin-mcp-use` (restart to apply).
 - **uninstall:** `claude plugin uninstall mcp-use@plugin-mcp-use`.
 
-you need: claude code (tested on 2.1.302 and 2.1.304), node on your `PATH` (the engines and hooks run on it; without node the hooks just stay quiet), and node ≥ 22.22.2 in the projects you build (that floor is mcp-use's, not ours).
+you need: claude code (tested on 2.1.302 to 2.1.307), node on your `PATH` (the engines and hooks run on it; without node the hooks just stay quiet), and node ≥ 22.22.2 in the projects you build (that floor is mcp-use's, not ours).
 
 ## pick your journey
 
