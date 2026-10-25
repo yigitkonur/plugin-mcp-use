@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.11.1 - 2026-10-25
+
+- fix: helper reads header comments and quoted keys like TOML does (241a2a8)
+- fix: codex-plugin-project.sh matches TOML tables by parsed key path and trusts untrusted projects (3d4805b)
+
 ## 0.11.0 - 2026-10-25
 
 - fix: name the file on each guard line for multi-file patches (8ba0a57)
