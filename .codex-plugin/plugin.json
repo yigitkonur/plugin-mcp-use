@@ -1,6 +1,6 @@
 {
   "name": "mcp-use",
-  "version": "0.10.0",
+  "version": "0.11.0",
   "description": "Build, migrate, and harden TypeScript MCP servers on mcp-use, add MCP Apps, and target ChatGPT and Archestra with host-specific checks, linting, and live verification.",
   "author": { "name": "yigitkonur", "url": "https://github.com/yigitkonur" },
   "homepage": "https://github.com/yigitkonur/plugin-mcp-use",
