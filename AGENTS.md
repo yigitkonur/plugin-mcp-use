@@ -36,7 +36,7 @@ When layers disagree, say so in the reference and follow the higher layer. "Not 
 | Archestra | pages in `data/doc-hashes.json`, commits to `archestra-ai/archestra` (docs and the apps/lint code) | `node scripts/drift.mjs`; `gh api repos/archestra-ai/archestra/commits?path=docs/pages/chat/apps.md` | `skills/host-archestra/references/*`, `skills/archestra-app`, `lib/archestra-lint.mjs`, Archestra checklist |
 | Claude Code plugin format | `claude plugin --help` and its subcommands, the plugin docs | `claude plugin validate --strict .` | `plugin.json`, `marketplace.json`, README install section |
 
-New pages matter as much as changed ones: diff each vendor `llms.txt` against the pages you have read (`data/sources.json`), and read any page that is new to you.
+New pages matter as much as changed ones. The two `llms.txt` indexes (OpenAI plugins, mcp-use docs) are hashed in `data/doc-hashes.json`, so a new or renamed page shows up as drift; when one changes, diff the page list against what `data/sources.json` already covers and read every page that is new to you.
 
 ## Procedure
 1. **Detect.** `node scripts/drift.mjs` (exit 1 on drift: a version differing from `known_good`, or a tracked page whose hash moved). CI runs it every Monday and opens an issue; the local weekly job runs it and acts.
