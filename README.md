@@ -2,7 +2,7 @@
 
 a [claude code](https://code.claude.com) plugin for shipping **typescript mcp servers on [mcp-use](https://mcp-use.com)**, bolting **mcp apps** (react views) onto them, and making them actually behave in **chatgpt** and **archestra**: two hosts with very different rules, so the plugin treats them as two targets, not one. five journeys plus a linter for archestra owned apps. no vibes-based claims: everything below was run for real, and the receipts live in `spikes/`.
 
-> status: 0.9.3. tested on macos and linux ci. the bits that need your own archestra (an owned app checked by `validate_app` / `get_app_diagnostics`, and an installed server rendering in its gallery) haven't been run yet. see [what's not verified](#whats-not-verified).
+> status: pre-1.0 (the current version is in `.claude-plugin/plugin.json` and on the releases page). tested on macos and linux ci. the bits that need your own archestra (an owned app checked by `validate_app` / `get_app_diagnostics`, and an installed server rendering in its gallery) haven't been run yet. see [what's not verified](#whats-not-verified).
 
 ## install
 
@@ -36,7 +36,14 @@ claude plugin details mcp-use   # 11 skills, 2 agents, 2 hook events, 3 docs mcp
   ```
 
   that records the marketplace and `"mcp-use@plugin-mcp-use": false` in the repo's `.claude/settings.json`. skip the `disable` line and the plugin is on for the repo (commit the file and teammates get it too; each runs the install once).
-- **update:** `claude plugin marketplace update plugin-mcp-use`, then `claude plugin update mcp-use@plugin-mcp-use` (restart to apply).
+- **auto-update:** third-party marketplaces are off by default in claude code. turn it on once with `/plugin` > marketplaces > plugin-mcp-use > enable auto-update, or declare it in `settings.json` (user or project):
+
+  ```json
+  { "extraKnownMarketplaces": { "plugin-mcp-use": { "source": { "source": "github", "repo": "yigitkonur/plugin-mcp-use" }, "autoUpdate": true } } }
+  ```
+
+  per the docs, claude code checks a random delay (up to ten minutes) after your first message, then tells you `Plugin updated … run /reload-plugins`; new sessions pick it up on their own. every merge to main that changes what you receive is released automatically (version bump, tag, release), so an enabled auto-update always has something to find.
+- **update by hand:** `claude plugin marketplace update plugin-mcp-use`, then `claude plugin update mcp-use@plugin-mcp-use` (restart to apply).
 - **uninstall:** `claude plugin uninstall mcp-use@plugin-mcp-use`.
 
 you need: claude code (tested on 2.1.302 to 2.1.307), node on your `PATH` (the engines and hooks run on it; without node the hooks just stay quiet), and node ≥ 22.22.2 in the projects you build (that floor is mcp-use's, not ours).
