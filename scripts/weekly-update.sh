@@ -34,6 +34,14 @@ WORK="$HOME/.cache/plugin-mcp-use-weekly/$DATE"; BRANCH="weekly/$DATE"
 mkdir -p "$(dirname "$WORK")"
 git worktree add -q -b "$BRANCH" "$WORK" origin/main || { notify "worktree failed"; exit 2; }
 cleanup() { cd "$REPO" && git worktree remove --force "$WORK" 2>&1 | tail -1; git branch -D "$BRANCH" >/dev/null 2>&1; }
+# after a Claude session: keep the worktree and branch when the session failed or left work that is not on the remote
+keep_or_cleanup() {
+  UNSAVED=""; [ "$1" -ne 0 ] && UNSAVED="session exit $1"
+  [ -n "$(git -C "$WORK" status --porcelain 2>/dev/null)" ] && UNSAVED="$UNSAVED uncommitted changes"
+  git -C "$WORK" fetch -q origin 2>/dev/null
+  if ! git -C "$WORK" merge-base --is-ancestor HEAD origin/main 2>/dev/null && ! git -C "$WORK" merge-base --is-ancestor HEAD "origin/$BRANCH" 2>/dev/null; then UNSAVED="$UNSAVED unpushed commits"; fi
+  if [ -n "$UNSAVED" ]; then notify "kept $WORK ($UNSAVED)"; else cleanup; fi
+}
 cd "$WORK" || exit 2
 
 DRIFT="$(dirname "$WORK")/drift-$DATE.txt"
@@ -57,5 +65,5 @@ RC=$?
 echo "session exit $RC"
 PR=$(gh pr list --head "$BRANCH" --json number,state --jq '.[0] | "#\(.number) \(.state)"' 2>/dev/null)
 notify "session exit $RC, PR: ${PR:-none}"
-cleanup
+keep_or_cleanup $RC
 exit $RC

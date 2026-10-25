@@ -10,6 +10,10 @@
     "https://raw.githubusercontent.com/openai/mcp-extensions/main/docs/spec.md": "2c92cae50faa5fc5",
     "https://raw.githubusercontent.com/archestra-ai/archestra/main/docs/pages/reference/apps-sdk.md": "12a37d4adcf1165f",
     "https://raw.githubusercontent.com/archestra-ai/archestra/main/docs/pages/chat/apps.md": "4d7a75a41daa5a53",
-    "https://raw.githubusercontent.com/archestra-ai/archestra/main/docs/pages/reference/archestra-mcp-server.md": "dc1177a0f3754b0e"
+    "https://raw.githubusercontent.com/archestra-ai/archestra/main/docs/pages/reference/archestra-mcp-server.md": "dc1177a0f3754b0e",
+    "https://developers.openai.com/plugins/deploy/submission.md": "6e1d85f2969a9d38",
+    "https://developers.openai.com/plugins/deploy/app-review.md": "8c901b938170c51a",
+    "https://developers.openai.com/plugins/guides/security-privacy.md": "2354bba4b09c87d3",
+    "https://developers.openai.com/plugins/guides/submit-claude-plugin.md": "b171086bbd3ca415"
   }
 }

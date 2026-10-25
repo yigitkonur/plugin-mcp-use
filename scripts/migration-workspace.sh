@@ -19,6 +19,8 @@ fi
 for f in f02 f03 f11; do
   rm -rf "$WS/fixtures/$f"
   cp -R "$HERE/tests/fixtures/$f" "$WS/fixtures/$f"
+  # a fixture with its own install (zod 3) also gets the tracked SDK packages at latest under --latest
+  if [ "$LATEST" = 1 ]; then node "$HERE/scripts/latest-package-json.mjs" "$HERE/tests/fixtures/$f/package.json" "$WS/fixtures/$f/package.json" >&2 || exit 2; fi
   if grep -q '"zod": "^3' "$HERE/tests/fixtures/$f/package.json"; then
     # a fixture on zod 3 (the usual state of an SDK v1 server) gets its own complete install from its package.json
     (cd "$WS/fixtures/$f" && npm install --no-audit --no-fund --loglevel=error) >&2 || { echo "npm install failed for $f" >&2; exit 2; }
