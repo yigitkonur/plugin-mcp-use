@@ -1,95 +1,89 @@
 name: release
-# Installed copies update only when the plugin's version string changes (Claude Code compares it with the cached one).
-# This workflow makes that automatic: a merge to main that changes anything users receive bumps the version in
-# plugin.json and marketplace.json, commits it, tags mcp-use--v<version> and publishes a GitHub release.
-#   - a human who already bumped the version in the push is respected (no second bump)
-#   - a line `Release-Level: minor` or `Release-Level: major` in a commit message of the push bumps that level (default: patch)
-#   - Actions > release > Run workflow does the same by hand, with a chosen level
+# Installed copies of a Claude Code plugin update only when its version string changes, so every change that reaches users has
+# to move the version. This does it after the repo's checks are green on main: scripts/release.py decides the bump from the
+# conventional-commit subjects since the last release tag (feat -> minor, fix/perf -> patch, `!` or BREAKING CHANGE -> major;
+# docs, ci, chore, test, style, build and refactor -> none; a commit that touches only docs, tests, evals or CI never releases),
+# writes every manifest and the CHANGELOG, then this job validates the bumped tree, commits, tags v<x.y.z> and <plugin>--v<x.y.z>,
+# and publishes the GitHub release. A human who already bumped the manifest is respected (that exact version is released).
+# By hand: Actions > release > Run workflow, level patch|minor|major.
+# Canonical copy: yigitkonur/plugin-agentic-maker (scripts/release.py, .github/workflows/release.yml); each repo vendors both.
 on:
   push:
     branches: [main]
-    paths-ignore:
-      - "tests/**"
-      - "spikes/**"
-      - "evals/**"
-      - ".github/**"
-      - "AGENTS.md"
   workflow_dispatch:
     inputs:
       level:
-        description: "bump level"
-        type: choice
-        options: [patch, minor, major]
-        default: patch
+        description: "auto, patch, minor or major"
+        default: auto
+
+env:
+  CLAUDE_CODE_VERSION: latest
+
+permissions:
+  contents: write
+
 concurrency:
   group: release
   cancel-in-progress: false
-permissions:
-  contents: write
+
 jobs:
   release:
-    # the bot's own commit carries [skip ci] in its message, which GitHub honours; this guard is the second fence
-    if: ${{ !contains(github.event.head_commit.message, 'chore(release)') }}
+    if: github.ref == 'refs/heads/main' && !startsWith(github.event.head_commit.message || '', 'chore(release)')
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
         with:
+          ref: ${{ github.sha }}
           fetch-depth: 0
-      - uses: actions/setup-node@v4
+          fetch-tags: true
+      - name: A newer push owns the next release
+        id: fresh
+        run: |
+          git fetch --quiet origin main
+          if [ "$(git rev-parse HEAD)" = "$(git rev-parse origin/main)" ]; then echo "fresh=true" >> "$GITHUB_OUTPUT"; else echo "this commit is no longer the tip of main; the run for the newer push will release"; fi
+      - uses: actions/setup-python@v5
+        if: steps.fresh.outputs.fresh == 'true'
         with:
-          node-version: 24
-      - name: Git identity
+          python-version: "3.12"
+      - name: Decide and write the next version
+        id: bump
+        if: steps.fresh.outputs.fresh == 'true'
+        run: python3 scripts/release.py --apply --level "${{ inputs.level || 'auto' }}" --notes-out "$RUNNER_TEMP/notes.md" --github-output
+      - uses: actions/setup-node@v4
+        if: steps.bump.outputs.released == 'true'
+        with:
+          node-version: "24"
+      - name: Validate the bumped manifests
+        if: steps.bump.outputs.released == 'true'
+        run: |
+          npm install -g "@anthropic-ai/claude-code@${CLAUDE_CODE_VERSION}"
+          claude plugin validate --strict .
+      - name: Repo gate on the bumped tree (scripts/release-gate.sh, when the repo has one)
+        if: steps.bump.outputs.released == 'true' && hashFiles('scripts/release-gate.sh') != ''
+        run: sh scripts/release-gate.sh
+      - name: Commit, tag, push
+        if: steps.bump.outputs.released == 'true'
+        env:
+          TAG: ${{ steps.bump.outputs.tag }}
+          CLI_TAG: ${{ steps.bump.outputs.cli_tag }}
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-      - name: Decide the bump
-        id: plan
-        shell: bash
-        run: |
-          set -euo pipefail
-          current=$(node -p "require('./.claude-plugin/plugin.json').version")
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-            echo "bump=true" >> "$GITHUB_OUTPUT"; echo "level=${{ inputs.level }}" >> "$GITHUB_OUTPUT"; exit 0
-          fi
-          before="${{ github.event.before }}"
-          if git cat-file -e "$before^{commit}" 2>/dev/null; then
-            previous=$(git show "$before:.claude-plugin/plugin.json" | node -p "JSON.parse(require('fs').readFileSync(0,'utf8')).version")
-          else
-            previous=""
-          fi
-          if [ -n "$previous" ] && [ "$previous" != "$current" ]; then
-            echo "version already changed in this push ($previous -> $current): no bump"
-            echo "bump=false" >> "$GITHUB_OUTPUT"
-          else
-            messages=$(git log --format=%B "$before..HEAD" 2>/dev/null || git log -1 --format=%B)
-            level=patch
-            echo "$messages" | grep -qiE '^release-level:[[:space:]]*minor[[:space:]]*$' && level=minor
-            echo "$messages" | grep -qiE '^release-level:[[:space:]]*major[[:space:]]*$' && level=major
-            echo "bump=true" >> "$GITHUB_OUTPUT"; echo "level=$level" >> "$GITHUB_OUTPUT"
-          fi
-          echo "tag_exists=$(git ls-remote --tags origin "refs/tags/mcp-use--v$current" | wc -l | tr -d ' ')" >> "$GITHUB_OUTPUT"
-      - name: Bump, validate, commit
-        id: bump
-        if: steps.plan.outputs.bump == 'true'
-        shell: bash
-        run: |
-          set -euo pipefail
-          version=$(node scripts/bump-version.mjs "${{ steps.plan.outputs.level }}")
-          node scripts/validate.mjs
-          git add .claude-plugin/plugin.json .claude-plugin/marketplace.json
-          git commit -m "chore(release): $version [skip ci]"
-          git push origin HEAD:main
-          echo "version=$version" >> "$GITHUB_OUTPUT"
-      - name: Tag and publish
-        if: steps.plan.outputs.bump == 'true' || steps.plan.outputs.tag_exists == '0'
-        shell: bash
+          git add -A
+          git diff --cached --quiet || git commit -m "chore(release): $TAG [skip ci]"
+          # No rebase: if main moved while this ran, the version no longer describes it; the queued run for that push releases.
+          git push origin HEAD:main || { echo "::error::main moved during the release; the run for that push will release"; exit 1; }
+          git tag -a "$TAG" -m "$TAG"
+          [ -z "$CLI_TAG" ] || git tag -a "$CLI_TAG" -m "$CLI_TAG"
+          git push origin "refs/tags/$TAG"
+          [ -z "$CLI_TAG" ] || git push origin "refs/tags/$CLI_TAG"
+      - name: Publish the GitHub release
+        if: steps.bump.outputs.released == 'true'
         env:
           GH_TOKEN: ${{ github.token }}
+          TAG: ${{ steps.bump.outputs.tag }}
+          VERSION: ${{ steps.bump.outputs.version }}
+          NAME: ${{ steps.bump.outputs.name }}
         run: |
-          set -euo pipefail
-          version="${{ steps.bump.outputs.version }}"
-          [ -n "$version" ] || version=$(node -p "require('./.claude-plugin/plugin.json').version")
-          tag="mcp-use--v$version"
-          git tag -a "$tag" -m "mcp-use $version"
-          git push origin "$tag"
-          gh release create "$tag" --title "mcp-use $version" --generate-notes --verify-tag
+          { printf '**install:** `claude plugin install %s --marketplace %s`\n\n' "$NAME" "${{ github.repository }}"; cat "$RUNNER_TEMP/notes.md"; } > "$RUNNER_TEMP/release.md"
+          gh release create "$TAG" --title "$NAME $VERSION" --notes-file "$RUNNER_TEMP/release.md" --verify-tag --latest
