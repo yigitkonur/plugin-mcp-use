@@ -1,0 +1,93 @@
+name: release
+# Installed copies update only when the plugin's version string changes (Claude Code compares it with the cached one).
+# This workflow makes that automatic: a merge to main that changes anything users receive bumps the version in
+# plugin.json and marketplace.json, commits it, tags mcp-use--v<version> and publishes a GitHub release.
+#   - a human who already bumped the version in the push is respected (no second bump)
+#   - put #minor or #major in a commit message of the push to bump that level (default: patch)
+#   - Actions > release > Run workflow does the same by hand, with a chosen level
+on:
+  push:
+    branches: [main]
+    paths-ignore:
+      - "tests/**"
+      - "spikes/**"
+      - "evals/**"
+      - ".github/**"
+      - "AGENTS.md"
+  workflow_dispatch:
+    inputs:
+      level:
+        description: "bump level"
+        type: choice
+        options: [patch, minor, major]
+        default: patch
+concurrency:
+  group: release
+  cancel-in-progress: false
+permissions:
+  contents: write
+jobs:
+  release:
+    # the bot's own commit carries [skip ci] in its message, which GitHub honours; this guard is the second fence
+    if: ${{ !contains(github.event.head_commit.message, 'chore(release)') }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Decide the bump
+        id: plan
+        shell: bash
+        run: |
+          set -euo pipefail
+          current=$(node -p "require('./.claude-plugin/plugin.json').version")
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "bump=true" >> "$GITHUB_OUTPUT"; echo "level=${{ inputs.level }}" >> "$GITHUB_OUTPUT"; exit 0
+          fi
+          before="${{ github.event.before }}"
+          if git cat-file -e "$before^{commit}" 2>/dev/null; then
+            previous=$(git show "$before:.claude-plugin/plugin.json" | node -p "JSON.parse(require('fs').readFileSync(0,'utf8')).version")
+          else
+            previous=""
+          fi
+          if [ -n "$previous" ] && [ "$previous" != "$current" ]; then
+            echo "version already changed in this push ($previous -> $current): no bump"
+            echo "bump=false" >> "$GITHUB_OUTPUT"
+          else
+            messages=$(git log --format=%B "$before..HEAD" 2>/dev/null || git log -1 --format=%B)
+            level=patch
+            echo "$messages" | grep -q '#minor' && level=minor
+            echo "$messages" | grep -q '#major' && level=major
+            echo "bump=true" >> "$GITHUB_OUTPUT"; echo "level=$level" >> "$GITHUB_OUTPUT"
+          fi
+          echo "tag_exists=$(git ls-remote --tags origin "refs/tags/mcp-use--v$current" | wc -l | tr -d ' ')" >> "$GITHUB_OUTPUT"
+      - name: Bump, validate, commit
+        id: bump
+        if: steps.plan.outputs.bump == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          version=$(node scripts/bump-version.mjs "${{ steps.plan.outputs.level }}")
+          node scripts/validate.mjs
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add .claude-plugin/plugin.json .claude-plugin/marketplace.json
+          git commit -m "chore(release): $version [skip ci]"
+          git push origin HEAD:main
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+      - name: Tag and publish
+        if: steps.plan.outputs.bump == 'true' || steps.plan.outputs.tag_exists == '0'
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          version="${{ steps.bump.outputs.version }}"
+          [ -n "$version" ] || version=$(node -p "require('./.claude-plugin/plugin.json').version")
+          tag="mcp-use--v$version"
+          git tag -a "$tag" -m "mcp-use $version"
+          git push origin "$tag"
+          gh release create "$tag" --title "mcp-use $version" --generate-notes --verify-tag
