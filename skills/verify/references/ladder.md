@@ -1,6 +1,6 @@
 # Verification ladder (rungs 1–4)
 
-Replace `<port>` with a free port (3000 by default; use another such as 3511 if 3000 is taken). Run commands from the project root. Verified against `@mcp-use/cli@4.5.0`.
+Replace `<port>` with a free port (3000 by default; use another such as 3511 if 3000 is taken). Run commands from the project root. Verified against `@mcp-use/cli@4.5.0` and re-run on 4.5.2 (S27).
 
 ## Rung 1 — static (limit 3 minutes each)
 ```sh

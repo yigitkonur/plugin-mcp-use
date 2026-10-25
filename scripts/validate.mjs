@@ -88,7 +88,7 @@ const vp = json("data/versions.json")?.packages ?? {};
 for (const [where, file] of [["tests/types/migration", "tests/types/migration/package.json"], ["tests/fixtures/f02", "tests/fixtures/f02/package.json"], ["tests/fixtures/f03", "tests/fixtures/f03/package.json"], ["tests/fixtures/f11", "tests/fixtures/f11/package.json"]]) {
   const pj = json(file);
   for (const [dep, v] of Object.entries(pj?.dependencies ?? {})) {
-    const want = vp[dep]?.known_good ?? (dep === "@modelcontextprotocol/node" ? "2.1.1" : null);
+    const want = vp[dep]?.known_good ?? null;
     if (want && v !== want) err(`${where}: ${dep} is ${v}, expected ${want} (data/versions.json known_good)`);
   }
 }

@@ -12,3 +12,48 @@
 10. Run before every PR: `node scripts/validate.mjs`, `node --test tests/*.test.mjs`, `sh scripts/typecheck-fixtures.sh`, `sh scripts/migration-workspace.sh --check`, `claude plugin validate --strict .`.
 11. **File references in the docs resolve.** A backticked path into another skill is written `${CLAUDE_PLUGIN_ROOT}/skills/<skill>/references/<file>.md`; inside a skill, `references/<file>.md` means that skill's own folder; README and AGENTS use paths from the repository root. `node scripts/validate.mjs` (lib/refs.mjs) fails on a missing file or a bare cross-skill path. A path that lives in the user's project goes in `ALLOW` in `lib/refs.mjs` with a reason.
 12. **Test fixtures are tracked.** `.mcp-use-plugin/` is ignored except under `tests/fixtures/`; `tests/docs.test.mjs` fails if any other file under `tests/` is hidden by `.gitignore`, because a fresh clone would not have it.
+
+# Keeping up with upstream
+
+This plugin is a claim about other people's software: mcp-use, its CLI, the official MCP SDK, ChatGPT's plugin platform, Archestra. Those move weekly (mcp-use went from 2.8.2 to 2.11.2 in two weeks). Every statement in `skills/*/references`, every rule in `data/guard-rules.tsv` and every fixture in `tests/` can go stale without anyone touching this repository. This section is how to notice, understand and fix that. A weekly job does it for you (below); read this to review it or to do it by hand.
+
+## The mental model: three layers of truth, strongest first
+1. **Package types (what the code can do).** The `.d.ts` files inside the published tarball are the contract. If a reference disagrees with them, the reference is wrong. Compare two versions' tarballs, not release notes: GitHub release bodies for mcp-use are empty stubs ("Release 2.11.2 of mcp-use") and the docs changelog lags.
+2. **Live runs (what it does).** Types say a thing exists; only a run says what it does (headers, CSP values, exit codes, what a host renders). Probe with `mcp-use-probe`, a scaffold, `curl`, a browser. Mark what you ran as `ran`.
+3. **Vendor documentation (what they claim).** Docs and specs are the weakest layer: they describe intent and lag the code, but they are the only source for host rules (review criteria, platform support) that no package contains. Record the page hash so you notice when it moves; read the diff, not the whole page.
+
+When layers disagree, say so in the reference and follow the higher layer. "Not documented" is not "does not exist": check the types and `--help` before writing that something is missing (S27 found a dozen CLI flags the docs never mention).
+
+## Where to look (what, where, how, which file it feeds)
+| Upstream | Look at | Command | Feeds |
+|---|---|---|---|
+| `mcp-use` | npm tarballs `.d.ts`, `package.json` exports/dependencies/engines | `node scripts/upstream-diff.mjs mcp-use <old> <new>`; `npm view mcp-use dist-tags` | `skills/mcp-use-server/references/*`, `scripts/check-api-facts.mjs`, `data/guard-rules.tsv` |
+| `@mcp-use/cli`, `create-mcp-use-app`, `@mcp-use/client`, `@mcp-use/inspector` | `--help` of every subcommand, a fresh scaffold run through the ladder | `npx create-mcp-use-app` into a scratch dir, then `skills/verify/references/ladder.md` | `skills/mcp-use-server/references/cli.md`, `skills/verify/references/ladder.md`, `skills/new/references/templates.md` |
+| Unreleased mcp-use | the `canary` dist-tag (install in scratch, probe it) and merged PRs on `mcp-use/mcp-use` | `npm view mcp-use dist-tags`; `gh pr list -R mcp-use/mcp-use --state merged` | "Upcoming" notes only, version-gated; never as fact for `latest` |
+| mcp-use docs | docs MCP `query_docs_filesystem_mcp_use`, `https://docs.mcp-use.com/llms.txt` (diff the page list) | `curl -s https://docs.mcp-use.com/llms.txt` | what to read next, never a source of API shape |
+| Official MCP SDK | tarballs of `@modelcontextprotocol/sdk`, `server`, `node`, `ext-apps`; their release notes/PRs; the spec revision date | `node scripts/upstream-diff.mjs @modelcontextprotocol/server <old> <new>`; `sh scripts/migration-workspace.sh --check --latest` | `skills/migrate/references/*`, `tests/fixtures/f02,f03,f11` |
+| ChatGPT / OpenAI | the pages listed in `data/doc-hashes.json`, `developers.openai.com/plugins/llms.txt` (new pages!), `openai/mcp-extensions` spec and commits, `@openai/apps-sdk-ui` | `node scripts/drift.mjs`; docs MCP `fetch_openai_doc` | `skills/host-chatgpt/references/*`, `data/hosts/chatgpt.checklist.json`, ChatGPT rules |
+| Archestra | pages in `data/doc-hashes.json`, commits to `archestra-ai/archestra` (docs and the apps/lint code) | `node scripts/drift.mjs`; `gh api repos/archestra-ai/archestra/commits?path=docs/pages/chat/apps.md` | `skills/host-archestra/references/*`, `skills/archestra-app`, `lib/archestra-lint.mjs`, Archestra checklist |
+| Claude Code plugin format | `claude plugin --help` and its subcommands, the plugin docs | `claude plugin validate --strict .` | `plugin.json`, `marketplace.json`, README install section |
+
+New pages matter as much as changed ones: diff each vendor `llms.txt` against the pages you have read (`data/sources.json`), and read any page that is new to you.
+
+## Procedure
+1. **Detect.** `node scripts/drift.mjs` (exit 1 on drift: a version differing from `known_good`, or a tracked page whose hash moved). CI runs it every Monday and opens an issue; the local weekly job runs it and acts.
+2. **Understand before editing.** For every drifted package run `scripts/upstream-diff.mjs`, then read the actual diff. For every drifted page fetch the page (`curl -s <url>`; the docs MCP servers also return it) and compare it, claim by claim, with the reference that cites it, and keep the fetched copy next to your spike notes so the next diff has a baseline. Write findings in `spikes/S<n>-upstream-<date>.md` (what changed, evidence, what it breaks, what is new) and give it an id in `data/sources.json`. S27 is the model.
+3. **Classify each difference:** BREAKING (a documented API, flag, rule or host criterion changed or vanished: fix reference, rule, fixture), NEW (something now in use that the plugin does not mention: add to the reference, and a rule or checklist item if it can be checked), UPCOMING (canary/unreleased: a version-gated note, labelled), NOTHING (record it so nobody rechecks).
+4. **Update where it lives** (one home per fact): the reference; the guard rule (`data/guard-rules.tsv`, with a source id and a positive and negative test in `tests/scan.test.mjs`); the checklist in `data/hosts/*.checklist.json`; `skills/new/references/templates.md` when the scaffold changed; `skills/mcp-use-server/references/versions.md`. Bump the `Sources:` line of every file you touch.
+5. **Run the gates at the latest versions and at the pins:** `sh scripts/typecheck-fixtures.sh --latest` and `sh scripts/migration-workspace.sh --check --latest` (these install npm latest into a separate workspace), then the usual rule-10 commands. A fixture that fails at latest is the signal that a reference is stale; fix the reference, not the fixture, unless the API really changed.
+6. **Record.** Set `data/versions.json` `known_good` to what you just verified (it is a record of the last verification, not a pin) and `as_of` to today; run `node scripts/drift.mjs --update-hashes`. Commit with a `fix:` or `feat:` subject (a docs-only change does not release; see rule 1), open a PR, merge on green CI. The release workflow bumps, tags and publishes; installs with `autoUpdate` pick it up.
+
+## Latest by default
+The plugin never tells a user to pin `mcp-use`. New projects get npm `latest` (`/mcp-use:new`), existing ones move with `/mcp-use:upgrade`, and the references describe the latest release. Pinning is the user's choice at deploy time. The `canary` dist-tag is never installed or recommended; document it only as UPCOMING.
+
+## What to test, and what not to
+Tests protect contracts that someone downstream relies on, not prose.
+- **Do test:** engine exit codes and the JSON envelope (`bin/*`); that hooks are silent where they must be (`tests/controls/`); each guard rule with one positive and one negative sample; that every marked TypeScript example compiles against the real package (the fixtures, which is how upstream breakage is noticed); that README commands match the skills' `argument-hint`s and file references resolve (`tests/docs.test.mjs`, `lib/refs.mjs`); that the release bump logic does what rule 1 says.
+- **Do not test:** wording of references, what the model says (that is `evals/`, run before a release, not in CI), or upstream behavior we merely document (observe it in a spike instead and cite it).
+- A bug found by a user or by the weekly job gets a test only if it was in an engine, a rule or a fixture.
+
+## The weekly job
+`scripts/weekly-update.sh` runs the procedure above unattended: it makes a throwaway git worktree from `origin/main` (your working copy is never touched), runs `scripts/drift.mjs`, and if there is drift starts a headless `claude -p` session that follows this section, pushes a branch, opens a PR and merges it only if CI is green and every gate passed. With no drift it stops. `sh scripts/install-weekly-job.sh` installs a macOS launchd agent (Mondays 09:17; a missed run happens when the Mac wakes; `--status`, `--uninstall`). Log: `~/Library/Logs/plugin-mcp-use-weekly.log`. Try it: `sh scripts/weekly-update.sh --dry` (drift check only) or `--force` (runs the Claude session even without drift, expected to report nothing to change). Knobs: `WEEKLY_MODEL` (default sonnet), `WEEKLY_BUDGET_USD` (15), `WEEKLY_TIMEOUT_SECS` (5400). If a run leaves a PR open, it could not satisfy a gate: read the PR body, finish by hand.

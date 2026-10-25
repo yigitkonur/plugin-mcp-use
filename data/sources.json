@@ -1,5 +1,5 @@
 {
-  "as_of": "2026-10-20",
+  "as_of": "2026-10-25",
   "note": "Every rule and reference cites an id from this file. URLs are the origin of the claim; no vendor text is copied into this repository.",
   "sources": {
     "M1": {
@@ -144,6 +144,26 @@
     "S26": {
       "title": "Spike S26: settings tools, preferredDisplayMode and Apps SDK UI facts checked after the host-reference review",
       "url": "spikes/S26-host-ref-checks.md"
+    },
+    "S27": {
+      "title": "Spike S27: upstream changes 2026-10-20 to 2026-10-25 (mcp-use 2.11.2, cli 4.5.2, official SDK server 2.4.0, OpenAI spec revision, Archestra, newly read OpenAI pages)",
+      "url": "spikes/S27-upstream-2026-10-25.md"
+    },
+    "O9": {
+      "title": "OpenAI: Upload and submit your plugin (portal flow, domain verification, review information)",
+      "url": "https://developers.openai.com/plugins/deploy/submission"
+    },
+    "O10": {
+      "title": "OpenAI: Remote MCP server review requirements (verification, server requirements, continuous review of tool changes)",
+      "url": "https://developers.openai.com/plugins/deploy/app-review"
+    },
+    "O11": {
+      "title": "OpenAI: Security and privacy (widget sandbox, iframes, authentication)",
+      "url": "https://developers.openai.com/plugins/guides/security-privacy"
+    },
+    "O12": {
+      "title": "OpenAI: Submit your Claude Code plugin to OpenAI",
+      "url": "https://developers.openai.com/plugins/guides/submit-claude-plugin"
     }
   }
 }

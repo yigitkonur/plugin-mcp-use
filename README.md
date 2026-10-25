@@ -22,7 +22,7 @@ claude plugin install mcp-use@plugin-mcp-use
 it loads the next time you start claude code (or run `/reload-plugins` in a session that's already open). check it landed:
 
 ```sh
-claude plugin details mcp-use   # 11 skills, 2 agents, 2 hook events, 3 docs mcp servers, ~740 tokens always on
+claude plugin details mcp-use   # 12 skills, 2 agents, 2 hook events, 3 docs mcp servers, ~740 tokens always on
 ```
 
 - **inside a session instead:** `/plugin marketplace add yigitkonur/plugin-mcp-use`, then `/plugin install mcp-use@plugin-mcp-use` (opens the plugin panel so you can review it and pick a scope).
@@ -63,6 +63,7 @@ you need: claude code (tested on 2.1.302 to 2.1.307), node on your `PATH` (the e
 | serving one host and need the other, or your integration is kinda mid | `/mcp-use:host <chatgpt\|archestra> <add\|audit\|fix>` |
 | writing an archestra owned app (one html file on `window.archestra`) | `/mcp-use:archestra-app <lint\|fix\|new> <file.html>` |
 | want proof the server works, not a promise (typecheck, build, dev server, real tool calls, screenshots) | `/mcp-use:verify [--tool <name>] [--host chatgpt\|archestra]` |
+| keep the project on the latest mcp-use (reads what changed, upgrades, re-verifies) | `/mcp-use:upgrade [--check] [--pin]` |
 | not sure tbh | `/mcp-use:start` (detects your project and prints the next command) |
 
 ## what's in the box
@@ -70,7 +71,7 @@ you need: claude code (tested on 2.1.302 to 2.1.307), node on your `PATH` (the e
 | piece | what it does |
 |---|---|
 | knowledge skills (the model loads them itself): `mcp-use-server`, `mcp-apps`, `host-chatgpt`, `host-archestra` | the rules for mcp-use v2, checked against its published types and live runs: tools with explicit annotations, result envelopes, auth, elicitation, views, hooks, csp, chatgpt review rules and apps sdk ui, both archestra routes. troubleshooting, deploy and oauth-debugging references included. every typescript example marked as a fixture (45 of the 48 blocks) is compiled in ci; the other three (two next.js snippets, one vite config) say so. |
-| workflow skills (you type them) | `start`, `new`, `apps`, `host`, `migrate`, `verify`, `archestra-app` |
+| workflow skills (you type them) | `start`, `new`, `apps`, `host`, `migrate`, `verify`, `upgrade`, `archestra-app` |
 | agents | `host-reviewer` (audits one host's checklist), `server-surveyor` (inventories an official-sdk server before a migration) |
 | `bin/` engines (the model runs them too) | `mcp-use-detect` (stack, signals, scenario), `mcp-use-scan` (static rules, `--fix` for the mechanical ones), `mcp-use-probe` (live protocol checks over http or `--stdio`, snapshots, `--diff` for migration parity), `archestra-app-lint` (owned-app lint, `--fix`). bad input gets a clear usage error (exit 3), never a fake "clean". |
 | hooks | session start: a short brief (≤ 1.2 kb) in a node mcp-server project. after edits: at most one short nudge (≤ 600 chars) when an edit trips a rule, once per file and rule. silent everywhere else, never block, no network calls. |

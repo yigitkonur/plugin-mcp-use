@@ -680,7 +680,7 @@
     },
     {
       "id": "CG-X05",
-      "title": "Platform caveats are surfaced (file entrypoint and mentions desktop only; deep links not Android; forms need MRTR)",
+      "title": "Platform caveats are surfaced (file entrypoint and WebMCP desktop only; mentions desktop and web; deep links not Android; forms need MRTR, desktop and web only)",
       "methods": [
         "manual"
       ],
@@ -690,7 +690,7 @@
       "static_rules": [],
       "probe_rules": [],
       "source": "O6",
-      "judge": "If the project uses a file entrypoint, mentions, deep links or forms, check that the README or the app description states the platform limits: file entrypoint and mentions are desktop only, deep links are not on Android, forms need MRTR."
+      "judge": "If the project uses a file entrypoint, mentions, WebMCP, deep links or forms, check that the README or the app description states the platform limits: file entrypoint and WebMCP are desktop only, mentions are desktop and web (not mobile), deep links are not on Android, forms need MRTR and are not on mobile."
     },
     {
       "id": "CG-S01",
@@ -704,7 +704,7 @@
       "static_rules": [],
       "probe_rules": [],
       "source": "O4",
-      "judge": "See host-chatgpt/references/submission.md; report as TODOs with an owner."
+      "judge": "See host-chatgpt/references/submission.md (publisher, listing, tools, auth, portal flow, review information, domain verification); report as TODOs with an owner."
     },
     {
       "id": "CG-U18",
@@ -734,6 +734,21 @@
       "probe_rules": [],
       "source": "O3",
       "judge": "Read the view CSS and markup: for every text/background pair, check AA contrast (4.5:1 body text, 3:1 large text and controls) in both themes. Flag a fixed foreground on a fixed background where the theme changes only one of them, and controls that rely on browser default colors. Estimate from the CSS; say so if the view was not rendered."
+    },
+    {
+      "id": "CG-U20",
+      "title": "Views do not call window.alert, prompt, confirm or navigator.clipboard (the widget sandbox blocks them)",
+      "methods": [
+        "static"
+      ],
+      "severity": "warning",
+      "fix_mode": "manual",
+      "submission_only": false,
+      "static_rules": [
+        "CG-U20"
+      ],
+      "probe_rules": [],
+      "source": "O11"
     }
   ]
 }

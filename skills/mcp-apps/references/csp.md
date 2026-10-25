@@ -29,6 +29,6 @@ Domains are normalized to origins and de-duplicated. A request from a view to an
 `view.permissions` is an **object**, not a list: `{ camera: {}, microphone: {}, geolocation: {}, clipboardWrite: {} }`. Hosts may honor it by setting the iframe `allow` attribute; a view must feature-detect and cope with a denial.
 
 ## `domain`
-`view.domain` sets the app's own domain for hosts that need it (ChatGPT submission requires `_meta.ui.domain`; see `host-chatgpt`). Mcp-use emits it only when you set it.
+`view.domain` sets the app's own domain for hosts that need it (ChatGPT submission requires `_meta.ui.domain`; see `host-chatgpt`). Mcp-use emits it only when you set it. **Upcoming (2.12.0-canary, not in 2.11.2):** a `view.domain` with a path is normalized to its origin, and the Claude host's `*.claudemcpcontent.com` domain becomes the sha256 of the public MCP endpoint instead of the authored value (S27).
 
-Sources: M2, S11, O1, O5, S25.
+Sources: M2, S11, O1, O5, S25, S27.

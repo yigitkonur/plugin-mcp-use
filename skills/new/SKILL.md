@@ -15,7 +15,8 @@ Arguments: `$ARGUMENTS`. Use what was given; ask only for what is missing and wh
    `sh "${CLAUDE_PLUGIN_ROOT}/skills/new/scripts/scaffold.sh" <template> <name> npm` (add `--no-skills` if the user does not want the official `mcp-apps-builder` skill copied into `.claude/skills`; add `pnpm` or `bun` for another package manager). Time limit: 5 minutes. The script refuses to overwrite and prints `scaffold: ok <name>`.
 4. **Record the hosts.** In the new project create `.mcp-use-plugin/settings.md` with frontmatter `hosts: [chatgpt]` (or `archestra`, or both) and add `.mcp-use-plugin/` to its `.gitignore`.
 5. **First tool.** Edit `index.ts`: replace the demo with the user's first tool per `${CLAUDE_PLUGIN_ROOT}/skills/mcp-use-server/references/tools-and-results.md`: `inputSchema` with described fields, **all three annotations**, `outputSchema` plus matching `structuredContent`, a raw result envelope, side effects in the description, `export const`, `export default server`. If you add a view, follow `${CLAUDE_PLUGIN_ROOT}/skills/mcp-apps/references/views.md`.
-6. **Verify.** Read `${CLAUDE_PLUGIN_ROOT}/skills/verify/references/ladder.md` and run rungs 1 to 4 in the new project. Report each command with its output as you saw it.
-7. **Report.** Where the project is, how to start it (`npm run dev`), what each rung showed, and what is still open (hosts not yet verified live, auth not configured).
+6. **Latest.** The scaffold pins `mcp-use` to npm latest when it runs; run `npm outdated mcp-use @mcp-use/cli` and, if either is behind, `npm install mcp-use@latest @mcp-use/cli@latest`. Do not pin unless the user asks.
+7. **Verify.** Read `${CLAUDE_PLUGIN_ROOT}/skills/verify/references/ladder.md` and run rungs 1 to 4 in the new project. Report each command with its output as you saw it.
+8. **Report.** Where the project is, how to start it (`npm run dev`), what each rung showed, and what is still open (hosts not yet verified live, auth not configured).
 
 Do not run `npm run deploy`, `mcp-use deploy` or `mcp-use login`. Do not edit anything outside the new project.

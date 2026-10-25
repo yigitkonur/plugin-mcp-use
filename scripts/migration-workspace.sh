@@ -1,12 +1,17 @@
 #!/bin/sh
 # Prepare the workspace for the migration fixtures (F02, F03, F11): installs the official MCP SDK packages pinned in
 # tests/types/migration/package.json, copies each fixture next to a node_modules symlink, and prints the workspace path.
-# Usage: scripts/migration-workspace.sh [--check]   (--check also compiles every fixture with tsc)
+# Usage: scripts/migration-workspace.sh [--check] [--latest]
+#   --check   also compiles every fixture with tsc
+#   --latest  use the official SDK packages at npm latest in a separate workspace (the drift check) instead of the pins
 set -u
 HERE=$(cd "$(dirname "$0")/.." && pwd)
+CHECK=0; LATEST=0
+for a in "$@"; do case "$a" in --check) CHECK=1 ;; --latest) LATEST=1 ;; *) echo "migration-workspace: unknown option $a" >&2; exit 3 ;; esac; done
 WS="${MCP_USE_WORK:-${TMPDIR:-/tmp}}/mcp-use-plugin-migration"
+[ "$LATEST" = 1 ] && WS="$WS-latest"
 mkdir -p "$WS/fixtures"
-cp "$HERE/tests/types/migration/package.json" "$WS/package.json"
+if [ "$LATEST" = 1 ]; then node "$HERE/scripts/latest-package-json.mjs" "$HERE/tests/types/migration/package.json" "$WS/package.json" >&2 || exit 2; else cp "$HERE/tests/types/migration/package.json" "$WS/package.json"; fi
 if [ ! -d "$WS/node_modules/@modelcontextprotocol/sdk" ] || [ "$(cat "$WS/.pkg-hash" 2>/dev/null)" != "$(shasum "$WS/package.json" | cut -d' ' -f1)" ]; then
   (cd "$WS" && npm install --no-audit --no-fund --loglevel=error) >&2 || { echo "npm install failed" >&2; exit 2; }
   shasum "$WS/package.json" | cut -d' ' -f1 > "$WS/.pkg-hash"
@@ -21,7 +26,7 @@ for f in f02 f03 f11; do
     ln -s ../../node_modules "$WS/fixtures/$f/node_modules"
   fi
 done
-if [ "${1:-}" = "--check" ]; then
+if [ "$CHECK" = 1 ]; then
   FAIL=0
   # "before" snippets from the playbook (<!-- fixture-sdk1/sdk2 -->) must compile against the pinned official SDK
   mkdir -p "$WS/generated"
