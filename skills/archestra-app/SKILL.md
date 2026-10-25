@@ -7,6 +7,8 @@ disable-model-invocation: true
 
 # /mcp-use:archestra-app
 
+> In Codex: `bin/` is not on PATH and `${CLAUDE_PLUGIN_ROOT}` is unset. The plugin root is two folders above this file: run engines as `node <root>/bin/<name>` and read `${CLAUDE_PLUGIN_ROOT}` as `<root>`. `/mcp-use:<x>` means the skill `<x>`.
+
 Arguments: `$ARGUMENTS` = `<mode> <file.html>`. Modes: `lint` (read-only report; default), `fix` (apply fixes), `new` (create a file from the skeleton and lint it). This works on any HTML file in any repository; no Node project is needed. Read `${CLAUDE_PLUGIN_ROOT}/skills/host-archestra/SKILL.md` and `${CLAUDE_PLUGIN_ROOT}/skills/host-archestra/references/route-b-sdk.md` before writing app code. The platform's `validate_app` and `get_app_diagnostics` are the authority; the lint is a pre-flight.
 
 ## lint

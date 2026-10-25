@@ -7,6 +7,8 @@ disable-model-invocation: true
 
 # /mcp-use:apps
 
+> In Codex: `bin/` is not on PATH and `${CLAUDE_PLUGIN_ROOT}` is unset. The plugin root is two folders above this file: run engines as `node <root>/bin/<name>` and read `${CLAUDE_PLUGIN_ROOT}` as `<root>`. `/mcp-use:<x>` means the skill `<x>`.
+
 Arguments: `$ARGUMENTS` (tool names to give a UI; empty = decide with the user). Scenario: an mcp-use v2 server whose tools have no views yet (or a few).
 
 1. **Scope.** `mcp-use-detect --json`: continue only for `M-USE-SRV` in a Node project (else the scope notice from `/mcp-use:start`). Read the server entry and list every tool with its `inputSchema`, `outputSchema`, annotations and handler.

@@ -6,6 +6,8 @@ user-invocable: false
 
 # MCP Apps with mcp-use views
 
+> In Codex: `bin/` is not on PATH and `${CLAUDE_PLUGIN_ROOT}` is unset. The plugin root is two folders above this file: run engines as `node <root>/bin/<name>` and read `${CLAUDE_PLUGIN_ROOT}` as `<root>`. `/mcp-use:<x>` means the skill `<x>`.
+
 An MCP App is a tool plus a UI resource. mcp-use packages `views/<name>/view.tsx` as `ui://views/<name>.html` (MIME `text/html;profile=mcp-app`) and links the tool to it through `_meta.ui.resourceUri`. The host renders it in a sandboxed iframe. The same view can run in ChatGPT, Archestra (installed-server route) and other MCP Apps hosts, because the contract is the open standard, not one host's bridge.
 
 Start from `${CLAUDE_PLUGIN_ROOT}/skills/mcp-use-server/SKILL.md` for server rules. Everything here was checked against the installed `mcp-use` types (2.11.0); the type of an API wins over this text.

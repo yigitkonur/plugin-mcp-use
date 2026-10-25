@@ -8,6 +8,7 @@ import { loadRules, scanFiles, projectFiles, applyFixes, writeReport, SEVERITY_R
 import { readSettings, globToRegex, readText, MAX_TEXT_BYTES } from "../lib/project.mjs";
 import { lintHtml } from "../lib/archestra-lint.mjs";
 import { envelope, EXIT } from "../lib/envelope.mjs";
+import { patchPaths } from "../lib/patch.mjs";
 import { parseCli, usage, requireDir, kindOf } from "../lib/cli.mjs";
 
 const TOOL = "mcp-use-scan";
@@ -37,7 +38,9 @@ let root = o.dir || process.env.CLAUDE_PROJECT_DIR || process.cwd();
 if (o.dir && !hookMode) requireDir(TOOL, root, "--dir", json);
 if (o.host !== undefined && !HOSTS.includes(o.host)) usage(TOOL, `--host ${o.host}: expected one of ${HOSTS.join(", ")}`, json);
 let session = o.session || "no-session";
-let hookFile = null;
+let hookFile = null, hookFiles = [];
+// the same files the shell pre-filter (hooks/post-edit-guard.sh) lets through
+const HOOK_CANDIDATE = /(\.(ts|tsx|mts|js|mjs|css|html)|(^|\/)package\.json)$/;
 
 // Archestra Owned-App HTML: a declared owned_app_paths glob, or a file that uses the injected window.archestra.
 const OWNED_SIGNATURE = /\barchestra\.(?:ready|user|context|storage|files|llm|tools|ui)\b/;
@@ -67,6 +70,7 @@ try {
     if (p.cwd) root = p.cwd;
     if (p.session_id) session = p.session_id;
     hookFile = p.tool_input?.file_path ?? null;
+    if (!hookFile) hookFiles = patchPaths(p.tool_input?.command).filter((f) => HOOK_CANDIDATE.test(f) && !/(^|\/)(node_modules|\.mcp-use|dist)\//.test(f));
   }
 } catch { if (hookMode) process.exit(0); }
 
@@ -99,7 +103,7 @@ try {
   const rules = loadRules();
 
   let files;
-  if (hookMode) files = hookFile ? [posix(relative(real(root), real(resolve(root, hookFile))))] : [];
+  if (hookMode) files = (hookFile ? [hookFile] : hookFiles).map((f) => posix(relative(real(root), real(resolve(root, f)))));
   else if (fileArgs.length) files = fileArgs;
   else files = projectFiles(root);
   files = files.filter((f) => !escapes(f));

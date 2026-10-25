@@ -20,6 +20,29 @@ if (plugin && market) {
   if (plugin.version !== mv || plugin.version !== market.metadata?.version) err(`version mismatch: plugin.json ${plugin.version}, marketplace plugin ${mv}, marketplace metadata ${market.metadata?.version}`);
 }
 
+// the Codex side: same version as the Claude manifest, same docs MCP servers, hook scripts that exist
+const codex = json(".codex-plugin/plugin.json");
+const codexMarket = json(".agents/plugins/marketplace.json");
+const codexMcp = json(".codex-mcp.json");
+const codexHooks = json("hooks/codex-hooks.json");
+if (plugin && codex && codex.version !== plugin.version) err(`version mismatch: .codex-plugin/plugin.json ${codex.version}, .claude-plugin/plugin.json ${plugin.version}`);
+if (codex) for (const k of ["skills", "mcpServers", "hooks"]) if (!codex[k] || !existsSync(join(root, codex[k]))) err(`.codex-plugin/plugin.json: ${k} "${codex[k]}" does not exist`);
+if (codexMarket) { const e = codexMarket.plugins?.[0]; if (e?.name !== plugin?.name || !e?.policy?.installation || !e?.policy?.authentication || !e?.category) err(".agents/plugins/marketplace.json: entry needs the plugin name, policy.installation, policy.authentication and category"); }
+if (codexMcp) {
+  const claudeMcp = json(".mcp.json")?.mcpServers ?? {};
+  const want = Object.fromEntries(Object.entries(claudeMcp).map(([k, v]) => [k, v.url]));
+  const have = Object.fromEntries(Object.entries(codexMcp.mcpServers ?? {}).map(([k, v]) => [k, v.url]));
+  if (JSON.stringify(want, Object.keys(want).sort()) !== JSON.stringify(have, Object.keys(have).sort())) err(`.codex-mcp.json servers ${JSON.stringify(have)} differ from .mcp.json ${JSON.stringify(want)}`);
+}
+if (codexHooks) for (const m of JSON.stringify(codexHooks).matchAll(/\$\{PLUGIN_ROOT\}\/([\w./-]+)/g)) if (!existsSync(join(root, m[1]))) err(`hooks/codex-hooks.json: ${m[1]} does not exist`);
+for (const d of readdirSync(join(root, "skills"))) {
+  const sk = readFileSync(join(root, "skills", d, "SKILL.md"), "utf8");
+  const noModel = /^disable-model-invocation:\s*true/m.test(sk);
+  const yaml = join(root, "skills", d, "agents", "openai.yaml");
+  if (noModel !== (existsSync(yaml) && /allow_implicit_invocation:\s*false/.test(readFileSync(yaml, "utf8")))) err(`skills/${d}: disable-model-invocation and agents/openai.yaml allow_implicit_invocation:false must agree`);
+  if (!sk.includes("In Codex:")) err(`skills/${d}/SKILL.md: missing the "In Codex:" line`);
+}
+
 function* walk(dir) {
   for (const e of readdirSync(dir)) {
     const p = join(dir, e);

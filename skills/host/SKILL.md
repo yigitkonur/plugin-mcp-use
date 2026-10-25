@@ -7,6 +7,8 @@ disable-model-invocation: true
 
 # /mcp-use:host
 
+> In Codex: `bin/` is not on PATH and `${CLAUDE_PLUGIN_ROOT}` is unset. The plugin root is two folders above this file: run engines as `node <root>/bin/<name>` and read `${CLAUDE_PLUGIN_ROOT}` as `<root>`. `/mcp-use:<x>` means the skill `<x>`. There are no plugin agents: read `<root>/agents/host-reviewer.md` and do the review yourself.
+
 Arguments: `$ARGUMENTS` = `<host> <mode>`. `host`: `chatgpt` or `archestra` (installed-server Route A; for a single HTML Owned App use `/mcp-use:archestra-app` instead). `mode`: `audit` (default; read-only), `add` (close the gaps for a host the project does not serve yet), `fix` (apply fixes to findings). One engine does all three: a gap analysis against `${CLAUDE_PLUGIN_ROOT}/data/hosts/<host>.checklist.json`. Read `references/gap-analysis.md` first.
 
 1. **Scope.** Run `mcp-use-detect --json`. Continue only for a Node project with an mcp-use server (`M-USE-SRV`); otherwise print the scope notice from `/mcp-use:start` and stop. For `add`, record the host by writing `hosts: [...]` (every host already declared plus the new one) into `.mcp-use-plugin/settings.md`: create the file without asking, it is this plugin's own local state. Suggest adding `.mcp-use-plugin/` to the project's `.gitignore`, and edit `.gitignore` only if the user agrees.

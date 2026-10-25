@@ -1,0 +1,13 @@
+{
+  "description": "mcp-use for Codex: SessionStart brief and edit guard (apply_patch), both silent outside MCP server projects",
+  "hooks": {
+    "SessionStart": [
+      { "matcher": "startup|resume|clear",
+        "hooks": [ { "type": "command", "command": "sh \"${PLUGIN_ROOT}/hooks/session-detect.sh\" codex", "timeout": 10 } ] }
+    ],
+    "PostToolUse": [
+      { "matcher": "^(apply_patch|Edit|Write)$",
+        "hooks": [ { "type": "command", "command": "sh \"${PLUGIN_ROOT}/hooks/post-edit-guard.sh\"", "timeout": 15 } ] }
+    ]
+  }
+}

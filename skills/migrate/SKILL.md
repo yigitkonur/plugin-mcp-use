@@ -7,6 +7,8 @@ disable-model-invocation: true
 
 # /mcp-use:migrate
 
+> In Codex: `bin/` is not on PATH and `${CLAUDE_PLUGIN_ROOT}` is unset. The plugin root is two folders above this file: run engines as `node <root>/bin/<name>` and read `${CLAUDE_PLUGIN_ROOT}` as `<root>`. `/mcp-use:<x>` means the skill `<x>`. There are no plugin agents: read `<root>/agents/server-surveyor.md` and do the survey yourself.
+
 Arguments: `$ARGUMENTS`. `--stdio "<command>"` or `--url` tells the probe how to start or reach the **old** server; without either, find it in `package.json` scripts and ask. Scope: a Node/TypeScript project on the official MCP SDK, or an mcp-use v1 server (then read `references/mcp-use-v1-to-v2.md` instead of `official-sdk.md`). Other frameworks are not covered: say so and stop. Read `references/method.md` first; it has the order, the questions and the stop conditions.
 
 1. **Scope.** `mcp-use-detect --json`. Continue for scenario `MIGRATE` or `LEGACY_V1`. For `ADD_APPS` and later scenarios say the server is already on mcp-use and name the right command.

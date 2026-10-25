@@ -1,0 +1,5 @@
+interface:
+  display_name: "mcp-use verify"
+  short_description: "Typecheck, run and call the server end to end"
+policy:
+  allow_implicit_invocation: false

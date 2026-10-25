@@ -1,0 +1,5 @@
+interface:
+  display_name: "mcp-use start"
+  short_description: "Show what mcp-use applies to this project"
+policy:
+  allow_implicit_invocation: false

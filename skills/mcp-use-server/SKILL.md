@@ -6,6 +6,8 @@ user-invocable: false
 
 # mcp-use v2 server (TypeScript)
 
+> In Codex: `bin/` is not on PATH and `${CLAUDE_PLUGIN_ROOT}` is unset. The plugin root is two folders above this file: run engines as `node <root>/bin/<name>` and read `${CLAUDE_PLUGIN_ROOT}` as `<root>`. `/mcp-use:<x>` means the skill `<x>`.
+
 ## Source of truth, in this order
 1. The installed package: `node_modules/mcp-use/dist/**/*.d.ts`, the generated `mcp-env.d.ts`, and `package.json` `exports`. Read the declaration before using an API you are not certain of.
 2. The docs MCP servers this plugin ships. `mcp-use-docs` has `search_mcp_use` and `query_docs_filesystem_mcp_use`; `openai-docs` and `archestra-docs` cover the hosts. Never call a feedback tool (the mcp-use docs server has `submit_feedback`).

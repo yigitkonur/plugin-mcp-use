@@ -4,6 +4,8 @@
 [ "${MCP_USE_PLUGIN:-}" = "off" ] && exit 0
 command -v node >/dev/null 2>&1 || exit 0
 INPUT=$(cat)
+# Codex passes "codex": the brief then says how to run the engines there (no bin/ on PATH)
+[ "${1:-}" = "codex" ] && MCP_USE_HOST=codex && export MCP_USE_HOST
 ROOT="${CLAUDE_PLUGIN_ROOT:-$(cd "$(dirname "$0")/.." && pwd)}"
 DIR="${CLAUDE_PROJECT_DIR:-$(pwd)}"
 CWD=$(printf '%s' "$INPUT" | sed -n 's/.*"cwd"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' | head -1)
@@ -12,5 +14,6 @@ cd "$DIR" 2>/dev/null || exit 0
 . "$ROOT/hooks/lib-signal.sh"
 mcp_use_disabled && exit 0
 mcp_use_has_signal || exit 0
+MCP_USE_PLUGIN_ROOT="$ROOT"; export MCP_USE_PLUGIN_ROOT
 printf '%s' "$INPUT" | node "$ROOT/bin/mcp-use-detect" --dir "$DIR" --brief --format hook 2>/dev/null
 exit 0

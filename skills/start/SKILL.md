@@ -6,6 +6,8 @@ disable-model-invocation: true
 
 # /mcp-use:start
 
+> In Codex: `bin/` is not on PATH and `${CLAUDE_PLUGIN_ROOT}` is unset. The plugin root is two folders above this file: run engines as `node <root>/bin/<name>` and read `${CLAUDE_PLUGIN_ROOT}` as `<root>`. `/mcp-use:<x>` means the skill `<x>`.
+
 Report what applies to this project. Do not edit anything except the optional settings file in step 4.
 
 1. Run `mcp-use-detect --json` (a bare command; the plugin's `bin/` is on PATH). Read `result.scenario`, `result.versions`, `result.hosts`, `result.entry`, `result.views` and `next_actions`.

@@ -1,0 +1,5 @@
+interface:
+  display_name: "mcp-use archestra-app"
+  short_description: "Lint and push an Archestra Owned App"
+policy:
+  allow_implicit_invocation: false

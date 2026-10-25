@@ -7,6 +7,8 @@ disable-model-invocation: true
 
 # /mcp-use:upgrade
 
+> In Codex: `bin/` is not on PATH and `${CLAUDE_PLUGIN_ROOT}` is unset. The plugin root is two folders above this file: run engines as `node <root>/bin/<name>` and read `${CLAUDE_PLUGIN_ROOT}` as `<root>`. `/mcp-use:<x>` means the skill `<x>`.
+
 Arguments: `$ARGUMENTS`: `--check` reports and edits nothing; `--pin` writes exact versions (default: the caret range npm writes). The rule of this plugin is **latest by default**: install the newest release and keep up with it, pin only when the user says the deploy target needs it.
 
 1. **Find what is installed.** Run `mcp-use-detect --json`; read `versions["mcp-use"]` and the entry. Then `npm ls mcp-use @mcp-use/cli @mcp-use/client @mcp-use/inspector --depth=0` and `npm view <each> version` for the latest. Say old -> new per package. Nothing newer: say so and stop. Dist-tag `canary` is not a release: never install it.

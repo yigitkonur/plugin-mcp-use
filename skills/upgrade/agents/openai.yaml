@@ -1,0 +1,5 @@
+interface:
+  display_name: "mcp-use upgrade"
+  short_description: "Move mcp-use and its CLI to the latest release"
+policy:
+  allow_implicit_invocation: false
