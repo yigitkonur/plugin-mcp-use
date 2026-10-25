@@ -131,8 +131,9 @@ try {
     const shown = fresh.slice(0, 3);
     mkdirSync(seenDir, { recursive: true });
     appendFileSync(seenFile, shown.map((f) => `${f.file}\t${f.rule_id}`).join("\n") + "\n");
-    const lines = [`mcp-use guard: ${shown[0].file}`];
-    for (const f of shown) lines.push(`- ${f.rule_id} line ${f.line}: ${short(f.message)} [${f.source}]`);
+    const multi = new Set(shown.map((f) => f.file)).size > 1; // a multi-file apply_patch: name the file on each line
+    const lines = [multi ? "mcp-use guard:" : `mcp-use guard: ${shown[0].file}`];
+    for (const f of shown) lines.push(`- ${multi ? f.file + " " : ""}${f.rule_id} line ${f.line}: ${short(f.message)} [${f.source}]`);
     let text = lines.join("\n");
     if (text.length > 600) text = text.slice(0, 597) + "…";
     process.stdout.write(JSON.stringify({ hookSpecificOutput: { hookEventName: "PostToolUse", additionalContext: text } }) + "\n");

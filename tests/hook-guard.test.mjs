@@ -131,3 +131,13 @@ test("Codex SessionStart brief names how to run the engines; the Claude brief do
   assert.ok(codex.includes(`node ${root}/bin/<name>`), codex);
   assert.ok(!JSON.parse(run([]).stdout).hookSpecificOutput.additionalContext.includes("Codex:"));
 });
+
+test("Codex multi-file apply_patch names the file on each finding", () => {
+  const d = copy("f15");
+  const patch = "*** Begin Patch\n*** Update File: legacy.ts\n@@\n-x\n+y\n*** Update File: views/product-card/view.tsx\n@@\n-x\n+y\n*** End Patch\n";
+  const r = applyPatch(d, patch, "s-multi");
+  const text = JSON.parse(r.stdout).hookSpecificOutput.additionalContext;
+  assert.ok(text.length <= 600, `len ${text.length}`);
+  assert.match(text, /^mcp-use guard:\n/);
+  for (const line of text.split("\n").slice(1)) assert.match(line, /^- \S+\.(ts|tsx) [A-Z]+-[A-Za-z0-9]+ line \d+/);
+});
