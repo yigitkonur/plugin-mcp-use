@@ -22,7 +22,7 @@ claude plugin install mcp-use@plugin-mcp-use
 it loads the next time you start claude code (or run `/reload-plugins` in a session that's already open). check it landed:
 
 ```sh
-claude plugin details mcp-use   # 12 skills, 2 agents, 2 hook events, 3 docs mcp servers, ~740 tokens always on
+claude plugin details mcp-use   # 12 skills, 2 agents, 2 hook events, 3 docs mcp servers, ~1.2k tokens always on
 ```
 
 - **inside a session instead:** `/plugin marketplace add yigitkonur/plugin-mcp-use`, then `/plugin install mcp-use@plugin-mcp-use` (opens the plugin panel so you can review it and pick a scope).
@@ -77,7 +77,7 @@ you need: claude code (tested on 2.1.302 to 2.1.307), node on your `PATH` (the e
 | hooks | session start: a short brief (≤ 1.2 kb) in a node mcp-server project. after edits: at most one short nudge (≤ 600 chars) when an edit trips a rule, once per file and rule. silent everywhere else, never block, no network calls. |
 | docs mcp servers | `mcp-use-docs`, `openai-docs`, `archestra-docs` (remote, no auth), so api details come from current docs, not from a model's memory |
 
-footprint: about 740 tokens always in context (`claude plugin details mcp-use`). everything else loads only when a skill or agent actually fires.
+footprint: about 1.2k tokens always in context once enabled (nothing while disabled) (`claude plugin details mcp-use`). everything else loads only when a skill or agent actually fires.
 
 ## how each journey goes
 
