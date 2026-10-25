@@ -1,6 +1,6 @@
 # ChatGPT extensions in mcp-use
 
-Spec: OpenAI MCP extensions (O6) and Extensions overview (O2); mcp-use API from its 2.11.0 types. **Platform support is O6's "expected support at DevDay launch" table ("Classic ChatGPT is excluded"): a snapshot to re-check, not a guarantee.** Use the `openai-docs` MCP server for current status.
+Spec: OpenAI MCP extensions (O6) and Extensions overview (O2); mcp-use API from its 2.11.0 types. **Platform support is O6's Platform Support table (re-read 2026-10-25, S27; "Web" is the Work browser, classic ChatGPT is excluded): a snapshot to re-check, not a guarantee.** Use the `openai-docs` MCP server for current status.
 
 | Extension | What it does | mcp-use | Platforms (O6 table) |
 |---|---|---|---|
@@ -9,12 +9,14 @@ Spec: OpenAI MCP extensions (O6) and Extensions overview (O2); mcp-use API from 
 | File entrypoint | opens as the viewer for files with given extensions; the tool receives `{ file: { name, resourceUri, … } }`; `resourceUri` is opaque, intercepted by ChatGPT | `{ type: "file", extensions: [".csv"] }` (extensions start with ".") | desktop only |
 | Structured settings | native settings screen from a read tool and an update tool | `server.settings({...})` | all |
 | Deep links | `https://chatgpt.com/plugins/<plugin-id>/app/<tool-name>?path=<encoded-app-relative-url>`; the app reads it from `hostContext["openai/deepLink"]` | `useDeepLink()` → `{ url }` | not Android |
-| Composer @-mentions | search tool backing mentions in the composer | `server.mentions({...})` (mcp-use ≥ 2.9.0) | desktop only |
+| Composer @-mentions | search tool backing mentions in the composer | `server.mentions({...})` (mcp-use ≥ 2.9.0) | desktop, web; not mobile |
 | Extended model context | `ui/update-model-context` extensions; each call replaces the app instance's prior context; no image content yet on web | `useModelContext()` (`${CLAUDE_PLUGIN_ROOT}/skills/mcp-apps/references/hooks.md`) | web*, iOS*, desktop, Android |
 | Extended forms | `OpenAIForm` through elicitation; OpenAI-registered servers need multi-round-trip requests (MRTR) | `inputRequired.elicit` (`${CLAUDE_PLUGIN_ROOT}/skills/mcp-use-server/references/elicitation.md`) | desktop; web*; no mobile |
+| Extended message sending | `ui/message` metadata; on mobile `send: false` (draft only) and `target: "new"` are supported (S27); iOS carries an asterisk in O6 | none in mcp-use (use `useSendFollowUp()` for the plain form) | all (iOS*) |
+| WebMCP | agents discover and call tools a view registers through `document.modelContext`. ChatGPT does **not** support the MCP Apps SDK's `App.registerTool()` | none | desktop only |
 | Plugin onboarding | `extensions["com.openai"].onboardingSkill` in the plugin manifest | n/a (plugin packaging) | all |
 
-The deep-link format is `?path=`, not `?route=`. Entrypoint tools are invoked without model-chosen arguments, and `visibility` is ignored when a tool is invoked as an entrypoint.
+The deep-link format is `?path=`, not `?route=`; the app-open scheme is `codex` on Desktop and `chatgpt` on iOS (the `?path=` web link is unchanged). Entrypoint tools are invoked without model-chosen arguments, and `visibility` is ignored when a tool is invoked as an entrypoint.
 
 ## Entrypoints
 <!-- fixture: chatgpt-entrypoints -->
@@ -142,7 +144,13 @@ export default function Router() {
 ```
 mcp-use normalizes older host `path`/`query` payloads to the same URL shape. Route parsing and authorization stay in the app.
 
-## Platform caveats to tell the user
-File entrypoints and mentions are desktop only; deep links are not on Android; forms need MRTR and are not on mobile; check O6's table for web and iOS asterisks before promising a surface.
+## Added in the 2026-10-21 spec revision (S27)
+- **Groups in model context.** A content block in `ui/update-model-context` may carry `_meta["openai/group"] = { title }` (non-empty string); blocks without a usable title fall into the "Context" group. `useModelContext()` has no typed option for it: pass the block `_meta` through.
+- **Numeric answers.** Hosts submit `integer` and `number` form fields as JSON numbers. Collect an exact value (an id, a long number) with a `string` field plus `pattern`.
+- **Display modes.** If `_meta["openai/ui"]` is omitted entirely, ChatGPT uses legacy behavior and defaults to `inline`. `pip` is still not listed (CG-R07).
+- **Deprecated:** `x-openai-input` with `type: "file"` and `x-openai-preview`.
 
-Sources: O2, O4, O6, M2, S26.
+## Platform caveats to tell the user
+File entrypoints are desktop only; mentions are desktop and web; WebMCP is desktop only; deep links are not on Android; forms need MRTR, work on desktop and web only; check O6's table for the asterisks before promising a surface.
+
+Sources: O2, O4, O6, M2, S26, S27.

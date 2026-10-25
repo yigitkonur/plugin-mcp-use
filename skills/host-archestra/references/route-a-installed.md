@@ -23,6 +23,8 @@ An mcp-use server with a `view` already speaks the contract Archestra reads. Wha
 | AR-A11 | `window.openai` is feature-detected | scan |
 | AR-A07, A08, A12 | viewer access, credential model, model context | **unverified**, see `unverified.md` |
 
+**Seen upstream, not run by this plugin (S27):** the host once forwarded only the bundled font names to the app, so views fell back to a serif default (fixed in Archestra on 2026-10-20: a generic family is appended). If an installed app renders serif, check the Archestra version before changing the view. Re-authentication of an installed server is now offered as a URL elicitation ("Sign-in expired? Your client asks you to sign in again"), which bears on the unconfirmed credential question U5.
+
 ## In mcp-use terms
 - The tool/view binding writes `_meta.ui.resourceUri` for you (`ui://views/<name>.html`); a hand-written `_meta` should use the nested `ui.resourceUri` form, not a flat key.
 - Declare origins with `view.csp` (`${CLAUDE_PLUGIN_ROOT}/skills/mcp-apps/references/csp.md`); the probe compares them with the `src`/`href` origins in the HTML text it reads, so it cannot see origins added by scripts at runtime, and it only matches absolute `src`/`href` values (quoted with `"` or `'`); unquoted attributes and CSS `url()` loads are not seen. Read Archestra's diagnostics for those.
@@ -42,4 +44,4 @@ After that, `mcp-use-scan` runs the `AR-*` rules and `/mcp-use:host archestra au
 ## Live check
 Ask the user for their Archestra URL, add the server to the registry from its dashboard (a tunnel URL for a local dev server), open the app, then read the app card and diagnostics (`verify-in-archestra.md`).
 
-Sources: A1, A3, M2.
+Sources: A1, A3, M2, S27.

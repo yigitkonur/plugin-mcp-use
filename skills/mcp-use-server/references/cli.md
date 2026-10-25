@@ -1,15 +1,15 @@
 # `mcp-use` CLI
 
-Verified against `@mcp-use/cli@4.5.0` by running `--help` and the commands below (2026-10-20). The CLI is installed by `mcp-use`, so `npx mcp-use <command>` works in any project. Boolean flags take no value (`--tunnel`, never `--tunnel=false`; the CLI answers `--tunnel does not take a value`, exit 2).
+Verified against `@mcp-use/cli@4.5.0` and re-checked on 4.5.2 (identical `--help` for every command, S27) by running `--help` and the commands below (2026-10-20 and 2026-10-25). `mcp-use --version` prints the resolved `mcp-use` package version, not the CLI's; there is no `generate-types` command (`typecheck` refreshes `mcp-env.d.ts`). The CLI is installed by `mcp-use`, so `npx mcp-use <command>` works in any project. Boolean flags take no value (`--tunnel`, never `--tunnel=false`; the CLI answers `--tunnel does not take a value`, exit 2).
 
 | Command | Use |
 |---|---|
 | `mcp-use dev [-p <port>] [--host h] [--entry f] [--path dir] [--mcp-dir d] [--views-dir d] [--tunnel] [--no-open] [--no-inspector]` | dev server with view hot reload and the Inspector. Exit 0 started, 2 bad arguments, 1 startup failure. Prints the MCP endpoint (default `http://localhost:3000/mcp`). |
-| `mcp-use typecheck [-- <tsc options>]` | regenerates `mcp-env.d.ts` and runs the project's TypeScript compiler. |
-| `mcp-use build [--source-maps] [--inline] [--no-views-config]` | builds `.mcp-use/build/index.js` and bundles views. Exit 1 on failure (including malformed `skills/`). |
-| `mcp-use start [-p] [--with-inspector]` | serves the production build. |
-| `mcp-use client connect <name> <url>` | saves a server. Then `mcp-use client <name> tools list`, `tools describe <tool>`, `tools call <tool> key=value key:=<json> [--json]`, `resources list`, `resources read <uri>`, `prompts list`, `prompts get`, `auth login\|status\|logout`. `mcp-use client list` and `remove <name>` manage saved servers. |
-| `mcp-use screenshot (--server <name> \| --mcp <url>) --tool <tool> [key=value…] [--theme light\|dark] [--width px] [--height px] [--device-scale-factor n] [--delay ms] [--timeout ms] [--output file.png] [--json]` | calls a view-backed tool and saves the rendered view as a PNG. |
+| `mcp-use typecheck [--path dir] [--entry f] [--mcp-dir d] [-- <tsc options>]` | regenerates `mcp-env.d.ts` and runs the project's TypeScript compiler. |
+| `mcp-use build [--source-maps] [--inline] [--no-views-config] [--path dir] [--entry f] [--mcp-dir d] [--views-dir d]` | builds `.mcp-use/build/index.js` and bundles views. Exit 1 on failure (including malformed `skills/`). |
+| `mcp-use start [-p] [--host h] [--path dir] [--tunnel] [--with-inspector]` | serves the production build. |
+| `mcp-use client connect <name> <url> [-H 'Name: value'…] [--no-oauth] [--auth-timeout ms] [--protocol auto\|legacy\|modern] [--no-open]` | saves a server. Then `mcp-use client <name> tools list`, `tools describe <tool>`, `tools call <tool> key=value key:=<json> [--json]`, `resources list`, `resources read <uri>`, `prompts list`, `prompts get`, `auth login\|status\|logout`. `mcp-use client list` and `remove <name>` manage saved servers. |
+| `mcp-use screenshot (--server <name> \| --mcp <url>) --tool <tool> [key=value…] [--theme light\|dark] [--width px] [--height px] [--device-scale-factor n] [--delay ms] [--timeout ms] [--output file.png] [-H 'Name: value'…] [--inspector url] [--cdp-url url] [--json]` | calls a view-backed tool and saves the rendered view as a PNG. |
 | `mcp-use deploy [path] [--no-github] [--env K=V] [--yes] [--json]` | deploys to Manufact Cloud. It mutates remote state; never run it without the user asking. |
 | `mcp-use login`, `logout`, `whoami`, `org`, `servers`, `deployments` | cloud account commands. |
 
@@ -25,4 +25,4 @@ Verified against `@mcp-use/cli@4.5.0` by running `--help` and the commands below
 1. Protocol: tools, resources, prompts and skills through `mcp-use client` (or `mcpc`). Exit codes and JSON, no model involved.
 2. Model: does an LLM pick the right tool and does the view render? That needs a host (Inspector chat, ChatGPT developer mode, Archestra). `/mcp-use:verify` walks both.
 
-Sources: M1, S16, S7.
+Sources: M1, S16, S7, S27.

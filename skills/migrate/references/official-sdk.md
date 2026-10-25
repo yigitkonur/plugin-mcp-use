@@ -1,6 +1,6 @@
 # Porting an official MCP TypeScript SDK server to mcp-use
 
-One playbook for every server built on the official SDK: `@modelcontextprotocol/sdk` 1.x (`McpServer`, low-level `Server`), the v2 split (`@modelcontextprotocol/server`, `/node`), either with `@modelcontextprotocol/ext-apps` UI or OpenAI's Apps SDK example pattern (`ui://widget/…`, `window.openai`). Checked against `sdk@1.32.1`, `server@2.3.1`, `node@2.1.1`, `ext-apps@2.0.3` and `mcp-use@2.11.0`; the "before" snippets compile in CI against the SDK, the "after" snippets against mcp-use. mcp-use 2.11.0 is itself built on `@modelcontextprotocol/server` v2, so v2 concepts (`ServerContext`, `AuthInfo`, `inputRequired`) carry over almost unchanged.
+One playbook for every server built on the official SDK: `@modelcontextprotocol/sdk` 1.x (`McpServer`, low-level `Server`), the v2 split (`@modelcontextprotocol/server`, `/node`), either with `@modelcontextprotocol/ext-apps` UI or OpenAI's Apps SDK example pattern (`ui://widget/…`, `window.openai`). Checked against `sdk@1.32.2`, `server@2.4.0`, `node@2.1.2`, `ext-apps@2.0.3` and `mcp-use@2.11.2` (S27; the earlier pass used sdk 1.32.1, server 2.3.1, node 2.1.1, mcp-use 2.11.0); the "before" snippets compile in CI against the SDK, the "after" snippets against mcp-use. mcp-use 2.11.0 is itself built on `@modelcontextprotocol/server` v2, so v2 concepts (`ServerContext`, `AuthInfo`, `inputRequired`) carry over almost unchanged.
 
 ## Decide before porting
 1. **Transport.** mcp-use 2.11.0 serves Streamable HTTP only (S12). A stdio server becomes an HTTP server: its clients switch from a `command` entry to a URL. Ask; do not promise stdio.
@@ -30,6 +30,7 @@ One playbook for every server built on the official SDK: `@modelcontextprotocol/
 | `StreamableHTTPServerTransport` + Express glue, `createMcpHandler` + `toNodeHandler` | delete the glue; `export default server`. Own routes: `server.get/post`. Embedding in Express: `toNodeHandler(server)` from `mcp-use/node` |
 | `requireBearerAuth({ verifier })`, `OAuthTokenVerifier` | `oauth: oauthCustomProvider({ oauthMetadata, createTokenVerifier: () => verifier, mapAuthInfo })` or a ready provider (`auth.md`) |
 | `ui://widget/x.html` + `text/html+skybridge` + `_meta["openai/outputTemplate"]` | `view: { name: "x" }` + `views/x/view.tsx`; mcp-use writes `_meta.ui.resourceUri` and serves `text/html;profile=mcp-app` |
+| Skills extension (`@modelcontextprotocol/server/ext/skills`: `SkillsExtension`, `loadSkills`, server 2.4.0) | a `skills/` directory next to the entry, or `skills: { directory }` on `new MCPServer` (`skills-over-mcp.md`); the official schema also wants `size`, `ttlMs` and `cacheScope`, which mcp-use 2.11.x does not emit, so a strict `SkillsClient` may reject the list |
 | `registerAppTool` / `registerAppResource` (ext-apps) | the same `view: { name }` binding; `view.csp`, `view.permissions`, `view.prefersBorder`, `view.domain` |
 
 ## Tools, resources, prompts: before and after
@@ -230,6 +231,10 @@ The old widget usually styled one theme only: set text and background colors for
 - **Default values and optionals** survive as JSON Schema `default`/`required`; compare them in the snapshot diff, not by eye.
 - **Error semantics.** A thrown error becomes a protocol error in some SDK paths and `isError` in others; port expected failures as `isError: true` results.
 - **Module-level singletons** (db clients, caches) are fine; per-session ones are not.
+- **Two copies of the v2 packages.** mcp-use 2.11.2 depends on `@modelcontextprotocol/server`, `core` and `client` at exactly 2.3.1. A project that keeps `@modelcontextprotocol/server@^2.4.0` as a direct dependency (and `node@2.1.2`, which needs server ^2.4.0; bump the two together) installs both. Remove the direct dependency after parity passes.
+- **A ported `outputSchema` with a root `$ref`** (zod `z.object().meta({ id })`): server 2.4.0 adds `type: "object"` to it, mcp-use 2.11.2 (on 2.3.1) does not, so the diff can show a benign `CHANGED outputSchema` line (`parity.md`).
+- **SDK 1.32.2 behaves differently from 1.32.1** in ways a baseline can show: `registerTool` after `connect()` now works; a declared capability with nothing registered answers an empty list instead of `-32601`. Take the baseline on the version the project actually runs.
+- **Server 2.4.0 rejects what 2.3.1 accepted:** `x-mcp-header` on a `number` parameter (tool not listed, `-32020` on call), and `$id`/`$ref` with an invalid scheme such as `my_tool:output`. grep before porting.
 - **Leftover dependencies.** Remove `@modelcontextprotocol/sdk` / `server` / `node` / `ext-apps` only after parity passes; `mcp-use` brings its own copy of what it needs.
 
-Sources: M1, M2, S12, S20, O5.
+Sources: M1, M2, S12, S20, O5, S27.

@@ -27,7 +27,7 @@ Rules that decide the target:
 
 1. Types pass: `npx mcp-use typecheck` (exit 1 and `TS2322` on a seeded type error). `mcp-use build` does not typecheck: same error, build exit 0. So run `npm run typecheck && npm run build`. [ran: both commands on a copy with `const bad: number = "x"`]
 2. Build works and produces the layout: `npx mcp-use build`, then `ls .mcp-use/build` shows `index.js`, `landing`, `manifest.json`, `views`. [ran: f13 and f14 copies]
-3. Views are built with the public origin: `MCP_URL=https://api.example.com npx mcp-use build` (origin only; a path in `MCP_URL` is dropped). [ran: csp showed `https://api.example.com` for `MCP_URL=https://api.example.com/some/path`]
+3. Views are built with the public origin: `MCP_URL=https://api.example.com npx mcp-use build` (origin only; a path in `MCP_URL` is dropped in 2.11.2; the 2.12 canary keeps it verbatim for the Claude view-domain hash only, S27). [ran: csp showed `https://api.example.com` for `MCP_URL=https://api.example.com/some/path`]
 4. Default export is the server: last line `export default server;`. [code: cli dist]
 5. It starts from the build alone: copy only `.mcp-use/build`, `package.json` and `node_modules` to a clean directory, run `PORT=3721 npx mcp-use start`, `curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:3721/health` -> 200 (the `/health` route is the app's own, see Health). [ran]
 6. Protocol is reachable: `node bin/mcp-use-probe --url http://127.0.0.1:<port>/mcp --json` -> `"protocol":"2026-07-28","mode":"modern","tools":3,"counts":{"error":0,...}`; or `curl -X POST -H 'Content-Type: application/json' -H 'Accept: application/json, text/event-stream' -d '{"jsonrpc":"2.0","id":1,"method":"tools/list","params":{}}' http://127.0.0.1:<port>/mcp` -> 200. [ran]
@@ -62,7 +62,7 @@ Rules that decide the target:
 | `CSP_URLS` | adds the origin to connect, resource, frame and base-uri | [ran: all four lists contained it] [existing: ${CLAUDE_PLUGIN_ROOT}/skills/mcp-apps/references/csp.md] |
 | `CSP_CONNECT_DOMAINS`, `CSP_RESOURCE_DOMAINS`, `CSP_FRAME_DOMAINS`, `CSP_BASE_URI_DOMAINS` | per-category additions | [ran: `CSP_CONNECT_DOMAINS` changed only connectDomains] [code: strings in mcp-use dist] |
 | `MCP_USE_LOG_LEVEL` | `info`, `debug` or `trace`; overrides `logging.level`; default `info` | [code: `resolveLogLevel`] [types: logging.d.ts] [existing: config-and-lifecycle.md] |
-| `MCP_USE_ANONYMIZED_TELEMETRY` | the value `false` disables mcp-use telemetry | [code: mcp-use dist `env("MCP_USE_ANONYMIZED_TELEMETRY")==="false"`] |
+| `MCP_USE_ANONYMIZED_TELEMETRY` | the value `false` disables mcp-use telemetry (the 2.11.3 canary adds a sampled `landing.viewed` event under the same switch, S27) | [code: mcp-use dist `env("MCP_USE_ANONYMIZED_TELEMETRY")==="false"`] |
 | `MCP_USE_OAUTH_<PROVIDER>_*` | provider settings, e.g. `MCP_USE_OAUTH_CLERK_FRONTEND_API_URL`, `MCP_USE_OAUTH_AUTH0_DOMAIN`, `MCP_USE_OAUTH_AUTH0_AUDIENCE`, `MCP_USE_OAUTH_SUPABASE_URL`, `MCP_USE_OAUTH_KEYCLOAK_REALM`. Not `CLERK_SECRET_KEY`-style names | [types: oauth/clerk.d.ts, oauth/auth0.d.ts `@defaultValue`] [code: mcp-use dist/oauth] |
 | `MCP_USE_OAUTH_SECRET` | secret for `oauthProxy` (32+ characters; array to rotate). Required outside a localhost `listen()` | [types: oauth/proxy/index.d.ts] |
 | `MCP_USE_OAUTH_DEBUG` | verbose OAuth logging | [code: mcp-use dist `process.env.MCP_USE_OAUTH_DEBUG`] |
@@ -133,4 +133,4 @@ export default server;
 - `requestState` is not storage; verify it with a codec if it affects authorization. [existing: elicitation.md, context-and-middleware.md]
 - Request timing: wrap with `server.use("mcp:*", ...)`; observers via `server.on("mcp:tools/call:complete", (ctx, result) => ...)` cannot change results. [existing: context-and-middleware.md]
 
-Sources: M2, S24, S25.
+Sources: M2, S24, S25, S27.

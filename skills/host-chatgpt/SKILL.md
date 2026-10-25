@@ -20,6 +20,9 @@ ChatGPT implements the open MCP Apps standard and adds optional extensions in `w
 9. **Feature-detect `window.openai`.** Prefer the `mcp-use/react` hooks, which use the standard bridge.
 10. **ChatGPT reads OAuth challenges from `_meta["mcp/www_authenticate"]` on an error result (O5).** mcp-use 2.11.0 returns that with HTTP 200 for ChatGPT user agents and 401 for others (S18; `${CLAUDE_PLUGIN_ROOT}/skills/mcp-use-server/references/auth.md`).
 
+11. **The widget sandbox has no `window.alert`, `window.prompt`, `window.confirm` or `navigator.clipboard` (O11).** Build dialogs and copy controls into the view (rule CG-U20).
+12. **Submission is a portal flow, not just rules.** One MCP server per plugin, domain verification at `/.well-known/openai-apps-challenge`, five positive and three negative review test cases, and a continuous review that holds changed tools until they pass (`references/submission.md`).
+
 ## Where to read
 | Need | File |
 |---|---|
@@ -29,7 +32,7 @@ ChatGPT implements the open MCP Apps standard and adds optional extensions in `w
 | Entrypoints, `server.settings`, mentions, deep links, platform support | `references/extensions.md` |
 | `window.openai` reference and feature detection | `references/window-openai.md` |
 | CSP, iframes, `redirect_domains` | `references/csp-and-iframes.md` |
-| Review and submission checklist | `references/submission.md` |
+| Review rules, the submission portal flow, domain verification, tool-change review | `references/submission.md` |
 
 ## Checking a project
 `mcp-use-scan --host chatgpt` (static rules, also run by the edit guard) and `mcp-use-probe --host chatgpt --url http://localhost:3000/mcp` (live protocol checks) implement `data/hosts/chatgpt.checklist.json`. The user can run `/mcp-use:host chatgpt audit`. Live rendering in ChatGPT developer mode is a separate, manual step (`${CLAUDE_PLUGIN_ROOT}/skills/verify/references/ladder.md`, rung 5).

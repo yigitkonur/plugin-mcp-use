@@ -181,3 +181,21 @@ test("CG-T01b leaves booleans, expressions and shorthand properties alone", () =
     assert.ok(!out.result.findings.some((x) => x.rule_id === "CG-T01b"), annotations);
   }
 });
+
+// ---- CG-U20: dialogs and the clipboard are blocked in ChatGPT widgets (O11) ------------------------------
+function viewProject(body) {
+  const d = toolProject("{ readOnlyHint: true, destructiveHint: false, openWorldHint: false }");
+  mkdirSync(join(d, "views", "card"), { recursive: true });
+  writeFileSync(join(d, "views", "card", "view.tsx"), body);
+  return d;
+}
+const cgU20 = (body) => runScan(viewProject(body), ["--host", "chatgpt"]).out.result.findings.filter((x) => x.rule_id === "CG-U20");
+
+test("CG-U20 flags alert/confirm/prompt and navigator.clipboard in a view", () => {
+  assert.equal(cgU20('export default function V() { return <button onClick={() => window.alert("x")}>a</button>; }\n').length, 1);
+  assert.equal(cgU20('export function copy(t: string) { return navigator.clipboard.writeText(t); }\n').length, 1);
+});
+
+test("CG-U20 leaves lookalikes alone", () => {
+  assert.equal(cgU20('const myAlert = (s: string) => s; export const x = myAlert("a"); const cfg = { alert: 1, prompt: 2 }; void cfg.prompt;\n').length, 0);
+});

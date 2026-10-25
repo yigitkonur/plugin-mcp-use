@@ -8,6 +8,8 @@ Basis: OpenAI build guide (O1), plugin guidelines (O4), reference (O5). mcp-use 
 - **`_meta.ui.domain`** is required for plugin UI submission and must be unique per plugin (`metadata.md`).
 - **Production origin.** mcp-use adds the server origin to `connectDomains`/`resourceDomains` from `MCP_URL`/`MCP_ASSETS_URL`. Without them the resource points at `http://127.0.0.1:<port>` (observed in the resource metadata), which a host that is not on the same machine as the server (ChatGPT in the cloud) cannot load.
 - **`CSP_URLS` widens `frame-src` and `base-uri` too** (observed). Prefer `CSP_CONNECT_DOMAINS` / `CSP_RESOURCE_DOMAINS`.
+- **Widgets run in an isolated iframe and cannot use the privileged browser APIs `window.alert`, `window.prompt`, `window.confirm` or `navigator.clipboard`** (O11). Build the confirmation or the copy button into the view; for destructive actions use the host's own confirmation prompt (tool annotations). Rule CG-U20 flags these calls.
+- **An embedded page keeps its own CSP.** The widget's `connectDomains` and `resourceDomains` do not restrict requests made inside a page you embed through `frameDomains`; keep iframe origins specific and include the embedded experience in your security review (O11).
 - Avoid `<iframe>` inside views (CG-U16).
 
-Sources: O1, O4, O5, M2.
+Sources: O1, O4, O5, O11, M2.

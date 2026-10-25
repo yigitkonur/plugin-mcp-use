@@ -1,19 +1,25 @@
 #!/bin/sh
-# Compile every <!-- fixture: --> example against the pinned mcp-use (data/versions.json known_good),
-# and prove every <!-- fixture-bad: --> example is rejected. Workspace lives outside the repo.
+# Compile every <!-- fixture: --> example against mcp-use and prove every <!-- fixture-bad: --> example is rejected.
+# Default: the versions in tests/types/workspace/package.json (data/versions.json known_good): reproducible, used by CI.
+# --latest: the tracked packages at npm latest (a separate workspace): the drift check. A failure here means upstream
+# changed something the examples rely on; see AGENTS.md "Keeping up with upstream".
+# Workspace lives outside the repo.
 set -u
 HERE=$(cd "$(dirname "$0")/.." && pwd)
+LATEST=0; [ "${1:-}" = "--latest" ] && LATEST=1
 WS="${MCP_USE_WORK:-${TMPDIR:-/tmp}}/mcp-use-plugin-fixtures"
+[ "$LATEST" = 1 ] && WS="$WS-latest"
 mkdir -p "$WS" "$WS/logs"
 cp -R "$HERE/tests/types/workspace/." "$WS/"
+if [ "$LATEST" = 1 ]; then node "$HERE/scripts/latest-package-json.mjs" "$HERE/tests/types/workspace/package.json" "$WS/package.json" || exit 2; fi
 if [ ! -d "$WS/node_modules/mcp-use" ] || [ "$(cat "$WS/.pkg-hash" 2>/dev/null)" != "$(shasum "$WS/package.json" | cut -d' ' -f1)" ]; then
   (cd "$WS" && npm install --no-audit --no-fund --loglevel=error) || { echo "npm install failed"; exit 2; }
   shasum "$WS/package.json" | cut -d' ' -f1 > "$WS/.pkg-hash"
 fi
 INSTALLED=$(node -p "require('$WS/node_modules/mcp-use/package.json').version")
 KNOWN=$(node -p "require('$HERE/data/versions.json').packages['mcp-use'].known_good")
-echo "mcp-use installed=$INSTALLED known_good=$KNOWN"
-[ "$INSTALLED" = "$KNOWN" ] || { echo "FAIL: installed mcp-use differs from data/versions.json known_good"; exit 2; }
+echo "mcp-use installed=$INSTALLED known_good=$KNOWN (latest mode: $LATEST)"
+if [ "$LATEST" = 0 ]; then [ "$INSTALLED" = "$KNOWN" ] || { echo "FAIL: installed mcp-use differs from data/versions.json known_good"; exit 2; }; fi
 node "$HERE/scripts/check-api-facts.mjs" "$WS" || exit 1
 mkdir -p "$WS/generated"
 COUNTS=$(node "$HERE/scripts/extract-fixtures.mjs" "$WS/generated") || exit 2

@@ -26,11 +26,11 @@ Things that need a decision rather than a mechanical port, each one a question t
 ## Done means
 - `mcp-use-probe --diff` is empty, or every line is classified intended with a reason (`parity.md`).
 - `mcp-use typecheck` exits 0 and `mcp-use dev` serves the same tools.
-- The old SDK packages are no longer direct dependencies in `package.json`, the old transport glue is deleted, scripts point at `mcp-use`. (`npm ls @modelcontextprotocol/server` still lists the package under `mcp-use`, which depends on it; that is expected.)
+- The old SDK packages are no longer direct dependencies in `package.json`, the old transport glue is deleted, scripts point at `mcp-use`. (`npm ls @modelcontextprotocol/server` still lists the package under `mcp-use`, which depends on it; that is expected; if you also keep `@modelcontextprotocol/server` as a direct dependency at a different version than mcp-use's exact pin, there are two copies: `official-sdk.md`, Traps.)
 - Client configuration is updated or the exact change is written down for the user.
 - Read-only sample calls return the same `structuredContent` (or an intended change).
 
 ## Stop and ask when
 - the baseline cannot run; the diff shows a lost tool, resource or prompt; a handler depends on session state you cannot move; the project is not on the official SDK; typecheck fails three times for different reasons.
 
-Sources: M1, M2, S12, S20.
+Sources: M1, M2, S12, S20, S27.
