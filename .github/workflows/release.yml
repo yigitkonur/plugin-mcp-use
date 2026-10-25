@@ -3,7 +3,7 @@ name: release
 # This workflow makes that automatic: a merge to main that changes anything users receive bumps the version in
 # plugin.json and marketplace.json, commits it, tags mcp-use--v<version> and publishes a GitHub release.
 #   - a human who already bumped the version in the push is respected (no second bump)
-#   - put #minor or #major in a commit message of the push to bump that level (default: patch)
+#   - a line `Release-Level: minor` or `Release-Level: major` in a commit message of the push bumps that level (default: patch)
 #   - Actions > release > Run workflow does the same by hand, with a chosen level
 on:
   push:
@@ -59,8 +59,8 @@ jobs:
           else
             messages=$(git log --format=%B "$before..HEAD" 2>/dev/null || git log -1 --format=%B)
             level=patch
-            echo "$messages" | grep -q '#minor' && level=minor
-            echo "$messages" | grep -q '#major' && level=major
+            echo "$messages" | grep -qiE '^release-level:[[:space:]]*minor[[:space:]]*$' && level=minor
+            echo "$messages" | grep -qiE '^release-level:[[:space:]]*major[[:space:]]*$' && level=major
             echo "bump=true" >> "$GITHUB_OUTPUT"; echo "level=$level" >> "$GITHUB_OUTPUT"
           fi
           echo "tag_exists=$(git ls-remote --tags origin "refs/tags/mcp-use--v$current" | wc -l | tr -d ' ')" >> "$GITHUB_OUTPUT"
