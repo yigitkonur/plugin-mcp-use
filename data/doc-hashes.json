@@ -14,6 +14,8 @@
     "https://developers.openai.com/plugins/deploy/submission.md": "6e1d85f2969a9d38",
     "https://developers.openai.com/plugins/deploy/app-review.md": "8c901b938170c51a",
     "https://developers.openai.com/plugins/guides/security-privacy.md": "2354bba4b09c87d3",
-    "https://developers.openai.com/plugins/guides/submit-claude-plugin.md": "b171086bbd3ca415"
+    "https://developers.openai.com/plugins/guides/submit-claude-plugin.md": "b171086bbd3ca415",
+    "https://developers.openai.com/plugins/llms.txt": "27b9428e99030054",
+    "https://docs.mcp-use.com/llms.txt": "eb724ccf74987f3c"
   }
 }
