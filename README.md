@@ -26,16 +26,21 @@ claude plugin details mcp-use   # 11 skills, 2 agents, 2 hook events, 3 docs mcp
 ```
 
 - **inside a session instead:** `/plugin marketplace add yigitkonur/plugin-mcp-use`, then `/plugin install mcp-use@plugin-mcp-use` (opens the plugin panel so you can review it and pick a scope).
-- **one repo only, switched off until you want it:** nothing global, nothing running, one command to turn it on later.
+- **installed everywhere, on only where you want it (costs no tokens while off):** install once for your user and switch it off:
 
   ```sh
-  claude plugin marketplace add yigitkonur/plugin-mcp-use --scope project
-  claude plugin install mcp-use@plugin-mcp-use --scope project
-  claude plugin disable mcp-use@plugin-mcp-use --scope project   # installed, but off
-  claude plugin enable  mcp-use@plugin-mcp-use --scope project   # whenever you want it
+  claude plugin install mcp-use --marketplace yigitkonur/plugin-mcp-use
+  claude plugin disable mcp-use@plugin-mcp-use --scope user
   ```
 
-  that records the marketplace and `"mcp-use@plugin-mcp-use": false` in the repo's `.claude/settings.json`. skip the `disable` line and the plugin is on for the repo (commit the file and teammates get it too; each runs the install once).
+  then, in any project, turn it on for that project only (writes `"mcp-use@plugin-mcp-use": true` to the project's `.claude/settings.json`):
+
+  ```sh
+  claude plugin enable  mcp-use@plugin-mcp-use --scope project   # on here
+  claude plugin disable mcp-use@plugin-mcp-use --scope project   # off again
+  claude plugin list                                             # what's on, and at which scope
+  ```
+- **one repo only, no global install:** `claude plugin marketplace add yigitkonur/plugin-mcp-use --scope project`, then `claude plugin install mcp-use@plugin-mcp-use --scope project`. that turns it on for the repo (commit `.claude/settings.json` and teammates get it; each runs the install once). add `claude plugin disable mcp-use@plugin-mcp-use --scope project` right after if you want it installed but off.
 - **auto-update:** third-party marketplaces are off by default in claude code. turn it on once with `/plugin` > marketplaces > plugin-mcp-use > enable auto-update, or declare it in `settings.json` (user or project):
 
   ```json
