@@ -231,10 +231,10 @@ The old widget usually styled one theme only: set text and background colors for
 - **Default values and optionals** survive as JSON Schema `default`/`required`; compare them in the snapshot diff, not by eye.
 - **Error semantics.** A thrown error becomes a protocol error in some SDK paths and `isError` in others; port expected failures as `isError: true` results.
 - **Module-level singletons** (db clients, caches) are fine; per-session ones are not.
-- **Two copies of the v2 packages.** mcp-use 2.11.2 depends on `@modelcontextprotocol/server`, `core` and `client` at exactly 2.3.1. A project that keeps `@modelcontextprotocol/server@^2.4.0` as a direct dependency (and `node@2.1.2`, which needs server ^2.4.0; bump the two together) installs both. Remove the direct dependency after parity passes.
-- **A ported `outputSchema` with a root `$ref`** (zod `z.object().meta({ id })`): server 2.4.0 adds `type: "object"` to it, mcp-use 2.11.2 (on 2.3.1) does not, so the diff can show a benign `CHANGED outputSchema` line (`parity.md`).
+- **Two copies of the v2 packages.** mcp-use 2.11.2 and 2.12.2 depend on `@modelcontextprotocol/server`, `core` and `client` at exactly 2.3.1. A project that keeps `@modelcontextprotocol/server@^2.4.0` as a direct dependency (and `node@2.1.2`, which needs server ^2.4.0; bump the two together) installs both. Remove the direct dependency after parity passes.
+- **A ported `outputSchema` with a root `$ref`** (zod `z.object().meta({ id })`): server 2.4.0 adds `type: "object"` to it, mcp-use 2.11.2 and 2.12.2 (on 2.3.1) do not, so the diff can show a benign `CHANGED outputSchema` line (`parity.md`).
 - **SDK 1.32.2 behaves differently from 1.32.1** in ways a baseline can show: `registerTool` after `connect()` now works; a declared capability with nothing registered answers an empty list instead of `-32601`. Take the baseline on the version the project actually runs.
 - **Server 2.4.0 rejects what 2.3.1 accepted:** `x-mcp-header` on a `number` parameter (tool not listed, `-32020` on call), and `$id`/`$ref` with an invalid scheme such as `my_tool:output`. grep before porting.
 - **Leftover dependencies.** Remove `@modelcontextprotocol/sdk` / `server` / `node` / `ext-apps` only after parity passes; `mcp-use` brings its own copy of what it needs.
 
-Sources: M1, M2, S12, S20, O5, S27.
+Sources: M1, M2, S12, S20, O5, S27, S28.

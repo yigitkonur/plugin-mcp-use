@@ -13,7 +13,7 @@ user-invocable: false
 2. The docs MCP servers this plugin ships. `mcp-use-docs` has `search_mcp_use` and `query_docs_filesystem_mcp_use`; `openai-docs` and `archestra-docs` cover the hosts. Never call a feedback tool (the mcp-use docs server has `submit_feedback`).
 3. The references below. If one disagrees with the installed types, the types win: say so, and fix the code to match the types.
 
-mcp-use moved from 2.8.2 to 2.11.2 in two weeks. Do not trust memory for signatures. Use the latest release (`/mcp-use:upgrade` moves a project there); `data/versions.json` `known_good` is only the version these references were last verified against, not a pin.
+mcp-use moved from 2.8.2 to 2.12.2 in under four weeks. Do not trust memory for signatures. Use the latest release (`/mcp-use:upgrade` moves a project there); `data/versions.json` `known_good` is only the version these references were last verified against, not a pin.
 
 ## Invariants
 1. Import everything from `"mcp-use"`. The `mcp-use/server` subpath is gone (v1); other subpaths are `mcp-use/react`, `mcp-use/node`, `mcp-use/next`, `mcp-use/oauth/*`.

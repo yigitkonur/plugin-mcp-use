@@ -29,6 +29,6 @@ Domains are normalized to origins and de-duplicated. A request from a view to an
 `view.permissions` is an **object**, not a list: `{ camera: {}, microphone: {}, geolocation: {}, clipboardWrite: {} }`. Hosts may honor it by setting the iframe `allow` attribute; a view must feature-detect and cope with a denial.
 
 ## `domain`
-`view.domain` sets the app's own domain for hosts that need it (ChatGPT submission requires `_meta.ui.domain`; see `host-chatgpt`). Mcp-use emits it only when you set it. **Upcoming (2.12.0-canary, not in 2.11.2):** a `view.domain` with a path is normalized to its origin, and the Claude host's `*.claudemcpcontent.com` domain becomes the sha256 of the public MCP endpoint instead of the authored value (S27).
+`view.domain` sets the app's own domain for hosts that need it (ChatGPT submission requires `_meta.ui.domain`; see `host-chatgpt`). Mcp-use emits it only when you set it. Since 2.12 (observed on 2.12.2, S28; 2.11.2 returned the authored value and hashed it for Claude): a `view.domain` with a path is normalized to its origin for ChatGPT and other hosts (`https://app.example.com/some/path` reads back as `https://app.example.com`), and for a Claude read `_meta.ui.domain` is `<first 32 hex of sha256(public MCP endpoint)>.claudemcpcontent.com`. The endpoint is `MCP_URL` origin + `/mcp`, or `MCP_URL` verbatim when it has a path (CSP domains still use the origin); the authored `view.domain` no longer matters for Claude. Do not overwrite the generated domain in response middleware.
 
-Sources: M2, S11, O1, O5, S25, S27.
+Sources: M2, S11, O1, O5, S25, S27, S28.

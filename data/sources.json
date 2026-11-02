@@ -1,5 +1,5 @@
 {
-  "as_of": "2026-10-25",
+  "as_of": "2026-11-02",
   "note": "Every rule and reference cites an id from this file. URLs are the origin of the claim; no vendor text is copied into this repository.",
   "sources": {
     "M1": {
@@ -148,6 +148,10 @@
     "S27": {
       "title": "Spike S27: upstream changes 2026-10-20 to 2026-10-25 (mcp-use 2.11.2, cli 4.5.2, official SDK server 2.4.0, OpenAI spec revision, Archestra, newly read OpenAI pages)",
       "url": "spikes/S27-upstream-2026-10-25.md"
+    },
+    "S28": {
+      "title": "Spike S28: upstream changes 2026-10-25 to 2026-11-02 (mcp-use 2.12.2 view.domain and Claude domain probes, cli 4.5.5, create-mcp-use-app 2.1.1, inspector 20.3.27, Archestra MCP server page)",
+      "url": "spikes/S28-upstream-2026-11-02.md"
     },
     "O9": {
       "title": "OpenAI: Upload and submit your plugin (portal flow, domain verification, review information)",

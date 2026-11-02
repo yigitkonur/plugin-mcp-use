@@ -1,4 +1,4 @@
-# `create-mcp-use-app` templates (observed 2026-10-20 on 2.1.0, re-checked 2026-10-25)
+# `create-mcp-use-app` templates (observed 2026-10-20 on 2.1.0, re-checked 2026-11-02 on 2.1.1)
 
 `npx create-mcp-use-app@latest <name> --template <t> --npm --install [--skills|--no-skills]`. Run without `--skills` or `--no-skills` it still copies the official skill (non-interactive default). `npx create-mcp-use-app --list-templates` lists the templates.
 
@@ -10,10 +10,10 @@
 
 `blank`, `mcp-server` and `mcp-apps` all ship a `landing.tsx` (S27).
 
-Every template: `package.json` pins `mcp-use` exactly, to **npm latest at scaffold time** (the scaffolder rewrites the template's `workspace:*`; 2.11.2 on 2026-10-25, whatever the scaffolder's own version is, S27), `typescript ^7.0.2` and `@types/node ^22.20.0` as devDependencies, `"type": "module"`, `engines.node >=22.22.2`, scripts `dev`, `build`, `start`, `deploy`, `typecheck`; `tsconfig.json`; generated `mcp-env.d.ts`; `.gitignore` (ignores `.mcp-use/`, `node_modules/`).
+Every template: `package.json` pins `mcp-use` exactly, to **npm latest at scaffold time** (the scaffolder rewrites the template's `workspace:*`; 2.12.2 on 2026-11-02, whatever the scaffolder's own version is, S27, S28), `typescript ^7.0.2` and `@types/node ^22.20.0` as devDependencies (`mcp-server` and `mcp-apps` also `zod ^4.6.6` since create-mcp-use-app 2.1.1), `"type": "module"`, `engines.node >=22.22.2`, scripts `dev`, `build`, `start`, `deploy`, `typecheck`; `tsconfig.json`; generated `mcp-env.d.ts`; `.gitignore` (ignores `.mcp-use/`, `node_modules/`).
 
 With skills copied: `.claude/skills/mcp-apps-builder/`, `.agents/skills/mcp-apps-builder/`, `.cursor/skills/mcp-apps-builder/` (a 3.7 KB router plus seven short references). It tells the agent to treat installed types as the source of truth, which matches this plugin; both can coexist.
 
 Not installed by the template: `@mcp-use/client` (needed by `mcp-use client` and `mcp-use screenshot`) and `@openai/apps-sdk-ui` (ChatGPT styling).
 
-Sources: S13, S16, S27.
+Sources: S13, S16, S27, S28.
