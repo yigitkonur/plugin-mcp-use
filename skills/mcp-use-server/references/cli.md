@@ -1,6 +1,6 @@
 # `mcp-use` CLI
 
-Verified against `@mcp-use/cli@4.5.0` and re-checked on 4.5.2 (identical `--help` for every command, S27) by running `--help` and the commands below (2026-10-20 and 2026-10-25). `mcp-use --version` prints the resolved `mcp-use` package version, not the CLI's; there is no `generate-types` command (`typecheck` refreshes `mcp-env.d.ts`). The CLI is installed by `mcp-use`, so `npx mcp-use <command>` works in any project. Boolean flags take no value (`--tunnel`, never `--tunnel=false`; the CLI answers `--tunnel does not take a value`, exit 2).
+Verified against `@mcp-use/cli@4.5.0` and re-checked on 4.5.2 (identical `--help` for every command, S27) and 4.5.5 (same flag strings in `dist`, a fresh scaffold run through the ladder, S28) by running `--help` and the commands below (2026-10-20 and 2026-10-25). `mcp-use --version` prints the resolved `mcp-use` package version, not the CLI's; there is no `generate-types` command (`typecheck` refreshes `mcp-env.d.ts`). The CLI is installed by `mcp-use`, so `npx mcp-use <command>` works in any project. Boolean flags take no value (`--tunnel`, never `--tunnel=false`; the CLI answers `--tunnel does not take a value`, exit 2).
 
 | Command | Use |
 |---|---|
@@ -25,4 +25,4 @@ Verified against `@mcp-use/cli@4.5.0` and re-checked on 4.5.2 (identical `--help
 1. Protocol: tools, resources, prompts and skills through `mcp-use client` (or `mcpc`). Exit codes and JSON, no model involved.
 2. Model: does an LLM pick the right tool and does the view render? That needs a host (Inspector chat, ChatGPT developer mode, Archestra). `/mcp-use:verify` walks both.
 
-Sources: M1, S16, S7, S27.
+Sources: M1, S16, S7, S27, S28.

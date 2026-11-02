@@ -10,7 +10,7 @@ The diff already ignores JSON key order and a top-level `$schema` (the official 
 | `CHANGED tool X: description` / `title` | intended only if you changed it on purpose | otherwise restore the text |
 | `CHANGED tool X: inputSchema` where the only differences are listed under "Serializer-only differences" below | **benign**, still list it | note it in the report |
 | `CHANGED tool X: inputSchema` (a field missing, a type or `required` change, a lost `default` or `describe`) | **regression** | fix the schema; clients send arguments against it |
-| `CHANGED tool X: outputSchema` where the old schema is a root `$ref` to its own `$defs` and only `type: "object"` is missing/added | **benign**, still list it | server 2.4.0 adds the `type`, mcp-use 2.11.2 does not (S27) |
+| `CHANGED tool X: outputSchema` where the old schema is a root `$ref` to its own `$defs` and only `type: "object"` is missing/added | **benign**, still list it | server 2.4.0 adds the `type`, mcp-use 2.11.2 and 2.12.2 do not (S27, S28) |
 | `CHANGED tool X: outputSchema` (anything else) | regression unless you added/tightened it deliberately | explain in the report |
 | `REMOVED tool/resource/prompt` | **regression** | restore it |
 | `ADDED tool/resource/prompt` | intended only for a deliberate addition (for example a data tool split out) | state the reason |
@@ -32,4 +32,4 @@ Handler side effects, performance, auth behavior, behavior on inputs not in the 
 ## A clean result looks like
 `before` and `after` differ only in annotations that mcp-use now sets explicitly, the serializer-only schema differences above, the dialect note (and the server note when the transport or protocol changed, as it does from stdio to HTTP), and every sample call is identical. That was the outcome for the inventory fixture (3 tools, 1 resource, 1 prompt, 2 calls): see `spikes/S21-migration.md`.
 
-Sources: M2, S12, S20, S21, S27.
+Sources: M2, S12, S20, S21, S27, S28.

@@ -1,6 +1,6 @@
 # Versions, removed APIs, and drift
 
-**Use the latest versions.** A new project installs `mcp-use`, `@mcp-use/cli` and `@mcp-use/client` at npm `latest` and upgrades them when they move (`/mcp-use:upgrade`); pin only when the user deploys to an environment that needs it. `data/versions.json` `known_good` is what these references were **last verified** against, not a pin: `mcp-use` 2.11.2 (support floor 2.8.0), `@mcp-use/cli` 4.5.2, `@mcp-use/inspector` 20.3.24, `@mcp-use/client` 2.4.5, `create-mcp-use-app` 2.1.0, `@openai/apps-sdk-ui` 0.2.2, `@modelcontextprotocol/ext-apps` 2.0.3 (as of 2026-10-25). Pages that say "2.11.0" were written against it; the 2.11.0 and 2.11.2 `.d.ts` files are byte-identical (all 120), so they hold for 2.11.2 (S27). mcp-use published 2.8.2 to 2.11.2 between 2026-10-09 and 2026-10-24; check the installed version first (`mcp-use-detect` reports it).
+**Use the latest versions.** A new project installs `mcp-use`, `@mcp-use/cli` and `@mcp-use/client` at npm `latest` and upgrades them when they move (`/mcp-use:upgrade`); pin only when the user deploys to an environment that needs it. `data/versions.json` `known_good` is what these references were **last verified** against, not a pin: `mcp-use` 2.12.2 (support floor 2.8.0), `@mcp-use/cli` 4.5.5, `@mcp-use/inspector` 20.3.27, `@mcp-use/client` 2.4.5, `create-mcp-use-app` 2.1.1, `@openai/apps-sdk-ui` 0.2.2, `@modelcontextprotocol/ext-apps` 2.0.4 (as of 2026-11-02). Pages that say "2.11.0" were written against it; the 2.11.0 and 2.11.2 `.d.ts` files are byte-identical (all 120, S27), and 2.12.2 changes 5 of them, all in the view-domain code, the internal bot check and one doc comment, none removed (S28), so they hold for 2.12.2. mcp-use published 2.8.2 to 2.12.2 between 2026-10-09 and 2026-11-02; check the installed version first (`mcp-use-detect` reports it).
 
 ## Removed or changed from v1 (verified absent or deprecated in 2.11.0)
 | Old | Now |
@@ -21,8 +21,8 @@
 ## Added after 2.8.2 (from the changelog; present in 2.11.0 types)
 `server.mentions()` (2.9.0), `oauthProxy`/`upstreamToken`, `isBuilding()`, `mcp-use deploy --no-github` (2.10.0), view `description` → `openai/widgetDescription` (2.10.1).
 
-## Upcoming (2.12.0-canary, not released; S27)
-Version-gated notes live in `${CLAUDE_PLUGIN_ROOT}/skills/mcp-apps/references/csp.md` and `${CLAUDE_PLUGIN_ROOT}/skills/mcp-use-server/references/deploy.md`: `view.domain` is normalized to its origin; the Claude `*.claudemcpcontent.com` host is the sha256 of the public MCP endpoint (a path in `MCP_URL` is kept for that hash); a sampled `landing.viewed` telemetry event (opt out with `MCP_USE_ANONYMIZED_TELEMETRY=false`). Recheck when `npm view mcp-use dist-tags` shows them under `latest`.
+## Changed in 2.12 (released; S28) and upcoming
+2.12.2 (`latest` on 2026-11-02) makes the S27 canary behavior real. Details in `${CLAUDE_PLUGIN_ROOT}/skills/mcp-apps/references/csp.md` and `${CLAUDE_PLUGIN_ROOT}/skills/mcp-use-server/references/deploy.md`: `view.domain` is normalized to its origin; the Claude `*.claudemcpcontent.com` host is derived from the public MCP endpoint (`MCP_URL` origin + `/mcp`, or `MCP_URL` verbatim when it has a path), not from the authored `view.domain`. **Upcoming (2.12.3-canary.1, not released):** middleware on `resources/read` gets a read-only `view?: { name }` that can arrive with `auth` undefined on a `mixedAuth` server. Recheck when `npm view mcp-use dist-tags` shows it under `latest`.
 
 ## Drift procedure
 The full method is `AGENTS.md`, "Keeping up with upstream"; the weekly job (`scripts/weekly-update.sh`) runs it.
@@ -31,4 +31,4 @@ The full method is `AGENTS.md`, "Keeping up with upstream"; the weekly job (`scr
 3. Run `sh scripts/typecheck-fixtures.sh --latest` and `sh scripts/migration-workspace.sh --check --latest`. A failing fixture means a reference is stale; fix it, then set `known_good` to what you verified.
 4. Rules that name an API carry `min_mcp_use`/`max_mcp_use` in `data/guard-rules.tsv` (unused until a rule needs a bound).
 
-Sources: M1, M2, S27.
+Sources: M1, M2, S27, S28.

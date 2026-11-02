@@ -1,6 +1,6 @@
 # Verification ladder (rungs 1–4)
 
-Replace `<port>` with a free port (3000 by default; use another such as 3511 if 3000 is taken). Run commands from the project root. Verified against `@mcp-use/cli@4.5.0` and re-run on 4.5.2 (S27).
+Replace `<port>` with a free port (3000 by default; use another such as 3511 if 3000 is taken). Run commands from the project root. Verified against `@mcp-use/cli@4.5.0` and re-run on 4.5.2 (S27) and 4.5.5 (S28).
 
 ## Rung 1 — static (limit 3 minutes each)
 ```sh
@@ -46,4 +46,4 @@ ChatGPT: `${CLAUDE_PLUGIN_ROOT}/skills/verify/references/chatgpt-dev-mode.md` (t
 ## Cleanup
 Stop the dev server, run `mcp-use client remove dev`, and leave `.mcp-use-plugin/` out of version control.
 
-Sources: M2, S16, S19, S22.
+Sources: M2, S16, S19, S22, S28.

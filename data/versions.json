@@ -1,26 +1,26 @@
 {
-  "as_of": "2026-10-25",
+  "as_of": "2026-11-02",
   "note": "known_good = the version the references, rules and examples were last verified against (a record, not a pin). Projects use latest by default; scripts/typecheck-fixtures.sh --latest checks the examples against npm latest. Ordering of this file does not matter.",
   "node": ">=22.22.2",
   "packages": {
     "mcp-use": {
-      "known_good": "2.11.2",
+      "known_good": "2.12.2",
       "floor": "2.8.0"
     },
     "@mcp-use/cli": {
-      "known_good": "4.5.2"
+      "known_good": "4.5.5"
     },
     "create-mcp-use-app": {
-      "known_good": "2.1.0"
+      "known_good": "2.1.1"
     },
     "@mcp-use/inspector": {
-      "known_good": "20.3.24"
+      "known_good": "20.3.27"
     },
     "@openai/apps-sdk-ui": {
       "known_good": "0.2.2"
     },
     "@modelcontextprotocol/ext-apps": {
-      "known_good": "2.0.3"
+      "known_good": "2.0.4"
     },
     "@modelcontextprotocol/sdk": {
       "known_good": "1.32.2"
